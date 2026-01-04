@@ -12,6 +12,9 @@
     "preview": "vite preview",
     "start": "electron .",
     "package": "npm run build && electron-builder",
+    "pack:win": "electron-builder --config build-ci-config.json --win --publish=always",
+    "pack:linux": "electron-builder --config build-ci-config.json --linux --publish=always",
+    "pack:all": "electron-builder --config build-ci-config.json --publish=always",
     "test": "npm run build && node --test dist/tests/util.test.cjs dist/tests/storage.test.cjs",
     "verify:dist": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist/main.cjs')){console.error('dist/main.cjs missing'); process.exit(1);} console.log('dist/main.cjs exists')\""
   },
@@ -25,7 +28,7 @@
     "@types/jsdom": "^21.1.1",
     "@types/node": "^20.0.0",
     "electron": "^26.0.0",
-    "electron-builder": "^24.6.0",
+    "electron-builder": "^26.0.12",
     "jsdom": "^22.1.0",
     "svelte": "^5.46.1",
     "typescript": "^5.0.0",
