@@ -5,7 +5,7 @@
 	import type { LearningCard } from '../../types';
 
 	interface Props {
-		onStart: (prompt: string) => void;
+		onStart: (card: LearningCard) => void;
 		onToggle: (id: string, status: 'active' | 'done') => void;
 	}
 

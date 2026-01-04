@@ -17,8 +17,8 @@ declare global {
       getCards(): Promise<LearningCard[]>;
       addCard(data: { title: string; prompt: string; topic?: string }): Promise<LearningCard>;
       getProjects(): Promise<Project[]>;
-      createProject(name: string): Promise<Project>;
-      updateProject(id: string, name: string): Promise<Project>;
+      createProject(payload: { name: string; systemPrompt?: string }): Promise<Project>;
+      updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project>;
       deleteProject(id: string): Promise<RawProject>;
       toggleCard(id: string, status: Status): Promise<LearningCard>;
       runPrompt(prompt: string): Promise<void>;

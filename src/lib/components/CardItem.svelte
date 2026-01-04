@@ -4,7 +4,7 @@
 
 	interface Props {
 		card: LearningCard;
-		onStart: (prompt: string) => void;
+		onStart: (card: LearningCard) => void;
 		onToggle: (id: string, status: 'active' | 'done') => void;
 	}
 
@@ -42,7 +42,7 @@
 		<button
 			type="button"
 			class="primary"
-			onclick={() => onStart(card.prompt)}
+			onclick={() => onStart(card)}
 			aria-label={`Start chat with prompt for ${card.title}`}
 		>
 			Start in ChatGPT

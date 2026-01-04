@@ -5,15 +5,15 @@
     oncreated?: (detail: { project: string }) => void;
   }
 
-  type FormValues = { name: string };
+  type FormValues = { name: string; systemPrompt: string };
 
   const { oncreated }: Props = $props();
 
   // Form state using Svelte 5 runes
-  let formData: FormValues = $state({ name: '' });
+  let formData: FormValues = $state({ name: '', systemPrompt: '' });
   let submissionError: string | null = $state(null);
   let isSubmitting = $state(false);
-  let fieldErrors = $state<{ name?: string }>({});
+  let fieldErrors = $state<{ name?: string; systemPrompt?: string }>({});
 
   // Derived computed values for accessibility
   let descriptionIds = $derived(
@@ -21,10 +21,13 @@
   );
 
   // Validation function
-  function validateForm(values: FormValues): { name?: string } {
-    const errors: { name?: string } = {};
+  function validateForm(values: FormValues): { name?: string; systemPrompt?: string } {
+    const errors: { name?: string; systemPrompt?: string } = {};
     if (!values.name || values.name.trim() === '') {
       errors.name = 'Project name is required';
+    }
+    if (values.systemPrompt && values.systemPrompt.length > 500) {
+      errors.systemPrompt = 'System prompt must be less than 500 characters';
     }
     return errors;
   }
@@ -40,11 +43,12 @@
     isSubmitting = true;
 
     try {
-      const trimmed = formData.name.trim();
-      const created = await projectManager.createProject(trimmed);
+      const trimmedName = formData.name.trim();
+      const trimmedSystemPrompt = formData.systemPrompt.trim() || undefined;
+      const created = await projectManager.createProject(trimmedName, trimmedSystemPrompt);
 
       // Reset form
-      formData = { name: '' };
+      formData = { name: '', systemPrompt: '' };
       fieldErrors = {};
 
       // Emit event via callback
@@ -60,7 +64,7 @@
   }
 
   function cancel() {
-    formData = { name: '' };
+    formData = { name: '', systemPrompt: '' };
     fieldErrors = {};
     submissionError = null;
     projectManager.selectProject('all');
@@ -86,6 +90,24 @@
       </p>
     {/if}
     <p class="hint" id="project-hint">The project name appears in the sidebar list.</p>
+    
+    <label for="proj-system-prompt">System prompt <span class="optional">(optional)</span></label>
+    <textarea
+      id="proj-system-prompt"
+      bind:value={formData.systemPrompt}
+      placeholder="e.g. You are an expert JavaScript developer. Always provide code examples and explain best practices."
+      aria-invalid={fieldErrors.systemPrompt ? 'true' : 'false'}
+      class:error={fieldErrors.systemPrompt}
+      disabled={isSubmitting}
+      rows="4"
+    ></textarea>
+    {#if fieldErrors.systemPrompt}
+      <p id="system-prompt-error" class="field-error" role="alert">
+        {fieldErrors.systemPrompt}
+      </p>
+    {/if}
+    <p class="hint" id="system-prompt-hint">This prompt will be prepended to all learning cards in this project when sent to ChatGPT.</p>
+    
     {#if submissionError}
       <p class="submission-error" role="alert">{submissionError}</p>
     {/if}

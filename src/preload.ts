@@ -30,12 +30,12 @@ try {
         (p): Project => ({ ...p, createdAt: p.createdAt ? new Date(p.createdAt) : undefined })
       );
     },
-    createProject: async (name: string): Promise<Project> => {
-      const created = (await ipcRenderer.invoke('projects:create', name)) as RawProject;
+    createProject: async (payload: { name: string; systemPrompt?: string }): Promise<Project> => {
+      const created = (await ipcRenderer.invoke('projects:create', payload)) as RawProject;
       return { ...created, createdAt: created.createdAt ? new Date(created.createdAt) : undefined };
     },
-    updateProject: async (id: string, name: string): Promise<Project> => {
-      const updated = (await ipcRenderer.invoke('projects:update', { id, name })) as RawProject;
+    updateProject: async (payload: { id: string; name: string; systemPrompt?: string }): Promise<Project> => {
+      const updated = (await ipcRenderer.invoke('projects:update', payload)) as RawProject;
       return { ...updated, createdAt: updated.createdAt ? new Date(updated.createdAt) : undefined };
     },
     deleteProject: async (id: string): Promise<RawProject> => {
@@ -62,8 +62,8 @@ declare global {
       getCards(): Promise<LearningCard[]>;
       addCard(data: { title: string; prompt: string; topic?: string }): Promise<LearningCard>;
       getProjects(): Promise<Project[]>;
-      createProject(name: string): Promise<Project>;
-      updateProject(id: string, name: string): Promise<Project>;
+      createProject(payload: { name: string; systemPrompt?: string }): Promise<Project>;
+      updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project>;
       deleteProject(id: string): Promise<RawProject>;
       toggleCard(id: string, status: Status): Promise<LearningCard>;
       runPrompt(prompt: string): Promise<void>;

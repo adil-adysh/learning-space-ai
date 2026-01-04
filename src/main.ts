@@ -218,8 +218,8 @@ app.whenReady().then(async () => {
     return projects.find((p) => p.id === id) || null;
   });
 
-  ipcMain.handle('projects:create', async (_ev, name: string) => {
-    const n = (name || '').trim();
+  ipcMain.handle('projects:create', async (_ev, payload: { name: string; systemPrompt?: string }) => {
+    const n = (payload.name || '').trim();
     if (!n) {
       throw new Error('Invalid project name');
     }
@@ -230,18 +230,26 @@ app.whenReady().then(async () => {
       return existing;
     }
 
-    const newProj = { id: randomUUID(), name: n, createdAt: new Date().toISOString() };
+    const newProj = { 
+      id: randomUUID(), 
+      name: n, 
+      systemPrompt: payload.systemPrompt?.trim() || undefined,
+      createdAt: new Date().toISOString() 
+    };
     return await dbAddProject(newProj);
   });
 
-  ipcMain.handle('projects:update', async (_ev, payload: { id: string; name: string }) => {
+  ipcMain.handle('projects:update', async (_ev, payload: { id: string; name: string; systemPrompt?: string }) => {
     const id = (payload.id || '').trim();
     const name = (payload.name || '').trim();
     if (!id || !name) {
       throw new Error('Invalid input');
     }
 
-    const updated = await dbUpdateProject(id, { name });
+    const updated = await dbUpdateProject(id, { 
+      name,
+      systemPrompt: payload.systemPrompt?.trim() || undefined
+    });
     if (!updated) {
       throw new Error('Project not found');
     }

@@ -143,6 +143,29 @@ class CardManager {
   }
 
   /**
+   * Run a card's prompt with optional system prompt in ChatGPT
+   * System prompt will be prepended to the user prompt
+   */
+  async runPromptWithSystem(userPrompt: string, systemPrompt?: string) {
+    if (typeof window === 'undefined' || !('api' in window)) {
+      return;
+    }
+
+    // Combine system prompt with user prompt
+    let combinedPrompt = userPrompt;
+    if (systemPrompt && systemPrompt.trim()) {
+      combinedPrompt = `${systemPrompt.trim()}\n\n${userPrompt}`;
+    }
+
+    try {
+      await (window as typeof window & { api: typeof window.api }).api.runPrompt(combinedPrompt);
+    } catch (err) {
+      console.error('Failed to run prompt:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Toggle the add form visibility
    */
   toggleForm() {

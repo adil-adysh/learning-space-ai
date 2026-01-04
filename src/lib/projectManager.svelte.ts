@@ -52,7 +52,7 @@ class ProjectManager {
   /**
    * Create a new project
    */
-  async createProject(name: string): Promise<Project> {
+  async createProject(name: string, systemPrompt?: string): Promise<Project> {
     const trimmed = name.trim();
     if (!trimmed) {
       throw new Error('Project name is required');
@@ -64,7 +64,7 @@ class ProjectManager {
 
     const created: Project = await (
       window as typeof window & { api: typeof window.api }
-    ).api.createProject(trimmed);
+    ).api.createProject({ name: trimmed, systemPrompt });
     this.all = [...this.all, created].sort((a, b) => a.name.localeCompare(b.name));
     return created;
   }

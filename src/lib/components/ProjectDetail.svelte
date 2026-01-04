@@ -39,8 +39,16 @@
     cardManager.closeForm();
   }
 
-  async function handleCardStart(prompt: string) {
-    await cardManager.runPrompt(prompt);
+  async function handleStart(card: typeof import('../../types').LearningCard) {
+    // Get the project's system prompt if the card belongs to a project
+    let systemPrompt: string | undefined;
+    if (card.project) {
+      const proj = projectManager.all.find(p => p.id === card.project);
+      systemPrompt = proj?.systemPrompt;
+    }
+    
+    // Pass both the card prompt and system prompt
+    await cardManager.runPromptWithSystem(card.prompt, systemPrompt);
   }
 
   async function handleCardToggle(id: string, status: 'active' | 'done') {

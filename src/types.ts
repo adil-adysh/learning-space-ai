@@ -26,11 +26,13 @@ export interface RawCard {
 export interface Project {
   id: string;
   name: string;
+  systemPrompt?: string; // Optional system prompt that prepends to all cards in this project
   createdAt?: Date;
 }
 
 export interface RawProject {
   id: string;
   name: string;
+  systemPrompt?: string;
   createdAt?: string;
 }
