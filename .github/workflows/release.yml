@@ -37,12 +37,31 @@ jobs:
       - name: Build web client and electron main
         run: npm run build
 
+      - name: Create electron-builder temp config (use repo owner/repo)
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          OWNER=$(echo "$REPO" | cut -d'/' -f1)
+          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          cat > build-ci-config.json <<EOF
+          {
+            "publish": [
+              {
+                "provider": "github",
+                "owner": "${OWNER}",
+                "repo": "${REPO_NAME}"
+              }
+            ]
+          }
+          EOF
+
       - name: Package and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Use npx to ensure local electron-builder is used even if CLI not on PATH
-          npx electron-builder --publish=always
+          # Pass a small config that sets owner/repo dynamically from the checked-out repo
+          npx electron-builder --config build-ci-config.json --publish=always
 
       - name: Upload release artifacts (fallback)
         if: failure()
