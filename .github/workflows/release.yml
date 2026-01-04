@@ -142,13 +142,34 @@ jobs:
         with:
           name: release-artifacts-windows-latest
           path: artifacts/windows
+      - name: Find required artifacts to upload
+        run: |
+          set -e
+          mkdir -p artifacts
+          echo "Searching for artifacts matching patterns..."
+          # Find deterministic artifact names produced by electron-builder
+          find artifacts -type f \(
+            -name 'learning-space-ai-*.exe' -o \
+            -name 'learning-space-ai-*-Setup*.exe' -o \
+            -name 'learning-space-ai-*.AppImage' -o \
+            -name 'learning-space-ai_*.deb' -o \
+            -name 'learning-space-ai-*.zip' \
+          \) -print > artifacts/files_to_upload.txt || true
+          echo "Files to upload:" && cat artifacts/files_to_upload.txt || true
+          # Ensure at least one Windows installer exists
+          if ! grep -E '\.exe$' artifacts/files_to_upload.txt >/dev/null 2>&1; then
+            echo "ERROR: No Windows installer (.exe) found among downloaded artifacts."
+            exit 1
+          fi
 
       - name: Prepare unique artifact list
         run: |
           set -e
           mkdir -p artifacts/unique
-          echo "Collecting files into artifacts/unique"
-          find artifacts -type f -print0 | while IFS= read -r -d '' f; do
+          echo "Copying listed files into artifacts/unique"
+          while IFS= read -r f || [ -n "$f" ]; do
+            if [ -z "$f" ]; then continue; fi
+            if [ ! -f "$f" ]; then echo "Warning: listed file not found: $f"; continue; fi
             base=$(basename "$f")
             dest="artifacts/unique/$base"
             if [ -e "$dest" ]; then
@@ -157,7 +178,7 @@ jobs:
               cp "$f" "$dest"
               echo "Copied $f -> $dest"
             fi
-          done
+          done < artifacts/files_to_upload.txt
 
       - name: Publish release and upload assets
         uses: softprops/action-gh-release@v2
