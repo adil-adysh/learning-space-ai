@@ -28,10 +28,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache node modules
+      - name: Cache node modules and npm cache
         uses: actions/cache@v4
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -95,6 +97,7 @@ jobs:
           path: |
             dist/**/*.exe
             dist/**/win-unpacked/**
+          retention-days: 3
 
       - name: Package and publish (Linux)
         if: runner.os != 'Windows'
@@ -113,6 +116,7 @@ jobs:
             dist/**/*.AppImage
             dist/**/*.deb
             dist/**/linux-unpacked/**
+          retention-days: 3
 
       # no fallback artifact upload - artifacts uploaded per-platform on success
 
@@ -139,19 +143,28 @@ jobs:
           name: release-artifacts-windows-latest
           path: artifacts/windows
 
+      - name: Prepare unique artifact list
+        run: |
+          set -e
+          mkdir -p artifacts/unique
+          echo "Collecting files into artifacts/unique"
+          find artifacts -type f -print0 | while IFS= read -r -d '' f; do
+            base=$(basename "$f")
+            dest="artifacts/unique/$base"
+            if [ -e "$dest" ]; then
+              echo "Skipping duplicate: $base"
+            else
+              cp "$f" "$dest"
+              echo "Copied $f -> $dest"
+            fi
+          done
+
       - name: Publish release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           draft: true
+          # Upload only deduplicated artifacts matching the deterministic artifactName
           files: |
-            artifacts/windows/**/learning-space-ai*.exe
-            artifacts/windows/**/learning-space-ai*.zip
-            artifacts/windows/**/learning-space-ai*-Setup*.exe
-            artifacts/linux/**/learning-space-ai*.AppImage
-            artifacts/linux/**/learning-space-ai*.deb
-            artifacts/**/learning-space-ai*.exe
-            artifacts/**/learning-space-ai*.AppImage
-            artifacts/**/learning-space-ai*.deb
-            artifacts/**/learning-space-ai*.zip
+            artifacts/unique/learning-space-ai-*.*
           token: ${{ secrets.PUBLISH_TOKEN || github.token }}

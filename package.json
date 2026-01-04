@@ -46,6 +46,7 @@
     ],
     "appId": "com.example.learning-space-ai",
     "productName": "learning-space-ai",
+    "artifactName": "learning-space-ai-${version}-${os}-${arch}.${ext}",
     "files": [
       "build/**/*",
       "dist/**/*",
