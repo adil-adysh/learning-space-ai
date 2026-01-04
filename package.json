@@ -32,6 +32,14 @@
   }
   ,
   "build": {
+    "asar": false,
+    "extraResources": [
+      {
+        "from": "dist",
+        "to": "dist",
+        "filter": ["**/*"]
+      }
+    ],
     "appId": "com.example.learning-cards",
     "productName": "Learning Cards",
     "files": [
