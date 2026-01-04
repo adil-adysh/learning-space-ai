@@ -1,25 +1,47 @@
 <script lang="ts">
 	import { cardManager } from '../cardManager.svelte';
 	import { projectManager } from '../projectManager.svelte';
-	import { onMount, onDestroy } from 'svelte';
-	import type { LearningCard } from '../../types';
 
-	// Props
-	export let onSubmit: (data: { title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
+	interface Props {
+		onSubmit: (data: { title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
+	}
 
-	// Local state
-	let title = '';
-	let topic = '';
-	let project = '';
-	let creatingProject = false;
-	let prompt = '';
-	let status = '';
-	let isSubmitting = false;
+	const { onSubmit }: Props = $props();
 
-	// Reactive validation
-	$: isValid = title.trim().length > 0 && prompt.trim().length > 0;
+	// Local state using Svelte 5 runes
+	let title = $state('');
+	let topic = $state('');
+	let project = $state('');
+	let creatingProject = $state(false);
+	let prompt = $state('');
+	let status = $state('');
+	let isSubmitting = $state(false);
 
-	async function handleSubmit() {
+	// Derived validation state
+	let isValid = $derived.by(() => {
+		return title.trim().length > 0 && prompt.trim().length > 0;
+	});
+
+	// Side effect: Handle Escape key
+	$effect(() => {
+		if (!cardManager.isFormOpen) return;
+
+		const handleGlobalKeydown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				handleCancel();
+			}
+		};
+
+		window.addEventListener('keydown', handleGlobalKeydown);
+
+		return () => {
+			window.removeEventListener('keydown', handleGlobalKeydown);
+		};
+	});
+
+	async function handleSubmit(e: SubmitEvent) {
+		e.preventDefault();
+
 		if (!isValid || isSubmitting) return;
 
 		isSubmitting = true;
@@ -30,21 +52,31 @@
 				title: title.trim(),
 				prompt: prompt.trim(),
 				topic: topic.trim() || undefined,
-				project: creatingProject ? project.trim() || undefined : (project || undefined)
+				project: creatingProject ? project.trim() || undefined : (project || undefined),
 			});
 
 			// Success - clear form and close
 			clearForm();
 			cardManager.closeForm();
-			status = 'Card added successfully!';
-			
+
 			// Announce to screen readers
-			announceToSR(status);
+			announceToSR(`Card "${title}" added successfully`);
 		} catch (err) {
 			status = err instanceof Error ? err.message : 'Failed to add card';
 			announceToSR(status);
 		} finally {
 			isSubmitting = false;
+		}
+	}
+
+	function handleProjectChange(e: Event) {
+		const select = e.target as HTMLSelectElement;
+		if (select.value === '__create__') {
+			creatingProject = true;
+			project = '';
+		} else {
+			creatingProject = false;
+			project = select.value;
 		}
 	}
 
@@ -68,27 +100,11 @@
 			announcer.textContent = message;
 		}
 	}
-
-	// Global keydown handler for Escape
-	onMount(() => {
-		const handleGlobalKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && cardManager.isFormOpen) {
-				handleCancel();
-			}
-		};
-		
-		window.addEventListener('keydown', handleGlobalKeydown);
-		
-		return () => {
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
-	});
-
 </script>
 
 {#if cardManager.isFormOpen}
 	<section id="add-section">
-		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} aria-labelledby="add-heading">
+		<form onsubmit={handleSubmit} aria-labelledby="add-heading">
 			<h2>New Card Details</h2>
 
 			{#if status}
@@ -126,10 +142,16 @@
 
 			<div class="field">
 				<label for="project-select">Project <span class="optional">(optional)</span></label>
-				<select id="project-select" bind:value={project} onchange={() => { if (project === '__create__') { creatingProject = true; project = ''; } else { creatingProject = false; } }} disabled={isSubmitting} aria-describedby="project-hint">
+				<select
+					id="project-select"
+					bind:value={project}
+					onchange={handleProjectChange}
+					disabled={isSubmitting}
+					aria-describedby="project-hint"
+				>
 					<option value="all">All projects</option>
 					<option value="">Unassigned</option>
-					{#each projectManager.all as p}
+					{#each projectManager.all as p (p.id)}
 						<option value={p.id}>{p.name}</option>
 					{/each}
 					<option value="__create__">+ Create new project...</option>
@@ -140,7 +162,13 @@
 			{#if creatingProject}
 				<div class="field">
 					<label for="project">New project name</label>
-					<input id="project" bind:value={project} type="text" autocomplete="off" disabled={isSubmitting} />
+					<input
+						id="project"
+						bind:value={project}
+						type="text"
+						autocomplete="off"
+						disabled={isSubmitting}
+					/>
 					<span class="hint">Give your project a short, unique name.</span>
 				</div>
 			{/if}

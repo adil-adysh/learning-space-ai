@@ -31,6 +31,7 @@ BEFORE (Procedural)                AFTER (Event-Driven + Classes)
 ## 🏗️ New Architecture Components
 
 ### **1. EventBus Service** (`eventBus.ts`)
+
 - **Type:** Pub/Sub Pattern (Observer Pattern)
 - **Purpose:** Decoupled component communication
 - **Key Features:**
@@ -56,6 +57,7 @@ interface AppEvents {
 ---
 
 ### **2. AppStateManager Service** (`appState.ts`)
+
 - **Type:** State Management Pattern (Centralized State)
 - **Purpose:** Single source of truth for all app data
 - **Key Features:**
@@ -78,6 +80,7 @@ interface AppState {
 ---
 
 ### **3. AddForm Component Class** (`addFormComponent.ts`)
+
 - **Type:** Class-Based Component with DI
 - **Purpose:** Encapsulated form functionality
 - **Key Features:**
@@ -89,10 +92,10 @@ interface AppState {
 
 ```typescript
 class AddForm {
-  constructor(dependencies: AddFormDependencies) { }
-  private show(): void { }
-  private hide(): void { }
-  private handleSubmit(e: Event): Promise<void> { }
+  constructor(dependencies: AddFormDependencies) {}
+  private show(): void {}
+  private hide(): void {}
+  private handleSubmit(e: Event): Promise<void> {}
 }
 ```
 
@@ -101,6 +104,7 @@ class AddForm {
 ---
 
 ### **4. CardList Component Class** (`cardListComponent.ts`)
+
 - **Type:** Class-Based Component with DI
 - **Purpose:** Encapsulated card list rendering
 - **Key Features:**
@@ -111,9 +115,9 @@ class AddForm {
 
 ```typescript
 class CardList {
-  constructor(dependencies: CardListDependencies) { }
-  render(): void { }
-  private subscribeToEvents(): void { }
+  constructor(dependencies: CardListDependencies) {}
+  render(): void {}
+  private subscribeToEvents(): void {}
 }
 ```
 
@@ -149,9 +153,11 @@ UI Updated
 ## 🎯 Root Cause Problems Eliminated
 
 ### **Problem 1: Add Button Not Opening Form**
+
 **Root Cause:** State scattered, event handlers unclear, no centralized DOM validation
 
 **Solution:**
+
 - ✅ Constructor validates all required DOM elements at startup
 - ✅ Clear event flow: button click → state update → event emission
 - ✅ Comprehensive logging at each step for debugging
@@ -168,9 +174,11 @@ constructor(dependencies: AddFormDependencies) {
 ---
 
 ### **Problem 2: State Consistency Issues**
+
 **Root Cause:** Multiple sources of truth, manual refresh logic, async race conditions
 
 **Solution:**
+
 - ✅ Single source of truth (AppStateManager)
 - ✅ Automatic event emissions on state changes
 - ✅ Components react to events, not manual refresh calls
@@ -186,9 +194,11 @@ appState.updateCardStatus(...);  // Updates state + emits event
 ---
 
 ### **Problem 3: Tight Component Coupling**
+
 **Root Cause:** Components called each other directly, hard to test/extend
 
 **Solution:**
+
 - ✅ Components communicate through EventBus
 - ✅ Dependency injection makes dependencies explicit
 - ✅ Easy to add new listeners without modifying existing code
@@ -197,7 +207,7 @@ appState.updateCardStatus(...);  // Updates state + emits event
 ```typescript
 // Before: Hard-coded coupling
 const addForm = createAddForm(async (data) => {
-  await refreshUI();  // Direct call to CardList logic
+  await refreshUI(); // Direct call to CardList logic
 });
 
 // After: Decoupled via events
@@ -209,48 +219,52 @@ eventBus.on('card:added', () => cardList.render());
 
 ## 📈 Code Quality Improvements
 
-| Metric | Before | After |
-|--------|--------|-------|
-| **Coupling** | High (functions call each other) | Low (event bus) |
-| **Cohesion** | Mixed concerns | Separated concerns |
-| **Testability** | Hard (everything interconnected) | Easy (DI + events) |
-| **Maintainability** | Hard (scattered state) | Easy (single source) |
-| **Extensibility** | Hard (must modify existing code) | Easy (add listeners) |
-| **Debugging** | Hard (implicit flow) | Easy (explicit events + logging) |
-| **Type Safety** | Partial | Full (TypeScript) |
-| **Reusability** | Low (tightly coupled) | High (independent) |
+| Metric              | Before                           | After                            |
+| ------------------- | -------------------------------- | -------------------------------- |
+| **Coupling**        | High (functions call each other) | Low (event bus)                  |
+| **Cohesion**        | Mixed concerns                   | Separated concerns               |
+| **Testability**     | Hard (everything interconnected) | Easy (DI + events)               |
+| **Maintainability** | Hard (scattered state)           | Easy (single source)             |
+| **Extensibility**   | Hard (must modify existing code) | Easy (add listeners)             |
+| **Debugging**       | Hard (implicit flow)             | Easy (explicit events + logging) |
+| **Type Safety**     | Partial                          | Full (TypeScript)                |
+| **Reusability**     | Low (tightly coupled)            | High (independent)               |
 
 ---
 
 ## 🏆 Design Patterns Applied
 
-| Pattern | Location | Purpose |
-|---------|----------|---------|
-| **Observer/Pub-Sub** | EventBus | Decoupled event communication |
-| **State Management** | AppStateManager | Single source of truth |
-| **Dependency Injection** | All components | Loose coupling, testability |
-| **Singleton** | EventBus, AppState | Single instances throughout app |
-| **Factory** | Component constructors | Consistent initialization |
-| **Strategy** | AddForm.handleSubmit | Different submission strategies |
+| Pattern                  | Location               | Purpose                         |
+| ------------------------ | ---------------------- | ------------------------------- |
+| **Observer/Pub-Sub**     | EventBus               | Decoupled event communication   |
+| **State Management**     | AppStateManager        | Single source of truth          |
+| **Dependency Injection** | All components         | Loose coupling, testability     |
+| **Singleton**            | EventBus, AppState     | Single instances throughout app |
+| **Factory**              | Component constructors | Consistent initialization       |
+| **Strategy**             | AddForm.handleSubmit   | Different submission strategies |
 
 ---
 
 ## 📁 Files Changed
 
 ### **NEW FILES CREATED** (Modern Architecture)
+
 - ✅ `src/ui/eventBus.ts` - Type-safe event emitter
 - ✅ `src/ui/appState.ts` - Centralized state manager
 - ✅ `src/ui/addFormComponent.ts` - AddForm class (NEW)
 - ✅ `src/ui/cardListComponent.ts` - CardList class (NEW)
 
 ### **FILES REFACTORED** (Updated Logic)
+
 - ✅ `src/ui/index.ts` - Complete rewrite using new services
 
 ### **FILES DEPRECATED** (Kept for backward compat)
+
 - ⚠️ `src/ui/addForm.ts` - Old function version (marked deprecated)
 - ⚠️ `src/ui/cardList.ts` - Old function version (marked deprecated)
 
 ### **FILES UNCHANGED**
+
 - ✅ `src/ui/cardItem.ts` - Card rendering
 - ✅ `src/ui/utils.ts` - Helper functions
 - ✅ `src/ui/logger.ts` - Diagnostics
@@ -285,6 +299,7 @@ Total Size Added:  ~18 KB (minified will be ~5 KB)
 ## 🧪 Testing Improvements
 
 ### **Before: Difficult to Test**
+
 ```typescript
 // Can't test in isolation - everything interconnected
 test('add form works', () => {
@@ -295,14 +310,15 @@ test('add form works', () => {
 ```
 
 ### **After: Easy to Test**
+
 ```typescript
 test('add form submission calls onSubmit', async () => {
   const mock = jest.fn();
   const form = new AddForm({ onSubmit: mock });
-  
+
   // Simulate submission
   form.submit(testData);
-  
+
   // Verify
   expect(mock).toHaveBeenCalledWith(testData);
 });
@@ -351,30 +367,35 @@ test('add form submission calls onSubmit', async () => {
 ## 💡 Key Improvements Summary
 
 ### **Readability**
+
 ```
 Before:  100+ lines of procedural logic in one function
 After:   Clear class structure with small, focused methods
 ```
 
 ### **Maintainability**
+
 ```
 Before:  Change one component → must check all others
 After:   Change component → others auto-update via events
 ```
 
 ### **Debugging**
+
 ```
 Before:  Scattered console.logs, hard to trace flow
 After:   Structured logging with [ComponentName] prefix
 ```
 
 ### **Testing**
+
 ```
 Before:  Everything interconnected, hard to isolate
 After:   Dependencies injected, easy to mock
 ```
 
 ### **Extensibility**
+
 ```
 Before:  Add feature → modify existing components
 After:   Add feature → add new listeners/methods
@@ -387,27 +408,32 @@ After:   Add feature → add new listeners/methods
 This architecture enables:
 
 ✅ **State Persistence**
+
 ```typescript
-appState.subscribe(state => localStorage.setItem('state', JSON.stringify(state)));
+appState.subscribe((state) => localStorage.setItem('state', JSON.stringify(state)));
 ```
 
 ✅ **Real-time Sync**
+
 ```typescript
 eventBus.on('*', (event, data) => websocket.emit(event, data));
 ```
 
 ✅ **Undo/Redo**
+
 ```typescript
 const history = [];
 eventBus.on('*', () => history.push(appState.getState()));
 ```
 
 ✅ **Time-travel Debugging**
+
 ```typescript
 appState.setState(history[index]); // Jump to any state
 ```
 
 ✅ **Performance Monitoring**
+
 ```typescript
 eventBus.on('*', (event) => performance.mark(`event:${event}`));
 ```
@@ -428,7 +454,8 @@ eventBus.on('*', (event) => performance.mark(`event:${event}`));
 **From:** 📦 Tightly coupled procedural code with scattered state  
 **To:** 🏗️ Modern, event-driven architecture with clear separation of concerns
 
-**Result:** 
+**Result:**
+
 - ✅ Fixes root causes, not symptoms
 - ✅ Production-ready and maintainable
 - ✅ Future-proof and extensible
@@ -439,4 +466,4 @@ eventBus.on('*', (event) => performance.mark(`event:${event}`));
 
 ---
 
-*Refactored on January 4, 2026 with comprehensive design pattern implementation*
+_Refactored on January 4, 2026 with comprehensive design pattern implementation_

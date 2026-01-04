@@ -2,7 +2,10 @@ const { writeFileSync, mkdirSync } = require('fs');
 const { join } = require('path');
 
 const dist = 'dist';
-try { mkdirSync(dist, { recursive: true }); } catch (e) {}
+try {
+  mkdirSync(dist, { recursive: true });
+  // eslint-disable-next-line no-empty
+} catch {}
 
 const content = `// Auto-generated CommonJS wrapper to dynamically import ESM main
 (async () => {

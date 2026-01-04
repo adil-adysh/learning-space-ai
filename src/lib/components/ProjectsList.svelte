@@ -1,11 +1,15 @@
 <script lang="ts">
   import { projectManager } from '../projectManager.svelte';
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
 
-  function openProject(p: string) {
-    projectManager.selectProject(p);
-    dispatch('open', { projectId: p });
+  interface Props {
+    onopen?: (detail: { projectId: string }) => void;
+  }
+
+  const { onopen }: Props = $props();
+
+  function handleOpenProject(projectId: string) {
+    projectManager.selectProject(projectId);
+    onopen?.({ projectId });
   }
 </script>
 
@@ -22,12 +26,16 @@
     {#if projectManager.all.length === 0}
       <li class="empty">No projects yet — create one.</li>
     {:else}
-        {#each projectManager.all as p}
-          <li>
-            <button class="project-card" onclick={() => openProject(p.id)} aria-label={`Open project ${p.name}`}>
-              <span class="project-name">{p.name}</span>
-            </button>
-          </li>
+      {#each projectManager.all as p (p.id)}
+        <li>
+          <button
+            class="project-card"
+            onclick={() => handleOpenProject(p.id)}
+            aria-label={`Open project ${p.name}`}
+          >
+            <span class="project-name">{p.name}</span>
+          </button>
+        </li>
       {/each}
     {/if}
   </ul>

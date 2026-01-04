@@ -1,47 +1,22 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { projectManager } from '../lib/projectManager.svelte';
 	import { cardManager } from '../lib/cardManager.svelte';
-	import AddForm from '../lib/components/AddForm.svelte';
-	import CardList from '../lib/components/CardList.svelte';
 	import ProjectsList from '../lib/components/ProjectsList.svelte';
 	import ProjectCreate from '../lib/components/ProjectCreate.svelte';
 	import ProjectDetail from '../lib/components/ProjectDetail.svelte';
 	import '../styles.css';
 
-	// Load initial data using Svelte 5 runes
-	onMount(async () => {
-		await Promise.all([
-			cardManager.loadCards(),
-			projectManager.loadProjects()
-		]);
+	// Initial data load effect
+	$effect.pre(() => {
+		const loadInitialData = async () => {
+			await Promise.all([cardManager.loadCards(), projectManager.loadProjects()]);
+		};
+		loadInitialData();
 	});
 
-	// Event handlers
-	async function handleFormSubmit(data: { title: string; prompt: string; topic?: string; project?: string }) {
-		await cardManager.addCard(data);
-		announceToSR(`Card "${data.title}" added successfully`);
-	}
-
-	async function handleCardStart(prompt: string) {
-		await cardManager.runPrompt(prompt);
-		announceToSR('Opening prompt in ChatGPT');
-	}
-
-	async function handleCardToggle(id: string, status: 'active' | 'done') {
-		await cardManager.updateCardStatus(id, status);
-		announceToSR(`Card marked as ${status}`);
-	}
-
-	function toggleAddForm() {
-		cardManager.toggleForm();
-	}
-
-	function announceToSR(message: string) {
-		const announcer = document.getElementById('sr-announcements');
-		if (announcer) {
-			announcer.textContent = message;
-		}
+	function handleProjectCreated(detail: { project: string }) {
+		const projectId = detail.project;
+		projectManager.selectProject(projectId);
 	}
 </script>
 
@@ -59,11 +34,21 @@
 		<p class="subtitle">Finish what you start</p>
 		<div class="top-actions">
 			{#if projectManager.selectedProject === 'all'}
-				<button class="primary" onclick={() => projectManager.selectCreateProject()} aria-label="Create project">
+				<button
+					class="primary"
+					onclick={() => projectManager.selectCreateProject()}
+					aria-label="Create project"
+				>
 					+ New Project
 				</button>
 			{:else}
-				<button class="ghost" onclick={() => projectManager.selectProject('all')} aria-label="Back to projects">← Projects</button>
+				<button
+					class="ghost"
+					onclick={() => projectManager.selectProject('all')}
+					aria-label="Back to projects"
+				>
+					← Projects
+				</button>
 			{/if}
 		</div>
 	</header>
@@ -71,18 +56,13 @@
 	<main id="main-content">
 		{#if cardManager.isLoading || projectManager.isLoading}
 			<p>Loading...</p>
+		{:else if projectManager.selectedProject === 'all'}
+			<ProjectsList onopen={(e) => projectManager.selectProject(e.projectId)} />
+		{:else if projectManager.selectedProject === 'create'}
+			<ProjectCreate oncreated={handleProjectCreated} />
 		{:else}
-			{#if projectManager.selectedProject === 'all'}
-				<ProjectsList on:open={(e) => projectManager.selectProject(e.detail.projectId)} />
-			{:else if projectManager.selectedProject === 'create'}
-				<ProjectCreate on:created={async (e) => {
-					await projectManager.loadProjects();
-					projectManager.selectProject(e.detail.project);
-				}} />
-			{:else}
-				<!-- Project detail view moved into component -->
-				<ProjectDetail projectId={projectManager.selectedProject} />
-			{/if}
+			<!-- Project detail view -->
+			<ProjectDetail projectId={projectManager.selectedProject} />
 		{/if}
 	</main>
 </div>

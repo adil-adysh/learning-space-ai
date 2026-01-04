@@ -26,7 +26,7 @@ export interface RawCard {
 export interface Project {
   id: string;
   name: string;
-  createdAt?: string;
+  createdAt?: Date;
 }
 
 export interface RawProject {

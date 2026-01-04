@@ -1,14 +1,23 @@
 <script lang="ts">
 	import type { LearningCard } from '../../types';
 	import { projectManager } from '../projectManager.svelte';
-	
-	export let card: LearningCard;
-	export let onStart: (prompt: string) => void;
-	export let onToggle: (id: string, status: 'active' | 'done') => void;
 
-	$: isDone = card.status === 'done';
-	$: buttonLabel = isDone ? 'Mark active' : 'Mark done';
-	$: statusText = isDone ? '✓ Completed' : 'Active';
+	interface Props {
+		card: LearningCard;
+		onStart: (prompt: string) => void;
+		onToggle: (id: string, status: 'active' | 'done') => void;
+	}
+
+	const { card, onStart, onToggle }: Props = $props();
+
+	// Derived computed values
+	const isDone = $derived(card.status === 'done');
+	const buttonLabel = $derived(isDone ? 'Mark active' : 'Mark done');
+	const statusText = $derived(isDone ? '✓ Completed' : 'Active');
+	const projectName = $derived.by(() => {
+		if (!card.project) return '';
+		return projectManager.all.find(p => p.id === card.project)?.name || card.project;
+	});
 </script>
 
 <article class="card" class:done={isDone}>
@@ -18,8 +27,8 @@
 			<p class="topic">{card.topic}</p>
 		{/if}
 		{#if card.project}
-				<p class="project">Project: <strong>{projectManager.all.find(p => p.id === card.project)?.name || card.project}</strong></p>
-			{/if}
+			<p class="project">Project: <strong>{projectName}</strong></p>
+		{/if}
 	</header>
 
 	<section>
@@ -30,17 +39,17 @@
 	</section>
 
 	<footer class="card-actions">
-		<button 
-			type="button" 
-			class="primary" 
+		<button
+			type="button"
+			class="primary"
 			onclick={() => onStart(card.prompt)}
 			aria-label={`Start chat with prompt for ${card.title}`}
 		>
 			Start in ChatGPT
 		</button>
-		<button 
-			type="button" 
-			class="ghost" 
+		<button
+			type="button"
+			class="ghost"
 			aria-pressed={isDone}
 			onclick={() => onToggle(card.id, isDone ? 'active' : 'done')}
 			aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
@@ -50,11 +59,13 @@
 	</footer>
 </article>
 
+
+
 <style>
 	.card {
 		margin-bottom: 1rem;
 	}
-	
+
 	.done {
 		opacity: 0.7;
 	}

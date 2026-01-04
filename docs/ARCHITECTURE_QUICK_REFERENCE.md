@@ -3,6 +3,7 @@
 ## 🎯 Core Concepts
 
 ### **1. EventBus: Decoupled Communication**
+
 ```typescript
 import { eventBus } from './ui/eventBus';
 
@@ -25,6 +26,7 @@ eventBus.once('form:success', ({ title }) => {
 ```
 
 **Available Events:**
+
 - `form:open` - Form opened
 - `form:close` - Form closed
 - `form:submit` - Form submitted with data
@@ -37,6 +39,7 @@ eventBus.once('form:success', ({ title }) => {
 ---
 
 ### **2. AppState: Centralized State**
+
 ```typescript
 import { appState } from './ui/appState';
 
@@ -56,13 +59,14 @@ appState.setError('Something went wrong');
 appState.setFormOpen(true);
 
 // Semantic methods
-appState.addCard(newCard);                    // Adds card to beginning
-appState.updateCardStatus(cardId, 'done');   // Updates card status
+appState.addCard(newCard); // Adds card to beginning
+appState.updateCardStatus(cardId, 'done'); // Updates card status
 ```
 
 ---
 
 ### **3. AddForm Component: Class-Based**
+
 ```typescript
 import { AddForm } from './ui/addFormComponent';
 
@@ -84,6 +88,7 @@ const addForm = new AddForm({
 ---
 
 ### **4. CardList Component: Class-Based**
+
 ```typescript
 import { CardList } from './ui/cardListComponent';
 
@@ -143,6 +148,7 @@ cardList.render();
 ### **Example: Add a "Favorite" Toggle**
 
 1. **Update AppState to track favorites**
+
 ```typescript
 // In appState.ts
 interface AppState {
@@ -164,6 +170,7 @@ toggleFavorite(cardId: string): void {
 ```
 
 2. **Add event to EventBus**
+
 ```typescript
 // In eventBus.ts
 interface AppEvents {
@@ -173,6 +180,7 @@ interface AppEvents {
 ```
 
 3. **Add favorite button to CardItem**
+
 ```typescript
 // In cardItem.ts
 const favoriteBtn = document.createElement('button');
@@ -184,6 +192,7 @@ favoriteBtn.addEventListener('click', async () => {
 ```
 
 4. **Listen for changes in CardList**
+
 ```typescript
 // In cardListComponent.ts
 private subscribeToEvents(): void {
@@ -199,13 +208,14 @@ private subscribeToEvents(): void {
 ## 🧪 Testing Components
 
 ### **Test AddForm Submission**
+
 ```typescript
 import { AddForm } from './ui/addFormComponent';
 
 describe('AddForm', () => {
   it('should call onSubmit when form is submitted', async () => {
     const mockSubmit = jest.fn();
-    
+
     const addForm = new AddForm({
       onSubmit: mockSubmit,
     });
@@ -220,6 +230,7 @@ describe('AddForm', () => {
 ```
 
 ### **Test CardList Rendering**
+
 ```typescript
 import { CardList } from './ui/cardListComponent';
 import { appState } from './ui/appState';
@@ -235,9 +246,7 @@ describe('CardList', () => {
     });
 
     // Set test data in state
-    appState.setCards([
-      { id: '1', title: 'Test Card', /* ... */ },
-    ]);
+    appState.setCards([{ id: '1', title: 'Test Card' /* ... */ }]);
 
     cardList.render();
 
@@ -252,6 +261,7 @@ describe('CardList', () => {
 ## 🐛 Debugging
 
 ### **Enable Full Logging**
+
 All components log to console with `[ComponentName]` prefix:
 
 ```
@@ -267,19 +277,21 @@ All components log to console with `[ComponentName]` prefix:
 ```
 
 ### **Check App State**
+
 ```javascript
 // In browser console
-window.appState?.getState()
+window.appState?.getState();
 // { cards: [...], isLoading: false, isFormOpen: false }
 
-window.appState?.getValue('cards')
+window.appState?.getValue('cards');
 ```
 
 ### **Monitor Events**
+
 ```javascript
 // In browser console
 const originalEmit = window.eventBus.emit;
-window.eventBus.emit = function(event, data) {
+window.eventBus.emit = function (event, data) {
   console.log('EVENT:', event, data);
   return originalEmit.call(this, event, data);
 };

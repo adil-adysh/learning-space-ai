@@ -11,7 +11,7 @@ const esbuild = require('esbuild');
       outfile: 'dist/main.cjs',
       format: 'cjs',
       sourcemap: true,
-      external: ['electron'],
+      external: ['electron', './preload.cjs', './dist/preload.cjs'],
     });
 
     await esbuild.build({
@@ -20,7 +20,7 @@ const esbuild = require('esbuild');
       platform: 'node',
       target: ['node18'],
       outfile: 'dist/preload.cjs',
-      format: 'cjs',
+      format: 'iife',
       sourcemap: true,
       external: ['electron'],
     });

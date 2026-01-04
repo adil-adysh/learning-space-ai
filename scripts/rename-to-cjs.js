@@ -5,7 +5,7 @@ const distDir = 'dist';
 
 // Step 1: Rename all .js files to .cjs
 const files = readdirSync(distDir);
-files.forEach(file => {
+files.forEach((file) => {
   if (file.endsWith('.js')) {
     const oldPath = join(distDir, file);
     const newPath = join(distDir, file.replace('.js', '.cjs'));

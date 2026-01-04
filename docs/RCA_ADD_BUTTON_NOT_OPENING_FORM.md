@@ -9,7 +9,9 @@ The code structure for opening the add form **appears correct**, but there are s
 ## 🔍 Code Flow Analysis
 
 ### **1. Button Detection**
+
 **File:** `src/ui/addForm.ts` line 5
+
 ```typescript
 const toggle = qs<HTMLButtonElement>('#toggle-add');
 ```
@@ -21,7 +23,9 @@ const toggle = qs<HTMLButtonElement>('#toggle-add');
 ---
 
 ### **2. Form Detection**
+
 **File:** `src/ui/addForm.ts` line 6
+
 ```typescript
 const form = qs<HTMLFormElement>('#add-form');
 ```
@@ -33,7 +37,9 @@ const form = qs<HTMLFormElement>('#add-form');
 ---
 
 ### **3. Event Listener Setup**
+
 **File:** `src/ui/addForm.ts` line 58-62
+
 ```typescript
 toggle.addEventListener('click', () => {
   const expanded = toggle!.getAttribute('aria-expanded') === 'true';
@@ -42,6 +48,7 @@ toggle.addEventListener('click', () => {
 ```
 
 **Potential Issue:** Even if button exists and listener is attached, the click handler might not fire if:
+
 - Button is disabled
 - JavaScript is disabled in browser
 - Event delegation is broken
@@ -50,12 +57,14 @@ toggle.addEventListener('click', () => {
 ---
 
 ### **4. Show/Hide Logic**
+
 **File:** `src/ui/addForm.ts` line 24-35
 
 The `show()` function:
+
 ```typescript
 function show() {
-  form!.hidden = false;  // Remove hidden attribute
+  form!.hidden = false; // Remove hidden attribute
   toggle!.setAttribute('aria-expanded', 'true');
   clearStatusMessage();
   title!.focus();
@@ -72,11 +81,13 @@ function show() {
 I've added console logging to track:
 
 1. **Element Detection** (on init)
+
    ```
    [AddForm] Element detection: { toggle: "FOUND", form: "FOUND", ... }
    ```
 
 2. **Button Click** (when button clicked)
+
    ```
    [AddForm] Toggle button clicked
    [AddForm] Current expanded state: false
@@ -93,29 +104,35 @@ I've added console logging to track:
 ## 🛠️ How to Debug
 
 ### **Step 1: Run the app**
+
 ```bash
 npm run build
 npm start  # or your Electron launch command
 ```
 
 ### **Step 2: Open DevTools**
+
 - Press `F12` or `Ctrl+Shift+I`
 - Go to **Console** tab
 
 ### **Step 3: Look for errors**
 
 **If you see this error:**
+
 ```
 Uncaught Error: AddForm: required elements missing: toggle, form
 ```
+
 → **The HTML elements don't exist or selectors are wrong**
 
 **If you see:**
+
 ```
 [AddForm] Toggle button clicked
 [AddForm] show() called
 [AddForm] Form hidden state after show(): false
 ```
+
 → **Code is working; check CSS for visual issues**
 
 **If you don't see any logs:**
@@ -133,12 +150,13 @@ The HTML uses the `hidden` attribute, but CSS might override it:
 ```css
 /* Bad CSS that would cause this */
 #add-form {
-  display: block !important;  /* Overrides hidden */
+  display: block !important; /* Overrides hidden */
 }
 ```
 
 **Solution:**
 Ensure CSS respects the `hidden` attribute:
+
 ```css
 [hidden] {
   display: none !important;
@@ -153,6 +171,7 @@ Ensure CSS respects the `hidden` attribute:
 The `qs()` function or selector is failing to find elements.
 
 **File:** `src/ui/utils.ts`
+
 ```typescript
 export function qs<T extends HTMLElement>(sel: string): T | null {
   const el = document.querySelector(sel);
@@ -161,6 +180,7 @@ export function qs<T extends HTMLElement>(sel: string): T | null {
 ```
 
 **Check:**
+
 - Verify element IDs in HTML match selectors
 - Confirm HTML is loaded before JavaScript runs
 
@@ -172,6 +192,7 @@ export function qs<T extends HTMLElement>(sel: string): T | null {
 The app bootstrapping might fail before `init()` is reached.
 
 **File:** `src/renderer.ts` lines 6-9
+
 ```typescript
 const { init } = await import('./ui/index');
 await init();
@@ -188,6 +209,7 @@ Look for console output: `UI Initialized successfully.`
 ### **Immediate (Check These First)**
 
 1. **Run `npm run build`**
+
    ```bash
    npm run build
    ```
@@ -208,15 +230,15 @@ Look for console output: `UI Initialized successfully.`
 
 **Check HTML IDs match TypeScript selectors:**
 
-| Element | HTML ID | Selector in TS |
-|---------|---------|---|
-| Add Button | `id="toggle-add"` | `#toggle-add` ✓ |
-| Form | `id="add-form"` | `#add-form` ✓ |
-| Cancel Button | `id="cancel-add"` | `#cancel-add` ✓ |
-| Title Input | `id="title"` | `#title` ✓ |
-| Topic Input | `id="topic"` | `#topic` ✓ |
-| Prompt Textarea | `id="prompt"` | `#prompt` ✓ |
-| Status Div | `id="add-status"` | `#add-status` ✓ |
+| Element         | HTML ID           | Selector in TS  |
+| --------------- | ----------------- | --------------- |
+| Add Button      | `id="toggle-add"` | `#toggle-add` ✓ |
+| Form            | `id="add-form"`   | `#add-form` ✓   |
+| Cancel Button   | `id="cancel-add"` | `#cancel-add` ✓ |
+| Title Input     | `id="title"`      | `#title` ✓      |
+| Topic Input     | `id="topic"`      | `#topic` ✓      |
+| Prompt Textarea | `id="prompt"`     | `#prompt` ✓     |
+| Status Div      | `id="add-status"` | `#add-status` ✓ |
 
 All IDs match! ✓
 
@@ -225,6 +247,7 @@ All IDs match! ✓
 ### **If CSS is Overriding `hidden`**
 
 **Add to `src/styles.css`:**
+
 ```css
 /* Ensure HTML hidden attribute is respected */
 [hidden] {
@@ -261,6 +284,7 @@ After applying any fixes, test:
 ## 🔧 Files Modified for Diagnostics
 
 Added console logging to:
+
 - ✓ `src/ui/addForm.ts` - Element detection, click handler, show/hide calls
 - ✓ `src/ui/index.ts` - Init function start
 

@@ -3,27 +3,48 @@
   import { cardManager } from '../cardManager.svelte';
   import AddForm from './AddForm.svelte';
   import CardList from './CardList.svelte';
-  import { onMount } from 'svelte';
-  import type { Project } from '../../types';
 
-  export let projectId: string;
-
-  let project: Project | undefined;
-
-  $: {
-    if (projectManager.all && projectId) {
-      project = projectManager.all.find(p => p.id === projectId);
-    }
+  interface Props {
+    projectId: string;
   }
 
-  onMount(async () => {
+  const { projectId }: Props = $props();
+
+  // Derived value: find current project
+  const project = $derived.by(() => {
+    if (!projectManager.all || !projectId) return undefined;
+    return projectManager.all.find(p => p.id === projectId);
+  });
+
+  // Effect: Ensure projects are loaded
+  $effect(() => {
     if (!projectManager.all || projectManager.all.length === 0) {
-      await projectManager.loadProjects();
+      projectManager.loadProjects();
     }
   });
 
-  function toggleAdd() {
+  function handleToggleAdd() {
     cardManager.toggleForm();
+  }
+
+  async function handleFormSubmit(data: {
+    title: string;
+    prompt: string;
+    topic?: string;
+    project?: string;
+  }) {
+    const hasProject = data.project && String(data.project).trim().length > 0;
+    const assignedProject = hasProject ? data.project : projectId || undefined;
+    await cardManager.addCard({ ...data, project: assignedProject });
+    cardManager.closeForm();
+  }
+
+  async function handleCardStart(prompt: string) {
+    await cardManager.runPrompt(prompt);
+  }
+
+  async function handleCardToggle(id: string, status: 'active' | 'done') {
+    await cardManager.updateCardStatus(id, status);
   }
 </script>
 
@@ -31,20 +52,25 @@
   <header>
     <h2>{project ? project.name : 'Project'}</h2>
     <div class="actions">
-      <button class="primary" onclick={toggleAdd} aria-expanded={cardManager.isFormOpen} aria-controls="add-section">+ New Learning Item</button>
+      <button
+        class="primary"
+        onclick={handleToggleAdd}
+        aria-expanded={cardManager.isFormOpen}
+        aria-controls="add-section"
+      >
+        + New Learning Item
+      </button>
     </div>
   </header>
 
   {#if cardManager.isFormOpen}
-    <AddForm onSubmit={async (data) => {
-      const hasProject = data.project && String(data.project).trim().length > 0;
-      const project = hasProject ? data.project : (projectId || undefined);
-      await cardManager.addCard({ ...data, project });
-      cardManager.closeForm();
-    }} />
+    <AddForm onSubmit={handleFormSubmit} />
   {/if}
 
-  <CardList />
+  <CardList
+    onStart={handleCardStart}
+    onToggle={handleCardToggle}
+  />
 </section>
 
 <style>

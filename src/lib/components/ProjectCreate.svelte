@@ -1,64 +1,88 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { createForm } from 'felte';
-  import type { FormErrors } from 'felte';
   import { projectManager } from '../projectManager.svelte';
+
+  interface Props {
+    oncreated?: (detail: { project: string }) => void;
+  }
 
   type FormValues = { name: string };
 
-  const dispatch = createEventDispatcher<{ created: { project: string } }>();
-  let submissionError: string | null = null;
-  let descriptionIds = 'project-hint';
+  const { oncreated }: Props = $props();
 
-  const { form, errors, isSubmitting, reset } = createForm<FormValues>({
-    initialValues: { name: '' },
-    validate: (values) => {
-      const validation: FormErrors<FormValues> = {};
-      if (!values.name || values.name.trim() === '') {
-        validation.name = 'Project name is required';
-      }
-      return validation;
-    },
-    onSubmit: async (values) => {
-      submissionError = null;
-      const trimmed = values.name?.trim();
-      if (!trimmed) return;
+  // Form state using Svelte 5 runes
+  let formData: FormValues = $state({ name: '' });
+  let submissionError: string | null = $state(null);
+  let isSubmitting = $state(false);
+  let fieldErrors = $state<{ name?: string }>({});
 
-      try {
-        const created = await projectManager.createProject(trimmed);
-        dispatch('created', { project: created.id });
-        reset();
-      } catch (error: any) {
-        console.error('Failed to create project', error);
-        // Show the actual error message from the backend
-        submissionError = error?.message || 'Unable to create project right now. Try again in a moment.';
-      }
-    },
-  });
+  // Derived computed values for accessibility
+  let descriptionIds = $derived(
+    fieldErrors.name ? 'name-error project-hint' : 'project-hint'
+  );
 
-  $: descriptionIds = $errors?.name ? 'name-error project-hint' : 'project-hint';
+  // Validation function
+  function validateForm(values: FormValues): { name?: string } {
+    const errors: { name?: string } = {};
+    if (!values.name || values.name.trim() === '') {
+      errors.name = 'Project name is required';
+    }
+    return errors;
+  }
+
+  // Handle form submission
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+
+    fieldErrors = validateForm(formData);
+    if (Object.keys(fieldErrors).length > 0) return;
+
+    submissionError = null;
+    isSubmitting = true;
+
+    try {
+      const trimmed = formData.name.trim();
+      const created = await projectManager.createProject(trimmed);
+
+      // Reset form
+      formData = { name: '' };
+      fieldErrors = {};
+
+      // Emit event via callback
+      oncreated?.({ project: created.id });
+    } catch (error) {
+      console.error('Failed to create project', error);
+      submissionError =
+        error instanceof Error ? error.message :
+        'Unable to create project right now. Try again in a moment.';
+    } finally {
+      isSubmitting = false;
+    }
+  }
 
   function cancel() {
-    reset();
+    formData = { name: '' };
+    fieldErrors = {};
+    submissionError = null;
     projectManager.selectProject('all');
   }
 </script>
 
 <section class="project-create">
   <h2>Create project</h2>
-  <form use:form aria-describedby={descriptionIds} class="project-form">
+  <form onsubmit={handleSubmit} aria-describedby={descriptionIds} class="project-form">
     <label for="proj-name">Project name</label>
     <input
       id="proj-name"
-      name="name"
+      bind:value={formData.name}
       type="text"
       placeholder="e.g. JavaScript"
-      aria-invalid={$errors?.name ? 'true' : 'false'}
-      class:error={$errors?.name}
+      aria-invalid={fieldErrors.name ? 'true' : 'false'}
+      class:error={fieldErrors.name}
+      disabled={isSubmitting}
     />
-    {#if $errors?.name}
+    {#if fieldErrors.name}
       <p id="name-error" class="field-error" role="alert">
-        {$errors.name}
+        {fieldErrors.name}
       </p>
     {/if}
     <p class="hint" id="project-hint">The project name appears in the sidebar list.</p>
@@ -66,10 +90,10 @@
       <p class="submission-error" role="alert">{submissionError}</p>
     {/if}
     <div class="actions">
-      <button type="submit" class="primary" disabled={$isSubmitting}>
-        {$isSubmitting ? 'Creating...' : 'Create project'}
+      <button type="submit" class="primary" disabled={isSubmitting}>
+        {isSubmitting ? 'Creating...' : 'Create project'}
       </button>
-      <button type="button" class="ghost" onclick={cancel} disabled={$isSubmitting}>
+      <button type="button" class="ghost" onclick={cancel} disabled={isSubmitting}>
         Cancel
       </button>
     </div>

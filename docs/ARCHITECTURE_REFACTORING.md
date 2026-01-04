@@ -18,7 +18,7 @@ The application has been refactored from a **procedural, function-based architec
 
 ```typescript
 // Components communicate through events, not direct function calls
-eventBus.emit('card:added');        // Publisher
+eventBus.emit('card:added'); // Publisher
 eventBus.on('card:added', () => {}); // Subscriber
 
 // Type-safe event system using TypeScript
@@ -31,6 +31,7 @@ interface AppEvents {
 ```
 
 **Benefits:**
+
 - ✅ Components don't know about each other
 - ✅ Easy to add new listeners without modifying existing code
 - ✅ Type-safe event system
@@ -57,13 +58,13 @@ class AppStateManager {
   };
 
   // Type-safe state access
-  getState(): AppState { }
-  setValue<K extends keyof AppState>(key: K, value: AppState[K]): void { }
+  getState(): AppState {}
+  setValue<K extends keyof AppState>(key: K, value: AppState[K]): void {}
 
   // Semantic methods for state updates
-  setCards(cards: LearningCard[]): void { }
-  addCard(card: LearningCard): void { }
-  updateCardStatus(id: string, status: 'todo' | 'done'): void { }
+  setCards(cards: LearningCard[]): void {}
+  addCard(card: LearningCard): void {}
+  updateCardStatus(id: string, status: 'todo' | 'done'): void {}
 }
 
 // Singleton instance
@@ -71,6 +72,7 @@ export const appState = new AppStateManager();
 ```
 
 **Benefits:**
+
 - ✅ All app data in one place
 - ✅ Predictable state updates
 - ✅ Easy to debug (log all state changes)
@@ -85,6 +87,7 @@ export const appState = new AppStateManager();
 **Solution:** Converted to class-based architecture with dependency injection.
 
 **Files:**
+
 - `src/ui/addFormComponent.ts` - AddForm class
 - `src/ui/cardListComponent.ts` - CardList class
 
@@ -100,16 +103,17 @@ export class AddForm {
     // Dependencies are explicit and testable
   }
 
-  private validateElements(): void { }
-  private attachListeners(): void { }
-  private subscribeToEvents(): void { }
-  private show(): void { }
-  private hide(): void { }
-  private async handleSubmit(e: Event): Promise<void> { }
+  private validateElements(): void {}
+  private attachListeners(): void {}
+  private subscribeToEvents(): void {}
+  private show(): void {}
+  private hide(): void {}
+  private async handleSubmit(e: Event): Promise<void> {}
 }
 ```
 
 **Benefits:**
+
 - ✅ Clear internal structure with private methods
 - ✅ Explicit dependencies (easier to test)
 - ✅ Encapsulated state (`isSaving`, form elements)
@@ -146,6 +150,7 @@ const addForm = new AddForm({
 ```
 
 **Benefits:**
+
 - ✅ Easy to test (inject mock implementations)
 - ✅ Easy to swap implementations
 - ✅ Dependencies are explicit and type-safe
@@ -192,14 +197,16 @@ const addForm = new AddForm({
 ### **Data Flow Example: Adding a Card**
 
 1. **User clicks "Add learning card"**
+
    ```
-   AddForm.toggle.click() 
+   AddForm.toggle.click()
    → addForm.show()
    → appState.setFormOpen(true)
    → eventBus.emit('form:open')
    ```
 
 2. **User submits form**
+
    ```
    AddForm.form.submit()
    → handleFormSubmit(data)
@@ -242,19 +249,21 @@ src/ui/
 ### **Problem #1: Add Button Not Opening Form**
 
 **Old Architecture Issues:**
+
 - Event listeners attached but state scattered
 - Hard to debug which component is handling what
 - Focus management wasn't centralized
 - No clear initialization order
 
 **New Architecture Solution:**
+
 ```typescript
 // Clear event flow with logging
 class AddForm {
   constructor(dependencies) {
-    this.validateElements();        // Fail fast if DOM missing
-    this.attachListeners();         // Listeners attached immediately
-    this.subscribeToEvents();       // Event subscriptions explicit
+    this.validateElements(); // Fail fast if DOM missing
+    this.attachListeners(); // Listeners attached immediately
+    this.subscribeToEvents(); // Event subscriptions explicit
   }
 
   private attachListeners(): void {
@@ -275,6 +284,7 @@ class AddForm {
 ```
 
 **What Changed:**
+
 - ✅ Clear initialization sequence with logging at each step
 - ✅ State is centralized (single source of truth)
 - ✅ No more scattered event handlers
@@ -285,11 +295,13 @@ class AddForm {
 ### **Problem #2: State Consistency Issues**
 
 **Old Architecture Issues:**
+
 - Form and list didn't know about each other's state
 - Adding a card didn't guarantee list would update
 - No centralized "form is open" state
 
 **New Architecture Solution:**
+
 ```typescript
 // Single source of truth for ALL state
 const appState = {
@@ -316,6 +328,7 @@ class CardList {
 ```
 
 **What Changed:**
+
 - ✅ Single source of truth eliminates sync issues
 - ✅ All state updates trigger events
 - ✅ Components are "reactive" (respond to state changes)
@@ -325,15 +338,17 @@ class CardList {
 ### **Problem #3: Tight Coupling Between Components**
 
 **Old Architecture Issues:**
+
 ```typescript
 // Old way: Hard-coded dependencies
 const addForm = createAddForm(async (data) => {
   await window.api.addCard(data);
-  await refreshUI();  // Directly calls CardList refresh
+  await refreshUI(); // Directly calls CardList refresh
 });
 ```
 
 **New Architecture Solution:**
+
 ```typescript
 // New way: Components communicate through events
 const addForm = new AddForm({
@@ -357,6 +372,7 @@ eventBus.on('list:updated', () => cardList.render());
 ```
 
 **What Changed:**
+
 - ✅ Components don't reference each other
 - ✅ Easy to add new listeners or remove old ones
 - ✅ Changes to one component don't break others
@@ -366,6 +382,7 @@ eventBus.on('list:updated', () => cardList.render());
 ## 📊 Debugging Improvements
 
 ### **Before: Hard to Trace Issues**
+
 ```
 Form not opening?
 → Check addForm.ts
@@ -376,6 +393,7 @@ Form not opening?
 ```
 
 ### **After: Clear Debug Trail**
+
 ```
 [Init] Starting application initialization
 [Init] Loading initial data from API
@@ -397,13 +415,15 @@ Each log tells you exactly what's happening and in what order.
 ## 🧪 Testing Improvements
 
 ### **Before: Hard to Test**
+
 ```typescript
 // Can't easily test because everything is interconnected
-createAddForm(onSave) // How do I mock window.api?
-createCardList()       // How do I inject test data?
+createAddForm(onSave); // How do I mock window.api?
+createCardList(); // How do I inject test data?
 ```
 
 ### **After: Easy to Test**
+
 ```typescript
 // Mock dependencies at construction time
 const mockAddForm = new AddForm({
@@ -427,13 +447,15 @@ expect(mockDependency.onSubmit).toHaveBeenCalledWith(testData);
 This architecture enables:
 
 1. **State Persistence**
+
    ```typescript
-   appState.subscribe(state => {
+   appState.subscribe((state) => {
      localStorage.setItem('app-state', JSON.stringify(state));
    });
    ```
 
 2. **Undo/Redo**
+
    ```typescript
    const stateHistory: AppState[] = [];
    eventBus.on('*', (event, data) => {
@@ -442,8 +464,9 @@ This architecture enables:
    ```
 
 3. **Real-time Sync**
+
    ```typescript
-   appState.subscribe(state => {
+   appState.subscribe((state) => {
      websocket.emit('state:update', state);
    });
    ```
@@ -462,12 +485,14 @@ This architecture enables:
 ✅ **All files compile without errors**
 
 New files added:
+
 - ✅ `eventBus.ts` → `eventBus.js` (1.7 KB)
 - ✅ `appState.ts` → `appState.js` (2.3 KB)
 - ✅ `addFormComponent.ts` → `addFormComponent.js` (7.6 KB)
 - ✅ `cardListComponent.ts` → `cardListComponent.js` (3.1 KB)
 
 Refactored files:
+
 - ✅ `index.ts` → `index.js` (completely rewritten)
 - ✅ `addForm.ts` → marked as deprecated
 - ✅ `cardList.ts` → marked as deprecated
@@ -476,16 +501,16 @@ Refactored files:
 
 ## 🎓 Key Takeaways
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| **Communication** | Direct function calls | Event bus |
-| **State** | Scattered functions | Centralized manager |
-| **Components** | Functions | Classes |
-| **Dependencies** | Implicit/hard-coded | Explicit/injected |
-| **Testing** | Difficult | Easy |
-| **Debugging** | Hard to trace | Clear logging |
-| **Coupling** | Tight | Loose |
-| **Extensibility** | Hard to add features | Easy to extend |
+| Aspect            | Before                | After               |
+| ----------------- | --------------------- | ------------------- |
+| **Communication** | Direct function calls | Event bus           |
+| **State**         | Scattered functions   | Centralized manager |
+| **Components**    | Functions             | Classes             |
+| **Dependencies**  | Implicit/hard-coded   | Explicit/injected   |
+| **Testing**       | Difficult             | Easy                |
+| **Debugging**     | Hard to trace         | Clear logging       |
+| **Coupling**      | Tight                 | Loose               |
+| **Extensibility** | Hard to add features  | Easy to extend      |
 
 ---
 

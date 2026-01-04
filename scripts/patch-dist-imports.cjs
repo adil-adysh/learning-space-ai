@@ -9,7 +9,14 @@ function isRelativeImport(p) {
 }
 
 function shouldSkipExt(p) {
-  return p.endsWith('.js') || p.endsWith('.cjs') || p.endsWith('.mjs') || p.endsWith('.json') || p.endsWith('.css') || p.endsWith('.svg');
+  return (
+    p.endsWith('.js') ||
+    p.endsWith('.cjs') ||
+    p.endsWith('.mjs') ||
+    p.endsWith('.json') ||
+    p.endsWith('.css') ||
+    p.endsWith('.svg')
+  );
 }
 
 function fixContent(content) {
@@ -19,7 +26,7 @@ function fixContent(content) {
     /from\s+(['"])(\.[^'"\n]*?)\1/g,
     /import\s+(['"])(\.[^'"\n]*?)\1/g,
     /import\(\s*(['"])(\.[^'"\n]*?)\1\s*\)/g,
-    /export\s+[^\n]*?from\s+(['"])(\.[^'"\n]*?)\1/g
+    /export\s+[^\n]*?from\s+(['"])(\.[^'"\n]*?)\1/g,
   ];
 
   let out = content;

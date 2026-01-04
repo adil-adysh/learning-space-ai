@@ -17,13 +17,16 @@
     "file": "chunks/environment.js",
     "name": "environment"
   },
+  "_equality.js": {
+    "file": "chunks/equality.js",
+    "name": "equality"
+  },
   "_exports.js": {
     "file": "chunks/exports.js",
-    "name": "exports"
-  },
-  "_false.js": {
-    "file": "chunks/false.js",
-    "name": "false"
+    "name": "exports",
+    "imports": [
+      "_equality.js"
+    ]
   },
   "_index.js": {
     "file": "chunks/index.js",
@@ -32,21 +35,14 @@
       "_context.js"
     ]
   },
-  "_index2.js": {
-    "file": "chunks/index2.js",
-    "name": "index",
-    "imports": [
-      "_context.js",
-      "_false.js"
-    ]
-  },
   "_internal.js": {
     "file": "chunks/internal.js",
     "name": "internal",
     "imports": [
-      "_index2.js",
-      "_context.js",
-      "_environment.js"
+      "_index.js",
+      "_environment.js",
+      "_equality.js",
+      "_context.js"
     ]
   },
   "_shared.js": {
@@ -67,7 +63,6 @@
     "isEntry": true,
     "imports": [
       "_shared.js",
-      "_false.js",
       "_environment.js"
     ]
   },
@@ -78,9 +73,9 @@
     "isEntry": true,
     "imports": [
       "_context.js",
+      "_equality.js",
       "_exports.js",
-      "_utils.js",
-      "_index.js"
+      "_utils.js"
     ]
   },
   "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
@@ -89,12 +84,10 @@
     "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js",
     "isEntry": true,
     "imports": [
-      "_false.js",
       "_environment.js",
       "_shared.js",
       "_exports.js",
       "_utils.js",
-      "_index.js",
       "_internal.js"
     ]
   },
@@ -110,7 +103,7 @@
     "src": "src/routes/+layout.svelte",
     "isEntry": true,
     "imports": [
-      "_index2.js"
+      "_index.js"
     ]
   },
   "src/routes/+page.svelte": {
@@ -119,12 +112,11 @@
     "src": "src/routes/+page.svelte",
     "isEntry": true,
     "imports": [
-      "_index2.js",
-      "_context.js",
-      "_index.js"
+      "_index.js",
+      "_context.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.BnXX5bRF.css"
+      "_app/immutable/assets/_page.D64uYDG_.css"
     ]
   }
 }

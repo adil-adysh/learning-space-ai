@@ -1,83 +1,72 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Learning Cards</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Learning Cards</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-  <div class="container">
-    <header>
-      <h1>Learning Cards</h1>
-      <p class="subtitle">Finish what you start</p>
-      <div class="top-actions">
-        <button id="toggle-add" class="primary" aria-expanded="false" aria-controls="add-form">
-          + Add learning card
-        </button>
-        <button id="diag-toggle" class="ghost" aria-pressed="false">Diagnostics</button>
-      </div>
-    </header>
+    <div class="container">
+      <header>
+        <h1>Learning Cards</h1>
+        <p class="subtitle">Finish what you start</p>
+        <div class="top-actions">
+          <button id="toggle-add" class="primary" aria-expanded="false" aria-controls="add-form">
+            + Add learning card
+          </button>
+          <button id="diag-toggle" class="ghost" aria-pressed="false">Diagnostics</button>
+        </div>
+      </header>
 
-    <main id="main-content">
-      <section id="add-section">
-        <form id="add-form" hidden>
-          <h2 id="add-heading">New Card Details</h2>
-          
-          <!-- Status/Error Region (Visible + Accessible) -->
-          <div id="add-status" role="status" class="form-status"></div>
-          
-          <div class="field">
-            <label for="title">Title <span class="required">*</span></label>
-            <input 
-              id="title" 
-              name="title" 
-              type="text" 
-              autocomplete="off" 
-              required
-            >
-            <span class="hint">Give your learning card a clear, memorable name.</span>
-          </div>
+      <main id="main-content">
+        <section id="add-section">
+          <form id="add-form" hidden>
+            <h2 id="add-heading">New Card Details</h2>
 
-          <div class="field">
-            <label for="topic">Topic <span class="optional">(optional)</span></label>
-            <input 
-              id="topic" 
-              name="topic" 
-              type="text" 
-              autocomplete="off"
-            >
-            <span class="hint">e.g., JavaScript, Design Patterns, Math</span>
-          </div>
+            <!-- Status/Error Region (Visible + Accessible) -->
+            <div id="add-status" role="status" class="form-status"></div>
 
-          <div class="field">
-            <label for="prompt">Learning prompt <span class="required">*</span></label>
-            <textarea 
-              id="prompt" 
-              name="prompt" 
-              required
-              placeholder="e.g. Explain the concept of closures in JavaScript"
-            ></textarea>
-            <span class="hint">What do you want to learn or understand?</span>
-          </div>
+            <div class="field">
+              <label for="title">Title <span class="required">*</span></label>
+              <input id="title" name="title" type="text" autocomplete="off" required />
+              <span class="hint">Give your learning card a clear, memorable name.</span>
+            </div>
 
-          <div class="form-actions">
-            <button type="submit" class="primary">Save card</button>
-            <button type="button" id="cancel-add" class="ghost">Cancel</button>
-          </div>
-        </form>
-      </section>
+            <div class="field">
+              <label for="topic">Topic <span class="optional">(optional)</span></label>
+              <input id="topic" name="topic" type="text" autocomplete="off" />
+              <span class="hint">e.g., JavaScript, Design Patterns, Math</span>
+            </div>
 
-      <section>
-        <h2 id="list-heading">Your learning cards</h2>
-        <div id="cards" class="card-list"></div>
-      </section>
-    </main>
-  </div>
+            <div class="field">
+              <label for="prompt">Learning prompt <span class="required">*</span></label>
+              <textarea
+                id="prompt"
+                name="prompt"
+                required
+                placeholder="e.g. Explain the concept of closures in JavaScript"
+              ></textarea>
+              <span class="hint">What do you want to learn or understand?</span>
+            </div>
 
-  <script src="../dist/renderer.js" defer></script>
-</body>
+            <div class="form-actions">
+              <button type="submit" class="primary">Save card</button>
+              <button type="button" id="cancel-add" class="ghost">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <section>
+          <h2 id="list-heading">Your learning cards</h2>
+          <div id="cards" class="card-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../dist/renderer.js" defer></script>
+  </body>
 </html>

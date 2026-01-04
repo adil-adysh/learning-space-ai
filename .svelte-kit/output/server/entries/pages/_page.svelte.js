@@ -1,15 +1,6 @@
-import { V as attr, W as ensure_array_like, X as bind_props, Y as attr_class, Z as store_get, _ as unsubscribe_stores, $ as head } from "../../chunks/index2.js";
+import { x as ensure_array_like, y as attr, z as attr_class, F as head } from "../../chunks/index.js";
 import "clsx";
-import { b as ssr_context, n as noop, e as escape_html } from "../../chunks/context.js";
-import { createForm as createForm$1 } from "@felte/core";
-import { w as writable } from "../../chunks/index.js";
-function onDestroy(fn) {
-  /** @type {SSRContext} */
-  ssr_context.r.on_destroy(fn);
-}
-function createEventDispatcher() {
-  return noop;
-}
+import { e as escape_html } from "../../chunks/context.js";
 class ProjectManager {
   constructor() {
     this.all = [];
@@ -19,15 +10,19 @@ class ProjectManager {
   }
   // Derived value for backward compatibility
   get selectedProject() {
-    if (this.viewMode === "list") return "all";
-    if (this.viewMode === "create") return "create";
+    if (this.viewMode === "list") {
+      return "all";
+    }
+    if (this.viewMode === "create") {
+      return "create";
+    }
     return this.selectedProjectId || "all";
   }
   /**
    * Load all projects from Electron IPC
    */
   async loadProjects() {
-    if (typeof window === "undefined" || !window.api) {
+    if (typeof window === "undefined" || !("api" in window)) {
       console.warn("Window API not available, skipping project load");
       return;
     }
@@ -48,7 +43,12 @@ class ProjectManager {
    */
   async createProject(name) {
     const trimmed = name.trim();
-    if (!trimmed) throw new Error("Project name is required");
+    if (!trimmed) {
+      throw new Error("Project name is required");
+    }
+    if (typeof window === "undefined" || !("api" in window)) {
+      throw new Error("Window API not available - preload may not have loaded");
+    }
     const created = await window.api.createProject(trimmed);
     this.all = [...this.all, created].sort((a, b) => a.name.localeCompare(b.name));
     return created;
@@ -130,7 +130,9 @@ class CardManager {
    * Load all cards from Electron IPC
    */
   async loadCards() {
-    if (typeof window === "undefined" || !window.api) return;
+    if (typeof window === "undefined" || !("api" in window)) {
+      return;
+    }
     this.isLoading = true;
     try {
       const rawCards = await window.api.getCards();
@@ -146,7 +148,9 @@ class CardManager {
    * Add a new card
    */
   async addCard(data) {
-    if (typeof window === "undefined" || !window.api) return;
+    if (typeof window === "undefined" || !("api" in window)) {
+      return;
+    }
     try {
       const newCard = await window.api.addCard(data);
       this.all = [newCard, ...this.all];
@@ -160,7 +164,9 @@ class CardManager {
    * Update card status
    */
   async updateCardStatus(id, status) {
-    if (typeof window === "undefined" || !window.api) return;
+    if (typeof window === "undefined" || !("api" in window)) {
+      return;
+    }
     try {
       await window.api.toggleCard(id, status);
       const index = this.all.findIndex((c) => c.id === id);
@@ -176,7 +182,9 @@ class CardManager {
    * Run a card's prompt in ChatGPT
    */
   async runPrompt(prompt) {
-    if (typeof window === "undefined" || !window.api) return;
+    if (typeof window === "undefined" || !("api" in window)) {
+      return;
+    }
     try {
       await window.api.runPrompt(prompt);
     } catch (err) {
@@ -222,17 +230,66 @@ class CardManager {
   }
 }
 const cardManager = new CardManager();
+function ProjectsList($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    $$renderer2.push(`<section class="projects svelte-138d5ja"><header><h2>Projects</h2> <div class="actions svelte-138d5ja"><p class="hint">Create a project from the header above.</p></div></header> <ul class="project-list svelte-138d5ja">`);
+    if (projectManager.all.length === 0) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<li class="empty svelte-138d5ja">No projects yet — create one.</li>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+      $$renderer2.push(`<!--[-->`);
+      const each_array = ensure_array_like(projectManager.all);
+      for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+        let p = each_array[$$index];
+        $$renderer2.push(`<li><button class="project-card svelte-138d5ja"${attr("aria-label", `Open project ${p.name}`)}><span class="project-name svelte-138d5ja">${escape_html(p.name)}</span></button></li>`);
+      }
+      $$renderer2.push(`<!--]-->`);
+    }
+    $$renderer2.push(`<!--]--></ul></section>`);
+  });
+}
+function ProjectCreate($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let formData = { name: "" };
+    let isSubmitting = false;
+    let fieldErrors = {};
+    let descriptionIds = fieldErrors.name ? "name-error project-hint" : "project-hint";
+    $$renderer2.push(`<section class="project-create svelte-t06kqd"><h2 class="svelte-t06kqd">Create project</h2> <form${attr("aria-describedby", descriptionIds)} class="project-form svelte-t06kqd"><label for="proj-name" class="svelte-t06kqd">Project name</label> <input id="proj-name"${attr("value", formData.name)} type="text" placeholder="e.g. JavaScript"${attr("aria-invalid", fieldErrors.name ? "true" : "false")}${attr("disabled", isSubmitting, true)}${attr_class("svelte-t06kqd", void 0, { "error": fieldErrors.name })}/> `);
+    if (fieldErrors.name) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<p id="name-error" class="field-error svelte-t06kqd" role="alert">${escape_html(fieldErrors.name)}</p>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> <p class="hint svelte-t06kqd" id="project-hint">The project name appears in the sidebar list.</p> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> <div class="actions svelte-t06kqd"><button type="submit" class="primary svelte-t06kqd"${attr("disabled", isSubmitting, true)}>${escape_html("Create project")}</button> <button type="button" class="ghost svelte-t06kqd"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
+  });
+}
 function AddForm($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let isValid;
-    let onSubmit = $$props["onSubmit"];
     let title = "";
     let topic = "";
     let project = "";
     let creatingProject = false;
     let prompt = "";
     let isSubmitting = false;
-    isValid = title.trim().length > 0 && prompt.trim().length > 0;
+    let isValid = (() => {
+      return title.trim().length > 0 && prompt.trim().length > 0;
+    })();
+    function handleProjectChange(e) {
+      const select = e.target;
+      if (select.value === "__create__") {
+        creatingProject = true;
+        project = "";
+      } else {
+        creatingProject = false;
+        project = select.value;
+      }
+    }
     if (cardManager.isFormOpen) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<section id="add-section"><form aria-labelledby="add-heading"><h2>New Card Details</h2> `);
@@ -244,11 +301,7 @@ function AddForm($$renderer, $$props) {
         {
           id: "project-select",
           value: project,
-          onchange: () => {
-            {
-              creatingProject = false;
-            }
-          },
+          onchange: handleProjectChange,
           disabled: isSubmitting,
           "aria-describedby": "project-hint"
         },
@@ -290,18 +343,18 @@ function AddForm($$renderer, $$props) {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]-->`);
-    bind_props($$props, { onSubmit });
   });
 }
 function CardItem($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let isDone, buttonLabel, statusText;
-    let card = $$props["card"];
-    let onStart = $$props["onStart"];
-    let onToggle = $$props["onToggle"];
-    isDone = card.status === "done";
-    buttonLabel = isDone ? "Mark active" : "Mark done";
-    statusText = isDone ? "✓ Completed" : "Active";
+    const { card, onStart, onToggle } = $$props;
+    const isDone = card.status === "done";
+    const buttonLabel = isDone ? "Mark active" : "Mark done";
+    const statusText = isDone ? "✓ Completed" : "Active";
+    const projectName = (() => {
+      if (!card.project) return "";
+      return projectManager.all.find((p) => p.id === card.project)?.name || card.project;
+    })();
     $$renderer2.push(`<article${attr_class("card svelte-ybr5in", void 0, { "done": isDone })}><header><h3>${escape_html(card.title)}</h3> `);
     if (card.topic) {
       $$renderer2.push("<!--[-->");
@@ -312,18 +365,16 @@ function CardItem($$renderer, $$props) {
     $$renderer2.push(`<!--]--> `);
     if (card.project) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="project">Project: <strong>${escape_html(projectManager.all.find((p) => p.id === card.project)?.name || card.project)}</strong></p>`);
+      $$renderer2.push(`<p class="project">Project: <strong>${escape_html(projectName)}</strong></p>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--></header> <section><div${attr_class("status svelte-ybr5in", void 0, { "done": isDone })}>${escape_html(statusText)}</div> <pre class="prompt">${escape_html(card.prompt)}</pre></section> <footer class="card-actions"><button type="button" class="primary"${attr("aria-label", `Start chat with prompt for ${card.title}`)}>Start in ChatGPT</button> <button type="button" class="ghost"${attr("aria-pressed", isDone)}${attr("aria-label", isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`)}>${escape_html(buttonLabel)}</button></footer></article>`);
-    bind_props($$props, { card, onStart, onToggle });
   });
 }
 function CardList($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let onStart = $$props["onStart"];
-    let onToggle = $$props["onToggle"];
+    const { onStart, onToggle } = $$props;
     function groupByProject(list) {
       const map = /* @__PURE__ */ new Map();
       for (const c of list) {
@@ -346,6 +397,12 @@ function CardList($$renderer, $$props) {
       });
       return groups;
     }
+    const groupedCards = (() => {
+      if (cardManager.filterProject === "all") {
+        return groupByProject(cardManager.filtered);
+      }
+      return [];
+    })();
     $$renderer2.push(`<section><h2>Your learning cards</h2> <div class="filters"><label class="filter">Project: <select aria-label="Filter by project">`);
     $$renderer2.option({ value: "all" }, ($$renderer3) => {
       $$renderer3.push(`All projects`);
@@ -380,7 +437,7 @@ function CardList($$renderer, $$props) {
       if (cardManager.filterProject === "all") {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<!--[-->`);
-        const each_array_1 = ensure_array_like(groupByProject(cardManager.filtered));
+        const each_array_1 = ensure_array_like(groupedCards);
         for (let $$index_2 = 0, $$length = each_array_1.length; $$index_2 < $$length; $$index_2++) {
           let group = each_array_1[$$index_2];
           $$renderer2.push(`<section class="project-group"${attr("aria-labelledby", group.headingId)}><h3${attr("id", group.headingId)}>${escape_html(group.project ? projectManager.all.find((p) => p.id === group.project)?.name || group.project : "Unassigned")}</h3> <!--[-->`);
@@ -405,127 +462,31 @@ function CardList($$renderer, $$props) {
       $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--></div></section>`);
-    bind_props($$props, { onStart, onToggle });
-  });
-}
-function ProjectsList($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    $$renderer2.push(`<section class="projects svelte-138d5ja"><header><h2>Projects</h2> <div class="actions svelte-138d5ja"><p class="hint">Create a project from the header above.</p></div></header> <ul class="project-list svelte-138d5ja">`);
-    if (projectManager.all.length === 0) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<li class="empty svelte-138d5ja">No projects yet — create one.</li>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<!--[-->`);
-      const each_array = ensure_array_like(projectManager.all);
-      for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-        let p = each_array[$$index];
-        $$renderer2.push(`<li><button class="project-card svelte-138d5ja"${attr("aria-label", `Open project ${p.name}`)}><span class="project-name svelte-138d5ja">${escape_html(p.name)}</span></button></li>`);
-      }
-      $$renderer2.push(`<!--]-->`);
-    }
-    $$renderer2.push(`<!--]--></ul></section>`);
-  });
-}
-function __rest(s, e) {
-  var t = {};
-  for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-    t[p] = s[p];
-  if (s != null && typeof Object.getOwnPropertySymbols === "function")
-    for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-      if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-        t[p[i]] = s[p[i]];
-    }
-  return t;
-}
-typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-  var e = new Error(message);
-  return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
-function createForm(config) {
-  const _a = createForm$1(config !== null && config !== void 0 ? config : {}, {
-    storeFactory: writable
-  }), { cleanup, startStores } = _a, rest = __rest(_a, ["cleanup", "startStores"]);
-  onDestroy(cleanup);
-  return rest;
-}
-function ProjectCreate($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    var $$store_subs;
-    const dispatch = createEventDispatcher();
-    let submissionError = null;
-    let descriptionIds = "project-hint";
-    const { form, errors, isSubmitting, reset } = createForm({
-      initialValues: { name: "" },
-      validate: (values) => {
-        const validation = {};
-        if (!values.name || values.name.trim() === "") {
-          validation.name = "Project name is required";
-        }
-        return validation;
-      },
-      onSubmit: async (values) => {
-        submissionError = null;
-        const trimmed = values.name?.trim();
-        if (!trimmed) return;
-        try {
-          const created = await projectManager.createProject(trimmed);
-          dispatch("created", { project: created.id });
-          reset();
-        } catch (error) {
-          console.error("Failed to create project", error);
-          submissionError = error?.message || "Unable to create project right now. Try again in a moment.";
-        }
-      }
-    });
-    descriptionIds = store_get($$store_subs ??= {}, "$errors", errors)?.name ? "name-error project-hint" : "project-hint";
-    $$renderer2.push(`<section class="project-create svelte-t06kqd"><h2 class="svelte-t06kqd">Create project</h2> <form${attr("aria-describedby", descriptionIds)} class="project-form svelte-t06kqd"><label for="proj-name" class="svelte-t06kqd">Project name</label> <input id="proj-name" name="name" type="text" placeholder="e.g. JavaScript"${attr("aria-invalid", store_get($$store_subs ??= {}, "$errors", errors)?.name ? "true" : "false")}${attr_class("svelte-t06kqd", void 0, {
-      "error": store_get($$store_subs ??= {}, "$errors", errors)?.name
-    })}/> `);
-    if (store_get($$store_subs ??= {}, "$errors", errors)?.name) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p id="name-error" class="field-error svelte-t06kqd" role="alert">${escape_html(store_get($$store_subs ??= {}, "$errors", errors).name)}</p>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> <p class="hint svelte-t06kqd" id="project-hint">The project name appears in the sidebar list.</p> `);
-    if (submissionError) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="submission-error svelte-t06kqd" role="alert">${escape_html(submissionError)}</p>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> <div class="actions svelte-t06kqd"><button type="submit" class="primary svelte-t06kqd"${attr("disabled", store_get($$store_subs ??= {}, "$isSubmitting", isSubmitting), true)}>${escape_html(store_get($$store_subs ??= {}, "$isSubmitting", isSubmitting) ? "Creating..." : "Create project")}</button> <button type="button" class="ghost svelte-t06kqd"${attr("disabled", store_get($$store_subs ??= {}, "$isSubmitting", isSubmitting), true)}>Cancel</button></div></form></section>`);
-    if ($$store_subs) unsubscribe_stores($$store_subs);
   });
 }
 function ProjectDetail($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let projectId = $$props["projectId"];
-    let project;
-    {
-      if (projectManager.all && projectId) {
-        project = projectManager.all.find((p) => p.id === projectId);
-      }
+    const { projectId } = $$props;
+    const project = (() => {
+      if (!projectManager.all || !projectId) return void 0;
+      return projectManager.all.find((p) => p.id === projectId);
+    })();
+    async function handleCardStart(prompt) {
+      await cardManager.runPrompt(prompt);
+    }
+    async function handleCardToggle(id, status) {
+      await cardManager.updateCardStatus(id, status);
     }
     $$renderer2.push(`<section class="project-detail svelte-1ykxz3w"><header><h2>${escape_html(project ? project.name : "Project")}</h2> <div class="actions svelte-1ykxz3w"><button class="primary"${attr("aria-expanded", cardManager.isFormOpen)} aria-controls="add-section">+ New Learning Item</button></div></header> `);
     if (cardManager.isFormOpen) {
       $$renderer2.push("<!--[-->");
-      AddForm($$renderer2, {
-        onSubmit: async (data) => {
-          const hasProject = data.project && String(data.project).trim().length > 0;
-          const project2 = hasProject ? data.project : projectId || void 0;
-          await cardManager.addCard({ ...data, project: project2 });
-          cardManager.closeForm();
-        }
-      });
+      AddForm($$renderer2);
     } else {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--> `);
-    CardList($$renderer2, {});
+    CardList($$renderer2, { onStart: handleCardStart, onToggle: handleCardToggle });
     $$renderer2.push(`<!----></section>`);
-    bind_props($$props, { projectId });
   });
 }
 function _page($$renderer, $$props) {

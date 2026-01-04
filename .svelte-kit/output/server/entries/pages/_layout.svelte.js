@@ -1,4 +1,4 @@
-import { U as slot } from "../../chunks/index2.js";
+import { w as slot } from "../../chunks/index.js";
 function _layout($$renderer, $$props) {
   $$renderer.push(`<!--[-->`);
   slot($$renderer, $$props, "default", {});

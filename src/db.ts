@@ -15,20 +15,22 @@ let db: Low<Database> | null = null;
  * @param dataPath - Path to the data directory
  */
 export async function initDatabase(dataPath: string): Promise<Low<Database>> {
-  if (db) return db;
+  if (db) {
+    return db;
+  }
 
   const file = path.join(dataPath, 'learning-cards-db.json');
   const adapter = new JSONFile<Database>(file);
-  
+
   db = new Low<Database>(adapter, { cards: [], projects: [] });
-  
+
   await db.read();
-  
+
   // Initialize with empty arrays if the file is new
   db.data ||= { cards: [], projects: [] };
-  
+
   await db.write();
-  
+
   return db;
 }
 
@@ -70,26 +72,30 @@ export async function addCard(card: RawCard): Promise<RawCard> {
 export async function updateCard(id: string, updates: Partial<RawCard>): Promise<RawCard | null> {
   const database = getDb();
   await database.read();
-  
-  const idx = database.data.cards.findIndex(c => c.id === id);
-  if (idx === -1) return null;
-  
+
+  const idx = database.data.cards.findIndex((c) => c.id === id);
+  if (idx === -1) {
+    return null;
+  }
+
   database.data.cards[idx] = { ...database.data.cards[idx], ...updates };
   await database.write();
-  
+
   return database.data.cards[idx];
 }
 
 export async function deleteCard(id: string): Promise<RawCard | null> {
   const database = getDb();
   await database.read();
-  
-  const idx = database.data.cards.findIndex(c => c.id === id);
-  if (idx === -1) return null;
-  
+
+  const idx = database.data.cards.findIndex((c) => c.id === id);
+  if (idx === -1) {
+    return null;
+  }
+
   const [removed] = database.data.cards.splice(idx, 1);
   await database.write();
-  
+
   return removed;
 }
 
@@ -119,43 +125,50 @@ export async function addProject(project: RawProject): Promise<RawProject> {
   return project;
 }
 
-export async function updateProject(id: string, updates: Partial<RawProject>): Promise<RawProject | null> {
+export async function updateProject(
+  id: string,
+  updates: Partial<RawProject>
+): Promise<RawProject | null> {
   const database = getDb();
   await database.read();
-  
-  const idx = database.data.projects.findIndex(p => p.id === id);
-  if (idx === -1) return null;
-  
+
+  const idx = database.data.projects.findIndex((p) => p.id === id);
+  if (idx === -1) {
+    return null;
+  }
+
   database.data.projects[idx] = { ...database.data.projects[idx], ...updates };
   database.data.projects.sort((a, b) => a.name.localeCompare(b.name));
   await database.write();
-  
+
   return database.data.projects[idx];
 }
 
 export async function deleteProject(id: string): Promise<RawProject | null> {
   const database = getDb();
   await database.read();
-  
-  const idx = database.data.projects.findIndex(p => p.id === id);
-  if (idx === -1) return null;
-  
+
+  const idx = database.data.projects.findIndex((p) => p.id === id);
+  if (idx === -1) {
+    return null;
+  }
+
   const [removed] = database.data.projects.splice(idx, 1);
   await database.write();
-  
+
   return removed;
 }
 
 export async function findProjectById(id: string): Promise<RawProject | null> {
   const database = getDb();
   await database.read();
-  return database.data.projects.find(p => p.id === id) || null;
+  return database.data.projects.find((p) => p.id === id) || null;
 }
 
 export async function findProjectByName(name: string): Promise<RawProject | null> {
   const database = getDb();
   await database.read();
-  return database.data.projects.find(p => p.name === name) || null;
+  return database.data.projects.find((p) => p.name === name) || null;
 }
 
 // ============================================================
@@ -168,7 +181,7 @@ export async function findProjectByName(name: string): Promise<RawProject | null
 export async function clearProjectFromCards(projectId: string): Promise<void> {
   const database = getDb();
   await database.read();
-  
+
   let changed = false;
   for (const card of database.data.cards) {
     if (card.project === projectId) {
@@ -176,7 +189,7 @@ export async function clearProjectFromCards(projectId: string): Promise<void> {
       changed = true;
     }
   }
-  
+
   if (changed) {
     await database.write();
   }

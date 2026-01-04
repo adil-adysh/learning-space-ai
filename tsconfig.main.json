@@ -13,16 +13,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": [
-    "src/main.ts",
-    "src/preload.ts",
-    "src/db.ts",
-    "src/util.ts",
-    "src/types.ts"
-  ],
-  "exclude": [
-    "src/routes",
-    "src/lib",
-    "src/**/*.svelte"
-  ]
+  "include": ["src/main.ts", "src/preload.ts", "src/db.ts", "src/util.ts", "src/types.ts"],
+  "exclude": ["src/routes", "src/lib", "src/**/*.svelte"]
 }
