@@ -137,56 +137,34 @@ jobs:
         with:
           name: release-artifacts-ubuntu-latest
           path: artifacts
+          merge-multiple: true
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           name: release-artifacts-windows-latest
           path: artifacts
-      - name: Find required artifacts to upload
+          merge-multiple: true
+      - name: List downloaded artifacts and verify installers
         run: |
           set -e
-          mkdir -p artifacts
-          echo "Searching for artifacts matching patterns..."
-          # Find deterministic artifact names produced by electron-builder
-          find artifacts -type f \(
-            -name 'learning-space-ai*.exe' -o \
-            -name '*Setup*.exe' -o \
-            -name 'learning-space-ai*.AppImage' -o \
-            -name 'learning-space-ai_*.deb' -o \
-            -name 'learning-space-ai*.zip' \
-          \) -print > artifacts/files_to_upload.txt || true
-          echo "Files to upload:" && cat artifacts/files_to_upload.txt || true
-          # Ensure at least one Windows installer exists
-          if ! grep -E '\.exe$' artifacts/files_to_upload.txt >/dev/null 2>&1; then
+          echo "Listing artifacts directory contents:"
+          ls -R artifacts || true
+          echo "Looking for installer files..."
+          # ensure at least one Windows installer exists
+          if ! find artifacts -type f \( -iname '*.exe' -o -iname '*setup*.exe' \) | grep -q .; then
             echo "ERROR: No Windows installer (.exe) found among downloaded artifacts."
             exit 1
           fi
-
-      - name: Prepare unique artifact list
-        run: |
-          set -e
-          mkdir -p artifacts/unique
-          echo "Copying listed files into artifacts/unique"
-          while IFS= read -r f || [ -n "$f" ]; do
-            if [ -z "$f" ]; then continue; fi
-            if [ ! -f "$f" ]; then echo "Warning: listed file not found: $f"; continue; fi
-            base=$(basename "$f")
-            dest="artifacts/unique/$base"
-            if [ -e "$dest" ]; then
-              echo "Skipping duplicate: $base"
-            else
-              cp "$f" "$dest"
-              echo "Copied $f -> $dest"
-            fi
-          done < artifacts/files_to_upload.txt
-
       - name: Publish release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           draft: true
-          # Upload only deduplicated artifacts matching the deterministic artifactName
+          # Upload installers directly from extracted artifacts
           files: |
-            artifacts/unique/learning-space-ai*.*
+            artifacts/**/learning-space-ai*.*
+            artifacts/**/*Setup*.exe
+            artifacts/**/*.AppImage
+            artifacts/**/*_*.deb
           token: ${{ secrets.PUBLISH_TOKEN || github.token }}
