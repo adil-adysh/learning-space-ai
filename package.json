@@ -8,7 +8,7 @@
     "dev": "vite dev",
     "build": "vite build && node scripts/fix-paths.js && npm run build:electron",
     "build:electron": "tsc --project tsconfig.main.json && node scripts/rename-to-cjs.js",
-    "release:ci": "npm run build && electron-builder --publish=always",
+    "release:ci": "npm run build && npx electron-builder --publish=always",
     "preview": "vite preview",
     "start": "electron .",
     "package": "npm run build && electron-builder",
