@@ -89,14 +89,16 @@ jobs:
           echo "Running Windows packaging script"
           npm run pack:win
 
-      - name: Upload Windows artifacts
+      - name: Upload Windows artifacts (installers only)
         if: runner.os == 'Windows' && success()
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts-windows-latest
           path: |
-            dist/**/*.exe
-            dist/**/win-unpacked/**
+            dist/*Setup*.exe
+            dist/learning-space-ai*.exe
+            dist/*.exe.blockmap
+            dist/*.zip
           retention-days: 3
 
       - name: Package and publish (Linux)
@@ -107,15 +109,14 @@ jobs:
           echo "Running Linux packaging script"
           npm run pack:linux
 
-      - name: Upload Linux artifacts
+      - name: Upload Linux artifacts (installers only)
         if: runner.os != 'Windows' && success()
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts-ubuntu-latest
           path: |
-            dist/**/*.AppImage
-            dist/**/*.deb
-            dist/**/linux-unpacked/**
+            dist/*.AppImage
+            dist/*_*.deb
           retention-days: 3
 
       # no fallback artifact upload - artifacts uploaded per-platform on success
@@ -135,13 +136,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-artifacts-ubuntu-latest
-          path: artifacts/linux
+          path: artifacts
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
           name: release-artifacts-windows-latest
-          path: artifacts/windows
+          path: artifacts
       - name: Find required artifacts to upload
         run: |
           set -e
@@ -149,11 +150,11 @@ jobs:
           echo "Searching for artifacts matching patterns..."
           # Find deterministic artifact names produced by electron-builder
           find artifacts -type f \(
-            -name 'learning-space-ai-*.exe' -o \
-            -name 'learning-space-ai-*-Setup*.exe' -o \
-            -name 'learning-space-ai-*.AppImage' -o \
+            -name 'learning-space-ai*.exe' -o \
+            -name '*Setup*.exe' -o \
+            -name 'learning-space-ai*.AppImage' -o \
             -name 'learning-space-ai_*.deb' -o \
-            -name 'learning-space-ai-*.zip' \
+            -name 'learning-space-ai*.zip' \
           \) -print > artifacts/files_to_upload.txt || true
           echo "Files to upload:" && cat artifacts/files_to_upload.txt || true
           # Ensure at least one Windows installer exists
@@ -187,5 +188,5 @@ jobs:
           draft: true
           # Upload only deduplicated artifacts matching the deterministic artifactName
           files: |
-            artifacts/unique/learning-space-ai-*.*
+            artifacts/unique/learning-space-ai*.*
           token: ${{ secrets.PUBLISH_TOKEN || github.token }}
