@@ -8,6 +8,7 @@
     "dev": "vite dev",
     "build": "vite build && node scripts/fix-paths.js && npm run build:electron",
     "build:electron": "tsc --project tsconfig.main.json && node scripts/rename-to-cjs.js",
+    "release:ci": "npm run build && electron-builder --publish=always",
     "preview": "vite preview",
     "start": "electron .",
     "package": "npm run build && electron-builder",
@@ -23,9 +24,44 @@
     "@types/jsdom": "^21.1.1",
     "@types/node": "^20.0.0",
     "electron": "^26.0.0",
+    "electron-builder": "^24.6.0",
     "jsdom": "^22.1.0",
     "svelte": "^5.46.1",
     "typescript": "^5.0.0",
     "vite": "^7.3.0"
+  }
+  ,
+  "build": {
+    "appId": "com.example.learning-cards",
+    "productName": "Learning Cards",
+    "files": [
+      "build/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "win": {
+      "target": ["nsis", "zip"],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "YOUR_GITHUB_USER_OR_ORG",
+        "repo": "YOUR_REPO_NAME"
+      }
+    ]
   }
 }

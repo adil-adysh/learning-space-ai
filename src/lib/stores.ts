@@ -19,6 +19,40 @@ export const completedCards = derived(cards, ($cards) =>
 	$cards.filter(c => c.status === 'done')
 );
 
+// Filtering stores
+export const filterStatus = writable<'all' | 'active' | 'done'>('all');
+export const filterQuery = writable<string>('');
+
+export const filteredCards = derived(
+	[cards, filterStatus, filterQuery],
+	([$cards, $status, $query]) => {
+		let result = $cards.slice();
+		if ($status !== 'all') {
+			result = result.filter(c => ($status === 'active' ? c.status === 'active' : c.status === 'done'));
+		}
+		if ($query && $query.trim() !== '') {
+			const q = $query.toLowerCase();
+			result = result.filter(c => {
+				return (
+					(c.title || '').toLowerCase().includes(q) ||
+					(c.prompt || '').toLowerCase().includes(q) ||
+					(c.topic || '').toLowerCase().includes(q)
+				);
+			});
+		}
+		return result;
+	}
+);
+
+// Helpers
+export function setFilterStatus(s: 'all' | 'active' | 'done') {
+	filterStatus.set(s);
+}
+
+export function setFilterQuery(q: string) {
+	filterQuery.set(q);
+}
+
 // Helper functions to update stores
 export function addCard(card: LearningCard) {
 	cards.update(current => [card, ...current]);

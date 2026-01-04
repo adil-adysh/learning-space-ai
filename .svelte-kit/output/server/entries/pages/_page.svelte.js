@@ -5,13 +5,31 @@ const cards = writable([]);
 const isFormOpen = writable(false);
 const isLoading = writable(false);
 derived(cards, ($cards) => $cards.length);
-derived(
+const activeCards = derived(
   cards,
   ($cards) => $cards.filter((c) => c.status === "active")
 );
-derived(
+const completedCards = derived(
   cards,
   ($cards) => $cards.filter((c) => c.status === "done")
+);
+const filterStatus = writable("all");
+const filterQuery = writable("");
+const filteredCards = derived(
+  [cards, filterStatus, filterQuery],
+  ([$cards, $status, $query]) => {
+    let result = $cards.slice();
+    if ($status !== "all") {
+      result = result.filter((c) => $status === "active" ? c.status === "active" : c.status === "done");
+    }
+    if ($query && $query.trim() !== "") {
+      const q = $query.toLowerCase();
+      result = result.filter((c) => {
+        return (c.title || "").toLowerCase().includes(q) || (c.prompt || "").toLowerCase().includes(q) || (c.topic || "").toLowerCase().includes(q);
+      });
+    }
+    return result;
+  }
 );
 function addCard(card) {
   cards.update((current) => [card, ...current]);
@@ -76,14 +94,24 @@ function CardList($$renderer, $$props) {
     var $$store_subs;
     let onStart = $$props["onStart"];
     let onToggle = $$props["onToggle"];
-    $$renderer2.push(`<section><h2>Your learning cards</h2> <div class="card-list">`);
-    if (store_get($$store_subs ??= {}, "$cards", cards).length === 0) {
+    $$renderer2.push(`<section><h2>Your learning cards</h2> <div class="filters"><label class="filter">Show: <select>`);
+    $$renderer2.option({ value: "all" }, ($$renderer3) => {
+      $$renderer3.push(`All (${escape_html(store_get($$store_subs ??= {}, "$cards", cards).length)})`);
+    });
+    $$renderer2.option({ value: "active" }, ($$renderer3) => {
+      $$renderer3.push(`Active (${escape_html(store_get($$store_subs ??= {}, "$activeCards", activeCards).length)})`);
+    });
+    $$renderer2.option({ value: "done" }, ($$renderer3) => {
+      $$renderer3.push(`Completed (${escape_html(store_get($$store_subs ??= {}, "$completedCards", completedCards).length)})`);
+    });
+    $$renderer2.push(`</select></label> <label class="filter search">Search: <input type="search" placeholder="Search title, prompt, topic"/></label></div> <div class="card-list">`);
+    if (store_get($$store_subs ??= {}, "$filteredCards", filteredCards).length === 0) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<p class="empty-state">No learning cards yet. Create one to get started!</p>`);
+      $$renderer2.push(`<p class="empty-state">No learning cards match your filters.</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<!--[-->`);
-      const each_array = ensure_array_like(store_get($$store_subs ??= {}, "$cards", cards));
+      const each_array = ensure_array_like(store_get($$store_subs ??= {}, "$filteredCards", filteredCards));
       for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
         let card = each_array[$$index];
         CardItem($$renderer2, { card, onStart, onToggle });
