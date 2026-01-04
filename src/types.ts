@@ -1,11 +1,12 @@
-export type Status = 'todo' | 'done';
+export type Status = 'active' | 'done';
 
 // Public model used in renderer and app logic
 export interface LearningCard {
   id: string;
   title: string;
   prompt: string;
-  topic: string;
+  topic?: string;
+  project?: string; // optional project id the card belongs to
   status: Status;
   createdAt: Date;
 }
@@ -15,7 +16,21 @@ export interface RawCard {
   id: string;
   title: string;
   prompt: string;
-  topic: string;
+  topic?: string;
+  project?: string; // project id
   status: Status;
   createdAt: string; // ISO
+}
+
+// Project model
+export interface Project {
+  id: string;
+  name: string;
+  createdAt?: string;
+}
+
+export interface RawProject {
+  id: string;
+  name: string;
+  createdAt?: string;
 }

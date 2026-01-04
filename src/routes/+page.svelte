@@ -1,52 +1,40 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { isFormOpen, isLoading, setCards, addCard, updateCardStatus } from '../lib/stores';
+	import { projectManager } from '../lib/projectManager.svelte';
+	import { cardManager } from '../lib/cardManager.svelte';
 	import AddForm from '../lib/components/AddForm.svelte';
 	import CardList from '../lib/components/CardList.svelte';
+	import ProjectsList from '../lib/components/ProjectsList.svelte';
+	import ProjectCreate from '../lib/components/ProjectCreate.svelte';
+	import ProjectDetail from '../lib/components/ProjectDetail.svelte';
 	import '../styles.css';
-	import type { LearningCard } from '../types';
 
-	// Load initial data
+	// Load initial data using Svelte 5 runes
 	onMount(async () => {
-		isLoading.set(true);
-		
-		try {
-			const rawCards = await window.api.getCards();
-			const cards: LearningCard[] = rawCards
-				.map((c: any) => ({
-					...c,
-					createdAt: new Date(c.createdAt),
-				}))
-				.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-			setCards(cards);
-		} catch (err) {
-			console.error('Failed to load cards:', err);
-		} finally {
-			isLoading.set(false);
-		}
+		await Promise.all([
+			cardManager.loadCards(),
+			projectManager.loadProjects()
+		]);
 	});
 
 	// Event handlers
-	async function handleFormSubmit(data: { title: string; prompt: string; topic?: string }) {
-		const newCard = await window.api.addCard(data);
-		addCard(newCard);
+	async function handleFormSubmit(data: { title: string; prompt: string; topic?: string; project?: string }) {
+		await cardManager.addCard(data);
 		announceToSR(`Card "${data.title}" added successfully`);
 	}
 
 	async function handleCardStart(prompt: string) {
-		await window.api.runPrompt(prompt);
+		await cardManager.runPrompt(prompt);
 		announceToSR('Opening prompt in ChatGPT');
 	}
 
 	async function handleCardToggle(id: string, status: 'active' | 'done') {
-		const updated = await window.api.toggleCard(id, status);
-		updateCardStatus(id, status);
+		await cardManager.updateCardStatus(id, status);
 		announceToSR(`Card marked as ${status}`);
 	}
 
 	function toggleAddForm() {
-		isFormOpen.update(v => !v);
+		cardManager.toggleForm();
 	}
 
 	function announceToSR(message: string) {
@@ -70,27 +58,31 @@
 		<h1>Learning Cards</h1>
 		<p class="subtitle">Finish what you start</p>
 		<div class="top-actions">
-			<button 
-				class="primary" 
-				aria-expanded={$isFormOpen}
-				aria-controls="add-section"
-				on:click={toggleAddForm}
-			>
-				+ Add learning card
-			</button>
+			{#if projectManager.selectedProject === 'all'}
+				<button class="primary" onclick={() => projectManager.selectCreateProject()} aria-label="Create project">
+					+ New Project
+				</button>
+			{:else}
+				<button class="ghost" onclick={() => projectManager.selectProject('all')} aria-label="Back to projects">← Projects</button>
+			{/if}
 		</div>
 	</header>
 
 	<main id="main-content">
-		<AddForm onSubmit={handleFormSubmit} />
-		
-		{#if $isLoading}
-			<p>Loading cards...</p>
+		{#if cardManager.isLoading || projectManager.isLoading}
+			<p>Loading...</p>
 		{:else}
-			<CardList 
-				onStart={handleCardStart} 
-				onToggle={handleCardToggle}
-			/>
+			{#if projectManager.selectedProject === 'all'}
+				<ProjectsList on:open={(e) => projectManager.selectProject(e.detail.projectId)} />
+			{:else if projectManager.selectedProject === 'create'}
+				<ProjectCreate on:created={async (e) => {
+					await projectManager.loadProjects();
+					projectManager.selectProject(e.detail.project);
+				}} />
+			{:else}
+				<!-- Project detail view moved into component -->
+				<ProjectDetail projectId={projectManager.selectedProject} />
+			{/if}
 		{/if}
 	</main>
 </div>

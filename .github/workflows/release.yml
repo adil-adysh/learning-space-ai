@@ -50,9 +50,9 @@ jobs:
         run: |
           echo "-- ls dist --"
           ls -la dist || true
-          echo "-- check dist/main.cjs exists --"
-          if [ ! -f dist/main.cjs ]; then
-            echo "ERROR: dist/main.cjs not found"
+          echo "-- check dist/main.js exists --"
+          if [ ! -f dist/main.js ]; then
+            echo "ERROR: dist/main.js not found"
             echo "-- ls -R project --"
             ls -la || true
             echo "-- cat build-ci-config.json --"
@@ -66,8 +66,8 @@ jobs:
         run: |
           Write-Host "-- Get-ChildItem dist --"
           Get-ChildItem -Path .\dist -Recurse -Force -ErrorAction SilentlyContinue | Format-Table -AutoSize
-          if (-not (Test-Path .\dist\main.cjs)) {
-            Write-Error 'ERROR: dist/main.cjs not found'
+          if (-not (Test-Path .\dist\main.js)) {
+            Write-Error 'ERROR: dist/main.js not found'
             Write-Host "-- Get-ChildItem -Recurse project --"
             Get-ChildItem -Recurse -Force | Format-Table -AutoSize
             if (Test-Path .\build-ci-config.json) { Get-Content .\build-ci-config.json }
@@ -79,7 +79,7 @@ jobs:
         env:
           REPO: ${{ github.repository }}
         run: |
-          node -e "const fs=require('fs'); const repo=process.env.REPO||''; const [owner,repoName]=repo.split('/'); const cfg={asar:false, files:['build/**/*','dist/**/*','package.json'], extraMetadata:{main:'dist/main.cjs'}, linux:{target:['AppImage','deb'], icon:'assets'}, publish:[{provider:'github', owner:owner||'__OWNER__', repo:repoName||'__REPO__'}]}; fs.writeFileSync('build-ci-config.json', JSON.stringify(cfg, null, 2)); console.log('Wrote build-ci-config.json');"
+          node -e "const fs=require('fs'); const repo=process.env.REPO||''; const [owner,repoName]=repo.split('/'); const cfg={asar:false, files:['build/**/*','dist/**/*','package.json'], extraMetadata:{main:'dist/main.js'}, linux:{target:['AppImage','deb'], icon:'assets'}, publish:[{provider:'github', owner:owner||'__OWNER__', repo:repoName||'__REPO__'}]}; fs.writeFileSync('build-ci-config.json', JSON.stringify(cfg, null, 2)); console.log('Wrote build-ci-config.json');"
 
       - name: Package and publish (Windows)
         if: runner.os == 'Windows'

@@ -4,19 +4,25 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import { createServer, Server } from 'http';
 import { RawCard, Status } from './types';
-import { readCardsFrom, writeCardsTo } from './storage';
+import { 
+  initDatabase, 
+  readCards, 
+  writeCards, 
+  addCard as dbAddCard,
+  updateCard,
+  readProjects, 
+  addProject as dbAddProject,
+  updateProject as dbUpdateProject,
+  deleteProject as dbDeleteProject,
+  findProjectByName,
+  clearProjectFromCards
+} from './db';
 import { buildChatGPTUrl } from './util';
-
-const FILE_NAME = 'cards.json';
 const STATIC_PORT = Number(process.env.STATIC_PORT) || 4173;
 const BUILD_DIR = path.join(__dirname, '..', 'build');
 let staticServer: Server | null = null;
 
 let mainWindow: BrowserWindow | null = null;
-
-function getDataPath() {
-  return path.join(app.getPath('userData'), FILE_NAME);
-}
 
 async function startStaticServer() {
   if (staticServer) return;
@@ -80,14 +86,6 @@ function getMime(ext: string) {
   }
 }
 
-async function readCards(): Promise<RawCard[]> {
-  return readCardsFrom(getDataPath());
-}
-
-async function writeCards(cards: RawCard[]) {
-  return writeCardsTo(getDataPath(), cards);
-}
-
 function createWindow() {
   const win = new BrowserWindow({
     width: 900,
@@ -136,37 +134,104 @@ app.on('second-instance', () => {
 
 app.whenReady().then(async () => {
   await startStaticServer();
+  
+  // Initialize the lowdb database
+  const userDataPath = app.getPath('userData');
+  await initDatabase(userDataPath);
+  
   ipcMain.handle('cards:get', async () => {
-    const cards = await readCards();
-    return cards;
+    return await readCards();
   });
 
-  ipcMain.handle('cards:add', async (_ev, data: { title: string; prompt: string; topic: string }) => {
+  ipcMain.handle('cards:add', async (_ev, data: { title: string; prompt: string; topic?: string; project?: string }) => {
     if (!data || typeof data.title !== 'string' || typeof data.prompt !== 'string') {
       throw new Error('Invalid input');
     }
-    const cards = await readCards();
+    
+    let projectId = (data.project || '').trim();
+    if (projectId) {
+      // if provided value matches a project name, resolve to id
+      const foundByName = await findProjectByName(projectId);
+      if (foundByName) {
+        projectId = foundByName.id;
+      } else {
+        // Check if it's an existing project id
+        const projects = await readProjects();
+        const existsById = projects.find(p => p.id === projectId);
+        if (!existsById) {
+          // Create new project
+          const newProj = { id: randomUUID(), name: projectId, createdAt: new Date().toISOString() };
+          await dbAddProject(newProj);
+          projectId = newProj.id;
+        }
+      }
+    }
+
     const newCard: RawCard = {
       id: randomUUID(),
       title: data.title,
       prompt: data.prompt,
       topic: data.topic || '',
-      status: 'todo',
+      project: projectId || '',
+      status: 'active',
       createdAt: new Date().toISOString()
     };
-    cards.unshift(newCard);
-    await writeCards(cards);
-    return newCard;
+    
+    return await dbAddCard(newCard);
+  });
+
+  // Projects CRUD IPC
+  ipcMain.handle('projects:list', async () => {
+    return await readProjects();
+  });
+
+  ipcMain.handle('projects:get', async (_ev, id: string) => {
+    const projects = await readProjects();
+    return projects.find(p => p.id === id) || null;
+  });
+
+  ipcMain.handle('projects:create', async (_ev, name: string) => {
+    const n = (name || '').trim();
+    if (!n) throw new Error('Invalid project name');
+    
+    // prevent duplicate names
+    const existing = await findProjectByName(n);
+    if (existing) return existing;
+    
+    const newProj = { id: randomUUID(), name: n, createdAt: new Date().toISOString() };
+    return await dbAddProject(newProj);
+  });
+
+  ipcMain.handle('projects:update', async (_ev, payload: { id: string; name: string }) => {
+    const id = (payload.id || '').trim();
+    const name = (payload.name || '').trim();
+    if (!id || !name) throw new Error('Invalid input');
+    
+    const updated = await dbUpdateProject(id, { name });
+    if (!updated) throw new Error('Project not found');
+    
+    return updated;
+  });
+
+  ipcMain.handle('projects:delete', async (_ev, id: string) => {
+    const removed = await dbDeleteProject(id);
+    if (!removed) throw new Error('Project not found');
+    
+    // Remove project references from cards
+    try {
+      await clearProjectFromCards(id);
+    } catch (err) {
+      console.error('Failed to cleanup card project references', err);
+    }
+    
+    return removed;
   });
 
   ipcMain.handle('cards:toggle', async (_ev, args: { id: string; status: Status }) => {
     const { id, status } = args;
-    const cards = await readCards();
-    const idx = cards.findIndex((c) => c.id === id);
-    if (idx === -1) throw new Error('Card not found');
-    cards[idx].status = status;
-    await writeCards(cards);
-    return cards[idx];
+    const updated = await updateCard(id, { status });
+    if (!updated) throw new Error('Card not found');
+    return updated;
   });
 
   ipcMain.handle('cards:run', async (_ev, prompt: string) => {

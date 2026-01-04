@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { LearningCard } from '../../types';
+	import { projectManager } from '../projectManager.svelte';
 	
 	export let card: LearningCard;
 	export let onStart: (prompt: string) => void;
@@ -16,6 +17,9 @@
 		{#if card.topic}
 			<p class="topic">{card.topic}</p>
 		{/if}
+		{#if card.project}
+				<p class="project">Project: <strong>{projectManager.all.find(p => p.id === card.project)?.name || card.project}</strong></p>
+			{/if}
 	</header>
 
 	<section>
@@ -29,7 +33,8 @@
 		<button 
 			type="button" 
 			class="primary" 
-			on:click={() => onStart(card.prompt)}
+			onclick={() => onStart(card.prompt)}
+			aria-label={`Start chat with prompt for ${card.title}`}
 		>
 			Start in ChatGPT
 		</button>
@@ -37,7 +42,8 @@
 			type="button" 
 			class="ghost" 
 			aria-pressed={isDone}
-			on:click={() => onToggle(card.id, isDone ? 'active' : 'done')}
+			onclick={() => onToggle(card.id, isDone ? 'active' : 'done')}
+			aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
 		>
 			{buttonLabel}
 		</button>

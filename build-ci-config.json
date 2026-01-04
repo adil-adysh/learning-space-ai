@@ -6,7 +6,7 @@
     "package.json"
   ],
   "extraMetadata": {
-    "main": "dist/main.cjs"
+    "main": "dist/main.js"
   },
   "publish": [
     {

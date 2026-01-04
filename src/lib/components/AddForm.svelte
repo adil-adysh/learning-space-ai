@@ -1,14 +1,17 @@
 <script lang="ts">
-	import { isFormOpen } from '../stores';
+	import { cardManager } from '../cardManager.svelte';
+	import { projectManager } from '../projectManager.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import type { LearningCard } from '../../types';
 
 	// Props
-	export let onSubmit: (data: { title: string; prompt: string; topic?: string }) => Promise<void>;
+	export let onSubmit: (data: { title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
 
 	// Local state
 	let title = '';
 	let topic = '';
+	let project = '';
+	let creatingProject = false;
 	let prompt = '';
 	let status = '';
 	let isSubmitting = false;
@@ -26,12 +29,13 @@
 			await onSubmit({
 				title: title.trim(),
 				prompt: prompt.trim(),
-				topic: topic.trim() || undefined
+				topic: topic.trim() || undefined,
+				project: creatingProject ? project.trim() || undefined : (project || undefined)
 			});
 
 			// Success - clear form and close
 			clearForm();
-			isFormOpen.set(false);
+			cardManager.closeForm();
 			status = 'Card added successfully!';
 			
 			// Announce to screen readers
@@ -47,13 +51,15 @@
 	function clearForm() {
 		title = '';
 		topic = '';
+		project = '';
+		creatingProject = false;
 		prompt = '';
 		status = '';
 	}
 
 	function handleCancel() {
 		clearForm();
-		isFormOpen.set(false);
+		cardManager.closeForm();
 	}
 
 	function announceToSR(message: string) {
@@ -66,7 +72,7 @@
 	// Global keydown handler for Escape
 	onMount(() => {
 		const handleGlobalKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && $isFormOpen) {
+			if (e.key === 'Escape' && cardManager.isFormOpen) {
 				handleCancel();
 			}
 		};
@@ -80,9 +86,9 @@
 
 </script>
 
-{#if $isFormOpen}
+{#if cardManager.isFormOpen}
 	<section id="add-section">
-		<form on:submit|preventDefault={handleSubmit}>
+		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} aria-labelledby="add-heading">
 			<h2>New Card Details</h2>
 
 			{#if status}
@@ -119,6 +125,27 @@
 			</div>
 
 			<div class="field">
+				<label for="project-select">Project <span class="optional">(optional)</span></label>
+				<select id="project-select" bind:value={project} onchange={() => { if (project === '__create__') { creatingProject = true; project = ''; } else { creatingProject = false; } }} disabled={isSubmitting} aria-describedby="project-hint">
+					<option value="all">All projects</option>
+					<option value="">Unassigned</option>
+					{#each projectManager.all as p}
+						<option value={p.id}>{p.name}</option>
+					{/each}
+					<option value="__create__">+ Create new project...</option>
+				</select>
+				<span id="project-hint" class="hint">Assign this card to a project or create a new one.</span>
+			</div>
+
+			{#if creatingProject}
+				<div class="field">
+					<label for="project">New project name</label>
+					<input id="project" bind:value={project} type="text" autocomplete="off" disabled={isSubmitting} />
+					<span class="hint">Give your project a short, unique name.</span>
+				</div>
+			{/if}
+
+			<div class="field">
 				<label for="prompt">
 					Learning prompt <span class="required">*</span>
 				</label>
@@ -136,7 +163,7 @@
 				<button type="submit" class="primary" disabled={!isValid || isSubmitting}>
 					{isSubmitting ? 'Saving...' : 'Save card'}
 				</button>
-				<button type="button" class="ghost" on:click={handleCancel} disabled={isSubmitting}>
+				<button type="button" class="ghost" onclick={handleCancel} disabled={isSubmitting}>
 					Cancel
 				</button>
 			</div>

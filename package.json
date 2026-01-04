@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && node scripts/fix-paths.js && npm run build:electron",
-    "build:electron": "tsc --project tsconfig.main.json && node scripts/rename-to-cjs.js",
+    "build:electron": "node scripts/build-main.cjs",
+    "typecheck": "tsc --noEmit",
     "release:ci": "npm run build && npx electron-builder --publish=always",
     "preview": "vite preview",
     "start": "electron .",
@@ -15,7 +16,7 @@
     "pack:win": "electron-builder --config build-ci-config.json --win --publish=never",
     "pack:linux": "electron-builder --config build-ci-config.json --linux --publish=never",
     "pack:all": "electron-builder --config build-ci-config.json --publish=never",
-    "test": "npm run build && node --test dist/tests/util.test.cjs dist/tests/storage.test.cjs",
+    "test": "npm run build && node --test dist/tests/util.test.js dist/tests/storage.test.js",
     "verify:dist": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist/main.cjs')){console.error('dist/main.cjs missing'); process.exit(1);} console.log('dist/main.cjs exists')\""
   },
   "keywords": [],
@@ -29,19 +30,21 @@
     "@types/node": "^20.0.0",
     "electron": "^26.0.0",
     "electron-builder": "^26.0.12",
+    "esbuild": "^0.19.2",
     "jsdom": "^22.1.0",
     "svelte": "^5.46.1",
     "typescript": "^5.0.0",
     "vite": "^7.3.0"
-  }
-  ,
+  },
   "build": {
     "asar": false,
     "extraResources": [
       {
         "from": "dist",
         "to": "dist",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "appId": "com.example.learning-space-ai",
@@ -57,7 +60,10 @@
       "output": "release"
     },
     "win": {
-      "target": ["nsis", "zip"],
+      "target": [
+        "nsis",
+        "zip"
+      ],
       "icon": "assets/icon.ico"
     },
     "nsis": {
@@ -66,7 +72,10 @@
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "assets",
       "maintainer": "Adil Adysh <adil@example.com>"
     },
@@ -77,5 +86,9 @@
         "repo": "YOUR_REPO_NAME"
       }
     ]
+  },
+  "dependencies": {
+    "felte": "^1.3.0",
+    "lowdb": "^7.0.1"
   }
 }
