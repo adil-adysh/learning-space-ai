@@ -1,16 +1,83 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { promises as fs } from 'fs';
+import { createServer, Server } from 'http';
 import { RawCard, Status } from './types';
 import { readCardsFrom, writeCardsTo } from './storage';
 import { buildChatGPTUrl } from './util';
 
 const FILE_NAME = 'cards.json';
+const STATIC_PORT = Number(process.env.STATIC_PORT) || 4173;
+const BUILD_DIR = path.join(__dirname, '..', 'build');
+let staticServer: Server | null = null;
 
 let mainWindow: BrowserWindow | null = null;
 
 function getDataPath() {
   return path.join(app.getPath('userData'), FILE_NAME);
+}
+
+async function startStaticServer() {
+  if (staticServer) return;
+
+  staticServer = createServer(async (req, res) => {
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    const pathname = decodeURIComponent(url.pathname);
+    const normalized = path.normalize(path.join(BUILD_DIR, pathname));
+    let target = normalized;
+
+    if (!target.startsWith(BUILD_DIR)) {
+      target = path.join(BUILD_DIR, 'index.html');
+    }
+
+    try {
+      const stat = await fs.stat(target);
+      if (stat.isDirectory()) {
+        target = path.join(target, 'index.html');
+      }
+    } catch {
+      target = path.join(BUILD_DIR, 'index.html');
+    }
+
+    const ext = path.extname(target);
+    res.setHeader('Content-Type', getMime(ext));
+
+    try {
+      const data = await fs.readFile(target);
+      res.writeHead(200);
+      res.end(data);
+    } catch (err) {
+      const fallback = await fs.readFile(path.join(BUILD_DIR, 'index.html'));
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(fallback);
+    }
+  });
+
+  await new Promise<void>((resolve) => {
+    staticServer!.listen(STATIC_PORT, '127.0.0.1', () => resolve());
+  });
+}
+
+function getMime(ext: string) {
+  switch (ext) {
+    case '.js':
+      return 'application/javascript';
+    case '.css':
+      return 'text/css';
+    case '.json':
+      return 'application/json';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.woff2':
+      return 'font/woff2';
+    case '.woff':
+      return 'font/woff';
+    case '.ttf':
+      return 'font/ttf';
+    default:
+      return 'text/html';
+  }
 }
 
 async function readCards(): Promise<RawCard[]> {
@@ -26,7 +93,7 @@ function createWindow() {
     width: 900,
     height: 700,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false
     }
@@ -37,8 +104,9 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Load the HTML from the source dir so dev build (tsc) can run without bundling HTML
-  win.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
+  // Load the SvelteKit build output via local server to avoid file:// 404s
+  const targetUrl = `http://127.0.0.1:${STATIC_PORT}`;
+  void win.loadURL(targetUrl);
 
   // Security: open external links in user's default browser and prevent in-app navigation
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -66,7 +134,8 @@ app.on('second-instance', () => {
   }
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await startStaticServer();
   ipcMain.handle('cards:get', async () => {
     const cards = await readCards();
     return cards;
@@ -117,4 +186,11 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  if (staticServer) {
+    staticServer.close();
+    staticServer = null;
+  }
 });

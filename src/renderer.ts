@@ -1,126 +1,76 @@
-import { LearningCard } from './types';
+/**
+ * Renderer Entry Point
+ * Bootstraps the UI and provides a safety net for initialization failures.
+ */
 
-function qs<T extends HTMLElement>(sel: string) { return document.querySelector(sel) as T | null; }
+const startApp = async () => {
+  try {
+    // Attempt to load the main UI logic
+    // Ensure this path correctly points to your init file
+    const { init } = await import('./ui/index'); 
+    await init();
+    
+    console.log('UI Initialized successfully.');
+  } catch (err) {
+    // 1. Log for developers/diagnostics
+    console.error('Critical UI Initialization Error:', err);
 
-function srAnnounce(message: string) {
-  const el = qs<HTMLDivElement>('#sr-announcements');
-  if (el) el.textContent = message;
-}
-
-function renderCards(cards: LearningCard[]) {
-  const list = qs<HTMLUListElement>('#cards');
-  if (!list) return;
-  list.innerHTML = '';
-  for (const c of cards) {
-    const li = document.createElement('li');
-    li.className = 'card';
-    li.setAttribute('data-id', c.id);
-
-    const article = document.createElement('article');
-    article.setAttribute('aria-labelledby', `title-${c.id}`);
-
-    const title = document.createElement('h2');
-    title.id = `title-${c.id}`;
-    title.textContent = c.title;
-
-    const meta = document.createElement('p');
-    meta.className = 'meta';
-    meta.textContent = `${c.topic || 'General'} · ${c.createdAt.toLocaleString()}`;
-
-    const status = document.createElement('p');
-    status.className = 'status';
-    status.textContent = c.status === 'done' ? 'Status: Done' : 'Status: To do';
-
-    const promptPreview = document.createElement('pre');
-    promptPreview.className = 'prompt';
-    promptPreview.textContent = c.prompt;
-    promptPreview.setAttribute('tabindex','0');
-
-    const controls = document.createElement('div');
-    controls.className = 'controls-row';
-
-    const runBtn = document.createElement('button');
-    runBtn.className = 'primary';
-    runBtn.textContent = 'Run';
-    runBtn.setAttribute('aria-label', `Run prompt for ${c.title}`);
-    runBtn.addEventListener('click', async () => {
-      await window.api.runPrompt(c.prompt);
-    });
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'ghost';
-    toggleBtn.textContent = c.status === 'done' ? 'Mark as not completed' : 'Mark as completed';
-    toggleBtn.setAttribute('aria-pressed', c.status === 'done' ? 'true' : 'false');
-    toggleBtn.addEventListener('click', async () => {
-      const newStatus = c.status === 'done' ? 'todo' : 'done';
-      await window.api.toggleCard(c.id, newStatus as LearningCard['status']);
-      srAnnounce(`${c.title} marked ${newStatus === 'done' ? 'completed' : 'not completed'}`);
-      await loadAndRender();
-    });
-
-    controls.appendChild(runBtn);
-    controls.appendChild(toggleBtn);
-
-    article.appendChild(title);
-    article.appendChild(meta);
-    article.appendChild(status);
-    article.appendChild(promptPreview);
-    article.appendChild(controls);
-
-    li.appendChild(article);
-    list.appendChild(li);
-  }
-}
-
-async function loadAndRender(focusFirst = false) {
-  const cards = await window.api.getCards();
-  // sort by createdAt desc
-  cards.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  renderCards(cards);
-  if (focusFirst) {
-    const firstRun = document.querySelector('#cards button.primary') as HTMLButtonElement | null;
-    if (firstRun) firstRun.focus();
-  }
-}
-
-async function setupForm() {
-  const form = qs<HTMLFormElement>('#addForm');
-  const title = qs<HTMLInputElement>('#title');
-  const topic = qs<HTMLInputElement>('#topic');
-  const prompt = qs<HTMLTextAreaElement>('#prompt');
-  const clear = qs<HTMLButtonElement>('#clearForm');
-  const formStatus = qs<HTMLDivElement>('#form-status');
-  if (!form || !title || !prompt) return;
-  form.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    const t = title.value.trim();
-    const p = prompt.value.trim();
-    const top = topic?.value.trim() || '';
-    if (!t || !p) {
-      if (formStatus) formStatus.textContent = 'Please provide a title and prompt.';
-      return;
+    // 2. Visual Fallback for Users (Calm UX)
+    // We target the container to maintain the app shell if possible
+    const root = document.querySelector('.container') || document.body;
+    
+    root.innerHTML = `
+      <div class="error-state" role="alert" style="
+        padding: 3rem; 
+        text-align: center; 
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+      ">
+        <h1 style="font-weight: 500; color: #1a1a1a;">Something went wrong</h1>
+        <p style="color: #666; line-height: 1.6;">
+          The app couldn't start properly. This is usually caused by a configuration 
+          issue or a corrupted update.
+        </p>
+        <div style="margin-top: 2rem;">
+          <button 
+            onclick="window.location.reload()" 
+            style="
+              background: #0056b3; 
+              color: white; 
+              border: none; 
+              padding: 12px 24px; 
+              border-radius: 6px; 
+              cursor: pointer;
+              font-size: 1rem;
+            ">
+            Reload App
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // 3. Announce failure to Screen Readers
+    // We attempt a dynamic import, but fallback to direct DOM manipulation
+    // to ensure accessibility even if the 'utils' module is missing.
+    try {
+      const { srAnnounce } = await import('./ui/utils');
+      srAnnounce('Critical error: The application failed to load.');
+    } catch (a11yErr) {
+      const sr = document.getElementById('sr-announcements');
+      if (sr) {
+        sr.textContent = 'Critical error: The application failed to load. Please restart.';
+      }
     }
-    await window.api.addCard({ title: t, prompt: p, topic: top });
-    if (formStatus) formStatus.textContent = `Added “${t}”`;
-    title.value = '';
-    prompt.value = '';
-    if (topic) topic.value = '';
-    await loadAndRender(true);
-  });
+  }
+};
 
-  clear?.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    title.value = '';
-    prompt.value = '';
-    if (topic) topic.value = '';
-    if (formStatus) formStatus.textContent = 'Cleared form.';
-    title.focus();
-  });
+// Check if DOM is already loaded (Safety check for fast Electron boots)
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startApp);
+} else {
+  // If the script is deferred or loaded after DOM is ready
+  void startApp();
 }
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await setupForm();
-  await loadAndRender();
-});
 
 export {};
