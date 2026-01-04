@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Learning Cards — MVP</title>
+  <style>
+    :root{color-scheme:light dark;}
+    html,body{height:100%;}
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      margin: 0;
+      background: #f7f8fb;
+      color: #0b1220;
+      -webkit-font-smoothing:antialiased;
+      font-size:16px;
+      line-height:1.45;
+      padding:24px;
+    }
+    .container{max-width:900px;margin:0 auto}
+
+    header{margin-bottom:18px}
+    .app-title{font-size:20px;margin:0}
+    .app-sub{margin:6px 0 0;color:#475569;font-size:14px}
+
+    form#addForm{display:grid;gap:8px;grid-template-columns:1fr 220px;align-items:start;margin-bottom:18px}
+    form .col-full{grid-column:1 / -1}
+
+    label{font-size:13px;color:#102a43;display:block;margin-bottom:4px}
+    input[type=text], textarea {width:100%;padding:10px;border-radius:8px;border:1px solid #dfe7ee;background:white;font-size:15px}
+    textarea{min-height:88px;resize:vertical}
+    .controls-row{display:flex;gap:8px;align-items:center}
+
+    button.primary{background:#0b70ff;color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid #cbd5e1;padding:8px 12px;border-radius:8px;color:#0b1220;cursor:pointer}
+
+    /* Card list */
+    #cards{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+    .card{background:white;padding:14px;border-radius:10px;box-shadow:0 1px 2px rgba(2,6,23,0.06);display:flex;flex-direction:column;gap:8px}
+    .card h2{margin:0;font-size:16px}
+    .card .meta{color:#475569;font-size:13px}
+    .card .prompt{background:#f3f4f6;padding:10px;border-radius:8px;white-space:pre-wrap;font-family:inherit;font-size:14px;margin:0}
+    .status{font-size:13px;color:#0b1220}
+
+    /* focus */
+    :focus{outline:none}
+    button:focus, input:focus, textarea:focus, a:focus{box-shadow:0 0 0 3px rgba(11,112,255,0.18);outline:2px solid transparent;border-radius:6px}
+
+    /* visually hidden (screen-reader only) */
+    .sr-only{position:absolute!important;left:-9999px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden}
+
+    /* responsive */
+    @media (max-width:720px){
+      form#addForm{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="app-title">Learning Cards</h1>
+      <p class="app-sub">Capture a learning goal and a prompt — run it in ChatGPT with one click.</p>
+    </header>
+
+    <main>
+      <section aria-labelledby="create-heading">
+        <h2 id="create-heading" style="font-size:15px;margin:0 0 8px 0">Create a card</h2>
+        <form id="addForm" novalidate>
+          <div class="col-full">
+            <label for="title">What do you want to learn? (Title)</label>
+            <input id="title" type="text" autocomplete="off" required aria-required="true" />
+          </div>
+
+          <div>
+            <label for="topic">Topic (optional)</label>
+            <input id="topic" type="text" autocomplete="off" />
+          </div>
+
+          <div class="col-full">
+            <label for="prompt">Prompt for ChatGPT</label>
+            <textarea id="prompt" required aria-required="true"></textarea>
+          </div>
+
+          <div class="col-full controls-row">
+            <button type="submit" class="primary">Add card</button>
+            <button type="button" id="clearForm" class="ghost">Clear</button>
+            <div id="form-status" aria-live="polite" class="sr-only"></div>
+          </div>
+        </form>
+      </section>
+
+      <section aria-labelledby="list-heading">
+        <h2 id="list-heading" style="font-size:15px;margin:18px 0 8px 0">Your learning cards</h2>
+        <ul id="cards" aria-live="polite" aria-relevant="additions removals"></ul>
+      </section>
+    </main>
+
+    <div id="sr-announcements" class="sr-only" aria-live="polite"></div>
+  </div>
+
+  <script>window.require = undefined;</script>
+  <script src="../dist/renderer.js" defer></script>
+</body>
+</html>

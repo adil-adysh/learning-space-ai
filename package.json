@@ -1,0 +1,20 @@
+{
+  "name": "learning-cards-electron-mvp",
+  "version": "0.1.0",
+  "description": "Minimal Electron + TypeScript app for learning cards with one-click ChatGPT prompts",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dev": "tsc -w",
+    "test": "npm run build && node --test dist/tests/util.test.js dist/tests/storage.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
