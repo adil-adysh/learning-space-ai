@@ -1,4 +1,5 @@
 import type { Project } from '../types';
+import { cardManager } from './cardManager.svelte';
 
 /**
  * Project Manager using Svelte 5 Runes
@@ -74,6 +75,7 @@ class ProjectManager {
   selectAll() {
     this.viewMode = 'list';
     this.selectedProjectId = null;
+    cardManager.setFilterProject('all');
   }
 
   /**
@@ -87,10 +89,12 @@ class ProjectManager {
     if (id === 'create') {
       this.viewMode = 'create';
       this.selectedProjectId = null;
+      cardManager.setFilterProject('all');
       return;
     }
     this.viewMode = 'detail';
     this.selectedProjectId = id;
+    cardManager.setFilterProject(id);
   }
 
   /**
@@ -99,6 +103,7 @@ class ProjectManager {
   selectCreateProject() {
     this.viewMode = 'create';
     this.selectedProjectId = null;
+    cardManager.setFilterProject('all');
   }
 
   /**

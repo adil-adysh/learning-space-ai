@@ -277,8 +277,34 @@ function AddForm($$renderer, $$props) {
     let creatingProject = false;
     let prompt = "";
     let isSubmitting = false;
+    let titleError = (() => {
+      const trimmed = title.trim();
+      if (trimmed.length === 0) return "";
+      if (trimmed.length < 3) return "Title must be at least 3 characters";
+      if (trimmed.length > 100) return "Title must be less than 100 characters";
+      return "";
+    })();
+    let promptError = (() => {
+      const trimmed = prompt.trim();
+      if (trimmed.length === 0) return "";
+      if (trimmed.length < 10) return "Prompt must be at least 10 characters";
+      if (trimmed.length > 1e3) return "Prompt must be less than 1000 characters";
+      return "";
+    })();
+    let projectError = (() => {
+      if (creatingProject) {
+        const trimmed = project.trim();
+        if (trimmed.length === 0) return "Project name is required";
+        if (trimmed.length < 2) return "Project name must be at least 2 characters";
+        if (trimmed.length > 50) return "Project name must be less than 50 characters";
+        if (projectManager.all.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
+          return "A project with this name already exists";
+        }
+      }
+      return "";
+    })();
     let isValid = (() => {
-      return title.trim().length > 0 && prompt.trim().length > 0;
+      return title.trim().length > 0 && prompt.trim().length > 0 && !titleError && !promptError && !projectError;
     })();
     function handleProjectChange(e) {
       const select = e.target;
@@ -296,7 +322,15 @@ function AddForm($$renderer, $$props) {
       {
         $$renderer2.push("<!--[!-->");
       }
-      $$renderer2.push(`<!--]--> <div class="field"><label for="title">Title <span class="required">*</span></label> <input id="title"${attr("value", title)} type="text" autocomplete="off" required${attr("disabled", isSubmitting, true)}/> <span class="hint">Give your learning card a clear, memorable name.</span></div> <div class="field"><label for="topic">Topic <span class="optional">(optional)</span></label> <input id="topic"${attr("value", topic)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}/> <span class="hint">e.g., JavaScript, Design Patterns, Math</span></div> <div class="field"><label for="project-select">Project <span class="optional">(optional)</span></label> `);
+      $$renderer2.push(`<!--]--> <div class="field"><label for="title">Title <span class="required">*</span></label> <input id="title"${attr("value", title)} type="text" autocomplete="off" required${attr("disabled", isSubmitting, true)}${attr_class("", void 0, { "error": titleError })}/> `);
+      if (titleError) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<span class="error-message">${escape_html(titleError)}</span>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<span class="hint">Give your learning card a clear, memorable name.</span>`);
+      }
+      $$renderer2.push(`<!--]--></div> <div class="field"><label for="topic">Topic <span class="optional">(optional)</span></label> <input id="topic"${attr("value", topic)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}/> <span class="hint">e.g., JavaScript, Design Patterns, Math</span></div> <div class="field"><label for="project-select">Project <span class="optional">(optional)</span></label> `);
       $$renderer2.select(
         {
           id: "project-select",
@@ -326,16 +360,32 @@ function AddForm($$renderer, $$props) {
       $$renderer2.push(` <span id="project-hint" class="hint">Assign this card to a project or create a new one.</span></div> `);
       if (creatingProject) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="field"><label for="project">New project name</label> <input id="project"${attr("value", project)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}/> <span class="hint">Give your project a short, unique name.</span></div>`);
+        $$renderer2.push(`<div class="field"><label for="project">New project name <span class="required">*</span></label> <input id="project"${attr("value", project)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}${attr_class("", void 0, { "error": projectError })}/> `);
+        if (projectError) {
+          $$renderer2.push("<!--[-->");
+          $$renderer2.push(`<span class="error-message">${escape_html(projectError)}</span>`);
+        } else {
+          $$renderer2.push("<!--[!-->");
+          $$renderer2.push(`<span class="hint">Give your project a short, unique name.</span>`);
+        }
+        $$renderer2.push(`<!--]--></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
-      $$renderer2.push(`<!--]--> <div class="field"><label for="prompt">Learning prompt <span class="required">*</span></label> <textarea id="prompt" required${attr("disabled", isSubmitting, true)} placeholder="e.g. Explain the concept of closures in JavaScript">`);
+      $$renderer2.push(`<!--]--> <div class="field"><label for="prompt">Learning prompt <span class="required">*</span></label> <textarea id="prompt" required${attr("disabled", isSubmitting, true)} placeholder="e.g. Explain the concept of closures in JavaScript"${attr_class("", void 0, { "error": promptError })}>`);
       const $$body = escape_html(prompt);
       if ($$body) {
         $$renderer2.push(`${$$body}`);
       }
-      $$renderer2.push(`</textarea> <span class="hint">What do you want to learn or understand?</span></div> <div class="form-actions"><button type="submit" class="primary"${attr("disabled", !isValid || isSubmitting, true)}>${escape_html("Save card")}</button> <button type="button" class="ghost"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
+      $$renderer2.push(`</textarea> `);
+      if (promptError) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<span class="error-message">${escape_html(promptError)}</span>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<span class="hint">What do you want to learn or understand?</span>`);
+      }
+      $$renderer2.push(`<!--]--></div> <div class="form-actions"><button type="submit" class="primary"${attr("disabled", !isValid || isSubmitting, true)}>${escape_html("Save card")}</button> <button type="button" class="ghost"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }

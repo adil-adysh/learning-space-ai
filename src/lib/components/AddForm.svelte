@@ -56,9 +56,54 @@
 		       !projectError;
 	});
 
-	// Side effect: Handle Escape key
+	let formElement: HTMLElement | null = null;
+	let firstFocusableElement: HTMLElement | null = null;
+	let lastFocusableElement: HTMLElement | null = null;
+
+	// Focus trap effect
 	$effect(() => {
 		if (!cardManager.isFormOpen) return;
+
+		// Set initial focus to title input
+		const titleInput = document.getElementById('title') as HTMLInputElement;
+		if (titleInput) {
+			setTimeout(() => titleInput.focus(), 0);
+		}
+
+		// Get all focusable elements within the form
+		const updateFocusableElements = () => {
+			if (!formElement) return;
+			
+			const focusableSelectors = 'input:not([disabled]), textarea:not([disabled]), button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+			const focusableElements = formElement.querySelectorAll(focusableSelectors);
+			
+			if (focusableElements.length > 0) {
+				firstFocusableElement = focusableElements[0] as HTMLElement;
+				lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+			}
+		};
+
+		updateFocusableElements();
+
+		const handleTabKey = (e: KeyboardEvent) => {
+			if (e.key !== 'Tab') return;
+
+			updateFocusableElements();
+
+			if (e.shiftKey) {
+				// Shift + Tab
+				if (document.activeElement === firstFocusableElement) {
+					e.preventDefault();
+					lastFocusableElement?.focus();
+				}
+			} else {
+				// Tab
+				if (document.activeElement === lastFocusableElement) {
+					e.preventDefault();
+					firstFocusableElement?.focus();
+				}
+			}
+		};
 
 		const handleGlobalKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
@@ -66,9 +111,11 @@
 			}
 		};
 
+		formElement?.addEventListener('keydown', handleTabKey);
 		window.addEventListener('keydown', handleGlobalKeydown);
 
 		return () => {
+			formElement?.removeEventListener('keydown', handleTabKey);
 			window.removeEventListener('keydown', handleGlobalKeydown);
 		};
 	});
@@ -137,7 +184,7 @@
 </script>
 
 {#if cardManager.isFormOpen}
-	<section id="add-section">
+	<section id="add-section" bind:this={formElement}>
 		<form onsubmit={handleSubmit} aria-labelledby="add-heading">
 			<h2>New Card Details</h2>
 
