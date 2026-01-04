@@ -11,15 +11,49 @@
 	// Local state using Svelte 5 runes
 	let title = $state('');
 	let topic = $state('');
-	let project = $state('');
+	let project = $state(projectManager.selectedProject !== 'all' && projectManager.selectedProject !== 'create' ? projectManager.selectedProject : '');
 	let creatingProject = $state(false);
 	let prompt = $state('');
 	let status = $state('');
 	let isSubmitting = $state(false);
 
 	// Derived validation state
+	let titleError = $derived.by(() => {
+		const trimmed = title.trim();
+		if (trimmed.length === 0) return '';
+		if (trimmed.length < 3) return 'Title must be at least 3 characters';
+		if (trimmed.length > 100) return 'Title must be less than 100 characters';
+		return '';
+	});
+
+	let promptError = $derived.by(() => {
+		const trimmed = prompt.trim();
+		if (trimmed.length === 0) return '';
+		if (trimmed.length < 10) return 'Prompt must be at least 10 characters';
+		if (trimmed.length > 1000) return 'Prompt must be less than 1000 characters';
+		return '';
+	});
+
+	let projectError = $derived.by(() => {
+		if (creatingProject) {
+			const trimmed = project.trim();
+			if (trimmed.length === 0) return 'Project name is required';
+			if (trimmed.length < 2) return 'Project name must be at least 2 characters';
+			if (trimmed.length > 50) return 'Project name must be less than 50 characters';
+			// Check for duplicate project names
+			if (projectManager.all.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
+				return 'A project with this name already exists';
+			}
+		}
+		return '';
+	});
+
 	let isValid = $derived.by(() => {
-		return title.trim().length > 0 && prompt.trim().length > 0;
+		return title.trim().length > 0 && 
+		       prompt.trim().length > 0 && 
+		       !titleError && 
+		       !promptError && 
+		       !projectError;
 	});
 
 	// Side effect: Handle Escape key
@@ -122,8 +156,13 @@
 					autocomplete="off"
 					required
 					disabled={isSubmitting}
+					class:error={titleError}
 				/>
-				<span class="hint">Give your learning card a clear, memorable name.</span>
+				{#if titleError}
+					<span class="error-message">{titleError}</span>
+				{:else}
+					<span class="hint">Give your learning card a clear, memorable name.</span>
+				{/if}
 			</div>
 
 			<div class="field">
@@ -149,8 +188,7 @@
 					disabled={isSubmitting}
 					aria-describedby="project-hint"
 				>
-					<option value="all">All projects</option>
-					<option value="">Unassigned</option>
+					<option value="">Select a project</option>
 					{#each projectManager.all as p (p.id)}
 						<option value={p.id}>{p.name}</option>
 					{/each}
@@ -161,15 +199,20 @@
 
 			{#if creatingProject}
 				<div class="field">
-					<label for="project">New project name</label>
+					<label for="project">New project name <span class="required">*</span></label>
 					<input
 						id="project"
 						bind:value={project}
 						type="text"
 						autocomplete="off"
 						disabled={isSubmitting}
+						class:error={projectError}
 					/>
-					<span class="hint">Give your project a short, unique name.</span>
+					{#if projectError}
+						<span class="error-message">{projectError}</span>
+					{:else}
+						<span class="hint">Give your project a short, unique name.</span>
+					{/if}
 				</div>
 			{/if}
 
@@ -183,8 +226,13 @@
 					required
 					disabled={isSubmitting}
 					placeholder="e.g. Explain the concept of closures in JavaScript"
+					class:error={promptError}
 				></textarea>
-				<span class="hint">What do you want to learn or understand?</span>
+				{#if promptError}
+					<span class="error-message">{promptError}</span>
+				{:else}
+					<span class="hint">What do you want to learn or understand?</span>
+				{/if}
 			</div>
 
 			<div class="form-actions">

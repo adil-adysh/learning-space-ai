@@ -49,11 +49,6 @@
 		return [];
 	});
 
-	function handleProjectFilter(e: Event) {
-		const select = e.target as HTMLSelectElement;
-		cardManager.setFilterProject(select.value);
-	}
-
 	function handleStatusFilter(e: Event) {
 		const select = e.target as HTMLSelectElement;
 		cardManager.setFilterStatus(select.value as 'all' | 'active' | 'done');
@@ -70,17 +65,6 @@
 
 	<div class="filters">
 		<label class="filter">
-			Project:
-			<select onchange={handleProjectFilter} aria-label="Filter by project">
-				<option value="all">All projects</option>
-				<option value="">Unassigned</option>
-				{#each projectManager.all as p (p.id)}
-					<option value={p.id}>{p.name}</option>
-				{/each}
-			</select>
-		</label>
-
-		<label class="filter">
 			Show:
 			<select onchange={handleStatusFilter}>
 				<option value="all">All ({cardManager.all.length})</option>
@@ -93,7 +77,7 @@
 			Search:
 			<input
 				type="search"
-				placeholder="Search title, prompt, topic, project"
+				placeholder="Search title, prompt, topic"
 				oninput={handleSearchInput}
 				aria-label="Search cards"
 			/>

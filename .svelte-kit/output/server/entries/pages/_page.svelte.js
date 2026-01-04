@@ -273,7 +273,7 @@ function AddForm($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let title = "";
     let topic = "";
-    let project = "";
+    let project = projectManager.selectedProject !== "all" && projectManager.selectedProject !== "create" ? projectManager.selectedProject : "";
     let creatingProject = false;
     let prompt = "";
     let isSubmitting = false;
@@ -306,11 +306,8 @@ function AddForm($$renderer, $$props) {
           "aria-describedby": "project-hint"
         },
         ($$renderer3) => {
-          $$renderer3.option({ value: "all" }, ($$renderer4) => {
-            $$renderer4.push(`All projects`);
-          });
           $$renderer3.option({ value: "" }, ($$renderer4) => {
-            $$renderer4.push(`Unassigned`);
+            $$renderer4.push(`Select a project`);
           });
           $$renderer3.push(`<!--[-->`);
           const each_array = ensure_array_like(projectManager.all);
@@ -403,22 +400,7 @@ function CardList($$renderer, $$props) {
       }
       return [];
     })();
-    $$renderer2.push(`<section><h2>Your learning cards</h2> <div class="filters"><label class="filter">Project: <select aria-label="Filter by project">`);
-    $$renderer2.option({ value: "all" }, ($$renderer3) => {
-      $$renderer3.push(`All projects`);
-    });
-    $$renderer2.option({ value: "" }, ($$renderer3) => {
-      $$renderer3.push(`Unassigned`);
-    });
-    $$renderer2.push(`<!--[-->`);
-    const each_array = ensure_array_like(projectManager.all);
-    for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-      let p = each_array[$$index];
-      $$renderer2.option({ value: p.id }, ($$renderer3) => {
-        $$renderer3.push(`${escape_html(p.name)}`);
-      });
-    }
-    $$renderer2.push(`<!--]--></select></label> <label class="filter">Show: <select>`);
+    $$renderer2.push(`<section><h2>Your learning cards</h2> <div class="filters"><label class="filter">Show: <select>`);
     $$renderer2.option({ value: "all" }, ($$renderer3) => {
       $$renderer3.push(`All (${escape_html(cardManager.all.length)})`);
     });
@@ -428,7 +410,7 @@ function CardList($$renderer, $$props) {
     $$renderer2.option({ value: "done" }, ($$renderer3) => {
       $$renderer3.push(`Completed (${escape_html(cardManager.completedCards.length)})`);
     });
-    $$renderer2.push(`</select></label> <label class="filter search">Search: <input type="search" placeholder="Search title, prompt, topic, project" aria-label="Search cards"/></label></div> <div class="card-list">`);
+    $$renderer2.push(`</select></label> <label class="filter search">Search: <input type="search" placeholder="Search title, prompt, topic" aria-label="Search cards"/></label></div> <div class="card-list">`);
     if (cardManager.filtered.length === 0) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<p class="empty-state" role="status" aria-live="polite">No learning cards match your filters.</p>`);
@@ -437,13 +419,13 @@ function CardList($$renderer, $$props) {
       if (cardManager.filterProject === "all") {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<!--[-->`);
-        const each_array_1 = ensure_array_like(groupedCards);
-        for (let $$index_2 = 0, $$length = each_array_1.length; $$index_2 < $$length; $$index_2++) {
-          let group = each_array_1[$$index_2];
+        const each_array = ensure_array_like(groupedCards);
+        for (let $$index_1 = 0, $$length = each_array.length; $$index_1 < $$length; $$index_1++) {
+          let group = each_array[$$index_1];
           $$renderer2.push(`<section class="project-group"${attr("aria-labelledby", group.headingId)}><h3${attr("id", group.headingId)}>${escape_html(group.project ? projectManager.all.find((p) => p.id === group.project)?.name || group.project : "Unassigned")}</h3> <!--[-->`);
-          const each_array_2 = ensure_array_like(group.cards);
-          for (let $$index_1 = 0, $$length2 = each_array_2.length; $$index_1 < $$length2; $$index_1++) {
-            let card = each_array_2[$$index_1];
+          const each_array_1 = ensure_array_like(group.cards);
+          for (let $$index = 0, $$length2 = each_array_1.length; $$index < $$length2; $$index++) {
+            let card = each_array_1[$$index];
             CardItem($$renderer2, { card, onStart, onToggle });
           }
           $$renderer2.push(`<!--]--></section>`);
@@ -452,9 +434,9 @@ function CardList($$renderer, $$props) {
       } else {
         $$renderer2.push("<!--[!-->");
         $$renderer2.push(`<!--[-->`);
-        const each_array_3 = ensure_array_like(cardManager.filtered);
-        for (let $$index_3 = 0, $$length = each_array_3.length; $$index_3 < $$length; $$index_3++) {
-          let card = each_array_3[$$index_3];
+        const each_array_2 = ensure_array_like(cardManager.filtered);
+        for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
+          let card = each_array_2[$$index_2];
           CardItem($$renderer2, { card, onStart, onToggle });
         }
         $$renderer2.push(`<!--]-->`);
@@ -491,6 +473,16 @@ function ProjectDetail($$renderer, $$props) {
 }
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
+    projectManager.selectedProject;
+    function handleProjectFilterChange(e) {
+      const select = e.target;
+      const projectId = select.value;
+      if (projectId === "all") {
+        projectManager.selectAll();
+      } else if (projectId) {
+        projectManager.selectProject(projectId);
+      }
+    }
     head("1uha8ag", $$renderer2, ($$renderer3) => {
       $$renderer3.title(($$renderer4) => {
         $$renderer4.push(`<title>Learning Cards</title>`);
@@ -503,7 +495,38 @@ function _page($$renderer, $$props) {
       $$renderer2.push(`<button class="primary" aria-label="Create project">+ New Project</button>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<button class="ghost" aria-label="Back to projects">← Projects</button>`);
+      if (projectManager.selectedProject === "create") {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<button class="ghost" aria-label="Back to projects">← Projects</button>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<div class="project-controls svelte-1uha8ag"><label class="project-filter svelte-1uha8ag">Project: `);
+        $$renderer2.select(
+          {
+            value: projectManager.selectedProject,
+            onchange: handleProjectFilterChange,
+            "aria-label": "Switch project",
+            class: ""
+          },
+          ($$renderer3) => {
+            $$renderer3.option({ value: "all" }, ($$renderer4) => {
+              $$renderer4.push(`All projects`);
+            });
+            $$renderer3.push(`<!--[-->`);
+            const each_array = ensure_array_like(projectManager.all);
+            for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+              let p = each_array[$$index];
+              $$renderer3.option({ value: p.id }, ($$renderer4) => {
+                $$renderer4.push(`${escape_html(p.name)}`);
+              });
+            }
+            $$renderer3.push(`<!--]-->`);
+          },
+          "svelte-1uha8ag"
+        );
+        $$renderer2.push(`</label> <button class="ghost" aria-label="Back to projects">← Projects</button></div>`);
+      }
+      $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--></div></header> <main id="main-content">`);
     if (cardManager.isLoading || projectManager.isLoading) {
