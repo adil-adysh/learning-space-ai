@@ -37,6 +37,43 @@ jobs:
       - name: Build web client and electron main
         run: npm run build
 
+      - name: Verify compiled main (Linux/Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "-- ls dist --"
+          ls -la dist || true
+          echo "-- check dist/main.cjs exists --"
+          if [ ! -f dist/main.cjs ]; then
+            echo "ERROR: dist/main.cjs not found"
+            echo "-- ls -R project --"
+            ls -la || true
+            echo "-- cat build-ci-config.json --"
+            cat build-ci-config.json || true
+            exit 1
+          fi
+
+      - name: Verify compiled main (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "-- Get-ChildItem dist --"
+          Get-ChildItem -Path .\dist -Recurse -Force -ErrorAction SilentlyContinue | Format-Table -AutoSize
+          if (-not (Test-Path .\dist\main.cjs)) {
+            Write-Error 'ERROR: dist/main.cjs not found'
+            Write-Host "-- Get-ChildItem -Recurse project --"
+            Get-ChildItem -Recurse -Force | Format-Table -AutoSize
+            if (Test-Path .\build-ci-config.json) { Get-Content .\build-ci-config.json }
+            exit 1
+          }
+
+      - name: Dump debug info
+        run: |
+          echo "---- package.json build section ----"
+          node -e "console.log(JSON.stringify(require('./package.json').build || {}, null, 2))"
+          echo "---- build-ci-config.json (if present) ----"
+          test -f build-ci-config.json && cat build-ci-config.json || echo 'no build-ci-config.json'
+
       - name: Create electron-builder temp config (use repo owner/repo)
         env:
           REPO: ${{ github.repository }}

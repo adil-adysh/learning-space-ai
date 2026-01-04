@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "start": "electron .",
     "package": "npm run build && electron-builder",
-    "test": "npm run build && node --test dist/tests/util.test.cjs dist/tests/storage.test.cjs"
+    "test": "npm run build && node --test dist/tests/util.test.cjs dist/tests/storage.test.cjs",
+    "verify:dist": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist/main.cjs')){console.error('dist/main.cjs missing'); process.exit(1);} console.log('dist/main.cjs exists')\""
   },
   "keywords": [],
   "author": "",
