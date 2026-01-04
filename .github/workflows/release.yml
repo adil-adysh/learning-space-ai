@@ -161,10 +161,11 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           draft: true
-          # Upload installers directly from extracted artifacts
+          # Simplified, non-overlapping patterns to avoid duplicate uploads
           files: |
-            artifacts/**/learning-space-ai*.*
-            artifacts/**/*Setup*.exe
+            artifacts/**/*.exe
+            artifacts/**/*.blockmap
             artifacts/**/*.AppImage
-            artifacts/**/*_*.deb
+            artifacts/**/*.deb
           token: ${{ secrets.PUBLISH_TOKEN || github.token }}
+          overwrite_files: true
