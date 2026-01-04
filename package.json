@@ -1,5 +1,5 @@
 {
-  "name": "learning-cards-electron-mvp",
+  "name": "learning-space-ai",
   "version": "0.1.0",
   "type": "module",
   "description": "Minimal Electron + TypeScript app for learning cards with one-click ChatGPT prompts",
@@ -12,14 +12,14 @@
     "preview": "vite preview",
     "start": "electron .",
     "package": "npm run build && electron-builder",
-    "pack:win": "electron-builder --config build-ci-config.json --win --publish=always",
-    "pack:linux": "electron-builder --config build-ci-config.json --linux --publish=always",
-    "pack:all": "electron-builder --config build-ci-config.json --publish=always",
+    "pack:win": "electron-builder --config build-ci-config.json --win --publish=never",
+    "pack:linux": "electron-builder --config build-ci-config.json --linux --publish=never",
+    "pack:all": "electron-builder --config build-ci-config.json --publish=never",
     "test": "npm run build && node --test dist/tests/util.test.cjs dist/tests/storage.test.cjs",
     "verify:dist": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist/main.cjs')){console.error('dist/main.cjs missing'); process.exit(1);} console.log('dist/main.cjs exists')\""
   },
   "keywords": [],
-  "author": "",
+  "author": "Adil Adysh <adil@example.com>",
   "license": "Apache-2.0",
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
@@ -44,8 +44,8 @@
         "filter": ["**/*"]
       }
     ],
-    "appId": "com.example.learning-cards",
-    "productName": "Learning Cards",
+    "appId": "com.example.learning-space-ai",
+    "productName": "learning-space-ai",
     "files": [
       "build/**/*",
       "dist/**/*",
@@ -66,7 +66,8 @@
     },
     "linux": {
       "target": ["AppImage", "deb"],
-      "icon": "assets"
+      "icon": "assets",
+      "maintainer": "Adil Adysh <adil@example.com>"
     },
     "publish": [
       {
