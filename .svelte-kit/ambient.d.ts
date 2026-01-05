@@ -31,6 +31,7 @@ declare module '$env/static/private' {
 	export const ANDROID_HOME: string;
 	export const ANDROID_SDK_ROOT: string;
 	export const APPDATA: string;
+	export const BASE_URL: string;
 	export const CARGO_HOME: string;
 	export const ChocolateyInstall: string;
 	export const ChocolateyLastPathUpdate: string;
@@ -41,6 +42,7 @@ declare module '$env/static/private' {
 	export const COMPUTERNAME: string;
 	export const ComSpec: string;
 	export const COPILOT_MODEL: string;
+	export const DEV: string;
 	export const DriverData: string;
 	export const EDITOR: string;
 	export const EFC_14200_1592913036: string;
@@ -53,6 +55,7 @@ declare module '$env/static/private' {
 	export const LIBCLANG_PATH: string;
 	export const LOCALAPPDATA: string;
 	export const LOGONSERVER: string;
+	export const MODE: string;
 	export const NODE: string;
 	export const NODE_ENV: string;
 	export const npm_command: string;
@@ -87,12 +90,14 @@ declare module '$env/static/private' {
 	export const PROCESSOR_IDENTIFIER: string;
 	export const PROCESSOR_LEVEL: string;
 	export const PROCESSOR_REVISION: string;
+	export const PROD: string;
 	export const ProgramData: string;
 	export const ProgramFiles: string;
 	export const ProgramW6432: string;
 	export const PROMPT: string;
 	export const PSModulePath: string;
 	export const PUBLIC: string;
+	export const PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: string;
 	export const RlsSvcPort: string;
 	export const RUSTUP_HOME: string;
 	export const SCCACHE_DIR: string;
@@ -100,11 +105,13 @@ declare module '$env/static/private' {
 	export const SystemDrive: string;
 	export const SystemRoot: string;
 	export const TEMP: string;
+	export const TEST: string;
 	export const TMP: string;
 	export const USERDOMAIN: string;
 	export const USERDOMAIN_ROAMINGPROFILE: string;
 	export const USERNAME: string;
 	export const USERPROFILE: string;
+	export const VITEST: string;
 	export const windir: string;
 	export const ZES_ENABLE_SYSMAN: string;
 }
@@ -141,6 +148,7 @@ declare module '$env/dynamic/private' {
 		ANDROID_HOME: string;
 		ANDROID_SDK_ROOT: string;
 		APPDATA: string;
+		BASE_URL: string;
 		CARGO_HOME: string;
 		ChocolateyInstall: string;
 		ChocolateyLastPathUpdate: string;
@@ -151,6 +159,7 @@ declare module '$env/dynamic/private' {
 		COMPUTERNAME: string;
 		ComSpec: string;
 		COPILOT_MODEL: string;
+		DEV: string;
 		DriverData: string;
 		EDITOR: string;
 		EFC_14200_1592913036: string;
@@ -163,6 +172,7 @@ declare module '$env/dynamic/private' {
 		LIBCLANG_PATH: string;
 		LOCALAPPDATA: string;
 		LOGONSERVER: string;
+		MODE: string;
 		NODE: string;
 		NODE_ENV: string;
 		npm_command: string;
@@ -197,12 +207,14 @@ declare module '$env/dynamic/private' {
 		PROCESSOR_IDENTIFIER: string;
 		PROCESSOR_LEVEL: string;
 		PROCESSOR_REVISION: string;
+		PROD: string;
 		ProgramData: string;
 		ProgramFiles: string;
 		ProgramW6432: string;
 		PROMPT: string;
 		PSModulePath: string;
 		PUBLIC: string;
+		PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: string;
 		RlsSvcPort: string;
 		RUSTUP_HOME: string;
 		SCCACHE_DIR: string;
@@ -210,11 +222,13 @@ declare module '$env/dynamic/private' {
 		SystemDrive: string;
 		SystemRoot: string;
 		TEMP: string;
+		TEST: string;
 		TMP: string;
 		USERDOMAIN: string;
 		USERDOMAIN_ROAMINGPROFILE: string;
 		USERNAME: string;
 		USERPROFILE: string;
+		VITEST: string;
 		windir: string;
 		ZES_ENABLE_SYSMAN: string;
 		[key: `PUBLIC_${string}`]: undefined;

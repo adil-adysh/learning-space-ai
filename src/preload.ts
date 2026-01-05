@@ -68,22 +68,4 @@ try {
   console.error('[preload] Failed to expose API:', err);
 }
 
-// Minimal typing for renderer
-declare global {
-  interface Window {
-    api: {
-      getCards(): Promise<LearningCard[]>;
-      addCard(data: { title: string; prompt: string; topic?: string }): Promise<LearningCard>;
-      updateCard(payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }): Promise<LearningCard>;
-      deleteCard(id: string): Promise<RawCard>;
-      getProjects(): Promise<Project[]>;
-      createProject(payload: { name: string; systemPrompt?: string }): Promise<Project>;
-      updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project>;
-      deleteProject(id: string): Promise<RawProject>;
-      toggleCard(id: string, status: Status): Promise<LearningCard>;
-      runPrompt(prompt: string): Promise<void>;
-    };
-  }
-}
-
 export {};
