@@ -4,13 +4,17 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import type { Server } from 'http';
 import { createServer } from 'http';
-import type { RawCard, Status } from './types';
+import type { RawCard, Status, RawNote } from './types';
 import {
   initDatabase,
   readCards,
   addCard as dbAddCard,
   updateCard,
   deleteCard,
+  readNotes,
+  addNote as dbAddNote,
+  updateNote as dbUpdateNote,
+  deleteNote as dbDeleteNote,
   readProjects,
   addProject as dbAddProject,
   updateProject as dbUpdateProject,
@@ -342,6 +346,46 @@ app.whenReady().then(async () => {
       throw new Error('Card not found');
     }
     return updated;
+  });
+
+  // Notes IPC
+  ipcMain.handle('notes:list', async (_ev, cardId?: string) => {
+    return await readNotes(cardId);
+  });
+
+  ipcMain.handle('notes:create', async (_ev, payload: { cardId: string; title: string; content: string; tags?: string[] }) => {
+    const cardId = (payload.cardId || '').trim();
+    if (!cardId) throw new Error('cardId required');
+    const newNote: RawNote = {
+      id: randomUUID(),
+      cardId,
+      title: payload.title || '',
+      content: payload.content || '',
+      tags: payload.tags || [],
+      createdAt: new Date().toISOString(),
+    };
+    return await dbAddNote(newNote);
+  });
+
+  ipcMain.handle('notes:update', async (_ev, payload: { id: string; title?: string; content?: string; tags?: string[] }) => {
+    const id = (payload.id || '').trim();
+    if (!id) throw new Error('note id required');
+    const updates: Partial<RawNote> = {};
+    if (payload.title !== undefined) updates.title = payload.title;
+    if (payload.content !== undefined) updates.content = payload.content;
+    if (payload.tags !== undefined) updates.tags = payload.tags;
+    updates.updatedAt = new Date().toISOString();
+    const updated = await dbUpdateNote(id, updates);
+    if (!updated) throw new Error('Note not found');
+    return updated;
+  });
+
+  ipcMain.handle('notes:delete', async (_ev, id: string) => {
+    const nid = (id || '').trim();
+    if (!nid) throw new Error('note id required');
+    const removed = await dbDeleteNote(nid);
+    if (!removed) throw new Error('Note not found');
+    return removed;
   });
 
   ipcMain.handle('cards:run', async (_ev, prompt: string) => {

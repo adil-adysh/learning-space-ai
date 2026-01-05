@@ -969,7 +969,7 @@ export {
   COMMENT_NODE as C,
   DIRTY as D,
   ERROR_VALUE as E,
-  bind_props as F,
+  attr_class as F,
   head as G,
   HYDRATION_ERROR as H,
   INERT as I,
@@ -1002,7 +1002,7 @@ export {
   is_passive_event as u,
   render as v,
   slot as w,
-  ensure_array_like as x,
-  attr as y,
-  attr_class as z
+  attr as x,
+  bind_props as y,
+  ensure_array_like as z
 };

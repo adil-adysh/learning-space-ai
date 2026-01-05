@@ -2,6 +2,7 @@
 	import type { LearningCard } from '../../types';
 	import { projectManager } from '../projectManager.svelte';
 	import MoreMenu from './MoreMenu.svelte';
+	import NoteModal from './NoteModal.svelte';
 
 	interface Props {
 		card: LearningCard;
@@ -19,8 +20,11 @@
 	const statusText = $derived(isDone ? '✓ Completed' : 'Active');
 	const projectName = $derived.by(() => {
 		if (!card.project) return '';
-		return projectManager.all.find(p => p.id === card.project)?.name || card.project;
+		return projectManager.all.find((p) => p.id === card.project)?.name || card.project;
 	});
+
+	// local modal state (Svelte 5 rune)
+	let notesOpen = $state(false);
 </script>
 
 <article class="card" class:done={isDone}>
@@ -35,9 +39,7 @@
 	</header>
 
 	<section>
-		<div class="status" class:done={isDone}>
-			{statusText}
-		</div>
+		<div class="status" class:done={isDone}>{statusText}</div>
 		<pre class="prompt">{card.prompt}</pre>
 	</section>
 
@@ -45,23 +47,36 @@
 		<button
 			type="button"
 			class="primary"
-			onclick={() => onStart(card)}
+			on:click|stopPropagation={() => onStart(card)}
 			aria-label={`Start chat with prompt for ${card.title}`}
 		>
 			Start in ChatGPT
 		</button>
+
 		<label class="check">
 			<input
 				type="checkbox"
 				checked={isDone}
-				onchange={() => onToggle(card.id, isDone ? 'active' : 'done')}
+				on:click|stopPropagation={() => onToggle(card.id, isDone ? 'active' : 'done')}
 				aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
 			/>
 			<span class="check-label">{isDone ? 'Completed' : 'Mark done'}</span>
 		</label>
+
+		<button
+			type="button"
+			class="secondary open-notes"
+			on:click|stopPropagation={() => (notesOpen = true)}
+			aria-label={`Open notes for ${card.title}`}
+		>
+			Open Notes
+		</button>
+
 		<MoreMenu ariaLabel={`More actions for ${card.title}`} on:edit={() => onEdit?.(card)} on:delete={() => onDelete?.(card.id)} />
 	</footer>
 </article>
+
+<NoteModal open={notesOpen} cardId={card.id} cardTitle={card.title} on:close={() => (notesOpen = false)} />
 
 
 <style>
@@ -75,7 +90,7 @@
 		gap: 0.5rem;
 	}
 
-	.check input[type="checkbox"] {
+	.check input[type='checkbox'] {
 		width: 1.1rem;
 		height: 1.1rem;
 	}

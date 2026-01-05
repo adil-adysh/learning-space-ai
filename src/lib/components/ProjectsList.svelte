@@ -88,30 +88,31 @@
     {/if}
   </ul>
 
-  {#if editingProject}
-    <div
-      class="modal-overlay"
-      role="presentation"
-      tabindex="-1"
-      onclick={handleEditCancel}
-      onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
-    >
+    {#if editingProject}
       <div
-        class="modal-content"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="edit-project-heading"
-        onclick={(e) => e.stopPropagation()}
+        class="modal-overlay"
+        role="presentation"
+        tabindex="-1"
+        onclick={handleEditCancel}
         onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
       >
-        <EditProjectForm 
-          project={editingProject}
-          onSubmit={handleEditSubmit}
-          onCancel={handleEditCancel}
-        />
+        <div
+          class="modal-content"
+          role="dialog"
+          tabindex="-1"
+          aria-modal="true"
+          aria-labelledby="edit-project-heading"
+          onclick={(e) => e.stopPropagation()}
+          onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
+        >
+          <EditProjectForm 
+            project={editingProject}
+            onSubmit={handleEditSubmit}
+            onCancel={handleEditCancel}
+          />
+        </div>
       </div>
-    </div>
-  {/if}
+    {/if}
 </section>
 
 <style>

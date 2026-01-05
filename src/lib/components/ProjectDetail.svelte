@@ -109,6 +109,7 @@
       <div
         class="modal-content"
         role="dialog"
+        tabindex="-1"
         aria-modal="true"
         aria-labelledby="edit-heading"
         onclick={(e) => e.stopPropagation()}

@@ -1,11 +1,12 @@
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 import * as path from 'path';
-import type { RawCard, RawProject } from './types';
+import type { RawCard, RawProject, RawNote } from './types';
 
 interface Database {
   cards: RawCard[];
   projects: RawProject[];
+  notes?: RawNote[];
 }
 
 let db: Low<Database> | null = null;
@@ -22,7 +23,7 @@ export async function initDatabase(dataPath: string): Promise<Low<Database>> {
   const file = path.join(dataPath, 'learning-cards-db.json');
   const adapter = new JSONFile<Database>(file);
 
-  db = new Low<Database>(adapter, { cards: [], projects: [] });
+  db = new Low<Database>(adapter, { cards: [], projects: [], notes: [] });
 
   await db.read();
 
@@ -52,6 +53,49 @@ export async function readCards(): Promise<RawCard[]> {
   const database = getDb();
   await database.read();
   return database.data.cards || [];
+}
+
+// ============================================================
+// NOTES CRUD OPERATIONS
+// ============================================================
+
+export async function readNotes(cardId?: string): Promise<RawNote[]> {
+  const database = getDb();
+  await database.read();
+  const notes = database.data.notes || [];
+  if (!cardId) return notes;
+  return notes.filter((n) => n.cardId === cardId);
+}
+
+export async function addNote(note: RawNote): Promise<RawNote> {
+  const database = getDb();
+  await database.read();
+  database.data.notes = database.data.notes || [];
+  database.data.notes.unshift(note);
+  await database.write();
+  return note;
+}
+
+export async function updateNote(id: string, updates: Partial<RawNote>): Promise<RawNote | null> {
+  const database = getDb();
+  await database.read();
+  database.data.notes = database.data.notes || [];
+  const idx = database.data.notes.findIndex((n) => n.id === id);
+  if (idx === -1) return null;
+  database.data.notes[idx] = { ...database.data.notes[idx], ...updates };
+  await database.write();
+  return database.data.notes[idx];
+}
+
+export async function deleteNote(id: string): Promise<RawNote | null> {
+  const database = getDb();
+  await database.read();
+  database.data.notes = database.data.notes || [];
+  const idx = database.data.notes.findIndex((n) => n.id === id);
+  if (idx === -1) return null;
+  const [removed] = database.data.notes.splice(idx, 1);
+  await database.write();
+  return removed;
 }
 
 export async function writeCards(cards: RawCard[]): Promise<void> {

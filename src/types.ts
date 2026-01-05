@@ -36,3 +36,24 @@ export interface RawProject {
   systemPrompt?: string;
   createdAt?: string;
 }
+
+// Notes attached to LearningCard
+export interface Note {
+  id: string;
+  cardId: string;
+  title: string;
+  content: string;
+  tags?: string[]; // simple string tags
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+export interface RawNote {
+  id: string;
+  cardId: string;
+  title: string;
+  content: string;
+  tags?: string[];
+  createdAt: string; // ISO
+  updatedAt?: string;
+}

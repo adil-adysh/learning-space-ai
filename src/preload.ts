@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { LearningCard, RawCard, Status, Project, RawProject } from './types';
+import type { LearningCard, RawCard, Status, Project, RawProject, RawNote } from './types';
 
 console.info('[preload] Preload script loaded');
 
@@ -62,6 +62,23 @@ try {
     toggleCard: async (id: string, status: Status): Promise<LearningCard> => {
       const raw = (await ipcRenderer.invoke('cards:toggle', { id, status })) as RawCard;
       return toLearningCard(raw);
+    },
+    // Notes
+    getNotes: async (cardId?: string) => {
+      const list = (await ipcRenderer.invoke('notes:list', cardId)) as RawNote[];
+      return list.map((n) => ({ ...n, createdAt: new Date(n.createdAt), updatedAt: n.updatedAt ? new Date(n.updatedAt) : undefined }));
+    },
+    createNote: async (payload: { cardId: string; title: string; content: string; tags?: string[] }) => {
+      const created = (await ipcRenderer.invoke('notes:create', payload)) as RawNote;
+      return { ...created, createdAt: new Date(created.createdAt), updatedAt: created.updatedAt ? new Date(created.updatedAt) : undefined };
+    },
+    updateNote: async (payload: { id: string; title?: string; content?: string; tags?: string[] }) => {
+      const updated = (await ipcRenderer.invoke('notes:update', payload)) as RawNote;
+      return { ...updated, createdAt: new Date(updated.createdAt), updatedAt: updated.updatedAt ? new Date(updated.updatedAt) : undefined };
+    },
+    deleteNote: async (id: string) => {
+      const removed = (await ipcRenderer.invoke('notes:delete', id)) as RawNote;
+      return removed;
     },
     runPrompt: async (prompt: string): Promise<void> => {
       await ipcRenderer.invoke('cards:run', prompt);
