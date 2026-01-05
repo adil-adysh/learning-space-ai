@@ -24,6 +24,19 @@ try {
       const raw = (await ipcRenderer.invoke('cards:add', data)) as RawCard;
       return toLearningCard(raw);
     },
+    updateCard: async (payload: {
+      id: string;
+      title?: string;
+      prompt?: string;
+      topic?: string;
+      project?: string;
+    }): Promise<LearningCard> => {
+      const raw = (await ipcRenderer.invoke('cards:update', payload)) as RawCard;
+      return toLearningCard(raw);
+    },
+    deleteCard: async (id: string): Promise<RawCard> => {
+      return (await ipcRenderer.invoke('cards:delete', id)) as RawCard;
+    },
     getProjects: async (): Promise<Project[]> => {
       const list = (await ipcRenderer.invoke('projects:list')) as RawProject[];
       return list.map(
@@ -61,6 +74,8 @@ declare global {
     api: {
       getCards(): Promise<LearningCard[]>;
       addCard(data: { title: string; prompt: string; topic?: string }): Promise<LearningCard>;
+      updateCard(payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }): Promise<LearningCard>;
+      deleteCard(id: string): Promise<RawCard>;
       getProjects(): Promise<Project[]>;
       createProject(payload: { name: string; systemPrompt?: string }): Promise<Project>;
       updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project>;

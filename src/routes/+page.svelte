@@ -37,7 +37,7 @@
 </script>
 
 <svelte:head>
-	<title>Learning Cards</title>
+	<title>Learning Space</title>
 	<meta name="description" content="Finish what you start" />
 </svelte:head>
 
@@ -46,7 +46,7 @@
 
 <div class="container">
 	<header>
-		<h1>Learning Cards</h1>
+		<h1>Learning Space</h1>
 		<p class="subtitle">Finish what you start</p>
 		<div class="top-actions">
 			{#if projectManager.selectedProject === 'all'}

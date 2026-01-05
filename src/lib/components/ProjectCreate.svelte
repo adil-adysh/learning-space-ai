@@ -26,8 +26,8 @@
     if (!values.name || values.name.trim() === '') {
       errors.name = 'Project name is required';
     }
-    if (values.systemPrompt && values.systemPrompt.length > 500) {
-      errors.systemPrompt = 'System prompt must be less than 500 characters';
+    if (values.systemPrompt && values.systemPrompt.length > 1500) {
+      errors.systemPrompt = 'System prompt must be less than 1500 characters';
     }
     return errors;
   }

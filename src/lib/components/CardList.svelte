@@ -7,9 +7,11 @@
 	interface Props {
 		onStart: (card: LearningCard) => void;
 		onToggle: (id: string, status: 'active' | 'done') => void;
+		onEdit?: (card: LearningCard) => void;
+		onDelete?: (id: string) => void;
 	}
 
-	const { onStart, onToggle }: Props = $props();
+	const { onStart, onToggle, onEdit, onDelete }: Props = $props();
 
 	// Helper function to group cards by project
 	function groupByProject(list: LearningCard[]) {
@@ -98,13 +100,13 @@
 							: 'Unassigned'}
 					</h3>
 					{#each group.cards as card (card.id)}
-						<CardItem {card} {onStart} {onToggle} />
+						<CardItem {card} {onStart} {onToggle} {onEdit} {onDelete} />
 					{/each}
 				</section>
 			{/each}
 		{:else}
 			{#each cardManager.filtered as card (card.id)}
-				<CardItem {card} {onStart} {onToggle} />
+				<CardItem {card} {onStart} {onToggle} {onEdit} {onDelete} />
 			{/each}
 		{/if}
 	</div>

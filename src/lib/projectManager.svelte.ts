@@ -107,6 +107,52 @@ class ProjectManager {
   }
 
   /**
+   * Update an existing project
+   */
+  async updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project> {
+    if (!payload.id || !payload.name.trim()) {
+      throw new Error('Project ID and name are required');
+    }
+
+    if (typeof window === 'undefined' || !('api' in window)) {
+      throw new Error('Window API not available');
+    }
+
+    const updated: Project = await (
+      window as typeof window & { api: typeof window.api }
+    ).api.updateProject(payload);
+    
+    const index = this.all.findIndex((p) => p.id === payload.id);
+    if (index !== -1) {
+      this.all[index] = updated;
+      this.all.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    
+    return updated;
+  }
+
+  /**
+   * Delete a project
+   */
+  async deleteProject(id: string): Promise<void> {
+    if (!id) {
+      throw new Error('Project ID is required');
+    }
+
+    if (typeof window === 'undefined' || !('api' in window)) {
+      throw new Error('Window API not available');
+    }
+
+    await (window as typeof window & { api: typeof window.api }).api.deleteProject(id);
+    this.all = this.all.filter((p) => p.id !== id);
+    
+    // If viewing this project, go back to all projects
+    if (this.selectedProjectId === id) {
+      this.selectAll();
+    }
+  }
+
+  /**
    * Find project by ID
    */
   findById(id: string): Project | undefined {

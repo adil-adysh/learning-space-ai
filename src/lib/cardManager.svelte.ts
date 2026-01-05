@@ -106,6 +106,54 @@ class CardManager {
   }
 
   /**
+   * Update an existing card
+   */
+  async updateCard(payload: {
+    id: string;
+    title?: string;
+    prompt?: string;
+    topic?: string;
+    project?: string;
+  }) {
+    if (typeof window === 'undefined' || !('api' in window)) {
+      return;
+    }
+
+    try {
+      const updated: LearningCard = await (
+        window as typeof window & { api: typeof window.api }
+      ).api.updateCard(payload);
+      
+      const index = this.all.findIndex((c) => c.id === payload.id);
+      if (index !== -1) {
+        this.all[index] = updated;
+      }
+      
+      return updated;
+    } catch (err) {
+      console.error('Failed to update card:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Delete a card
+   */
+  async deleteCard(id: string) {
+    if (typeof window === 'undefined' || !('api' in window)) {
+      return;
+    }
+
+    try {
+      await (window as typeof window & { api: typeof window.api }).api.deleteCard(id);
+      this.all = this.all.filter((c) => c.id !== id);
+    } catch (err) {
+      console.error('Failed to delete card:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Update card status
    */
   async updateCardStatus(id: string, status: 'active' | 'done') {

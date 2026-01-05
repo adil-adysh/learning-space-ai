@@ -10,6 +10,7 @@ import {
   readCards,
   addCard as dbAddCard,
   updateCard,
+  deleteCard,
   readProjects,
   addProject as dbAddProject,
   updateProject as dbUpdateProject,
@@ -207,6 +208,52 @@ app.whenReady().then(async () => {
       return await dbAddCard(newCard);
     }
   );
+
+  ipcMain.handle(
+    'cards:update',
+    async (_ev, payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }) => {
+      const id = (payload.id || '').trim();
+      if (!id) {
+        throw new Error('Card ID is required');
+      }
+
+      const updates: Partial<RawCard> = {};
+      if (payload.title !== undefined) updates.title = payload.title;
+      if (payload.prompt !== undefined) updates.prompt = payload.prompt;
+      if (payload.topic !== undefined) updates.topic = payload.topic;
+      if (payload.project !== undefined) {
+        let projectId = payload.project.trim();
+        if (projectId) {
+          const foundByName = await findProjectByName(projectId);
+          if (foundByName) {
+            projectId = foundByName.id;
+          }
+        }
+        updates.project = projectId;
+      }
+
+      const updated = await updateCard(id, updates);
+      if (!updated) {
+        throw new Error('Card not found');
+      }
+
+      return updated;
+    }
+  );
+
+  ipcMain.handle('cards:delete', async (_ev, id: string) => {
+    const cardId = (id || '').trim();
+    if (!cardId) {
+      throw new Error('Card ID is required');
+    }
+
+    const deleted = await deleteCard(cardId);
+    if (!deleted) {
+      throw new Error('Card not found');
+    }
+
+    return deleted;
+  });
 
   // Projects CRUD IPC
   ipcMain.handle('projects:list', async () => {

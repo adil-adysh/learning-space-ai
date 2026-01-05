@@ -6,9 +6,11 @@
 		card: LearningCard;
 		onStart: (card: LearningCard) => void;
 		onToggle: (id: string, status: 'active' | 'done') => void;
+		onEdit?: (card: LearningCard) => void;
+		onDelete?: (id: string) => void;
 	}
 
-	const { card, onStart, onToggle }: Props = $props();
+	const { card, onStart, onToggle, onEdit, onDelete }: Props = $props();
 
 	// Derived computed values
 	const isDone = $derived(card.status === 'done');
@@ -56,9 +58,28 @@
 		>
 			{buttonLabel}
 		</button>
+		{#if onEdit}
+			<button
+				type="button"
+				class="ghost"
+				onclick={() => onEdit?.(card)}
+				aria-label={`Edit ${card.title}`}
+			>
+				Edit
+			</button>
+		{/if}
+		{#if onDelete}
+			<button
+				type="button"
+				class="ghost danger"
+				onclick={() => onDelete?.(card.id)}
+				aria-label={`Delete ${card.title}`}
+			>
+				Delete
+			</button>
+		{/if}
 	</footer>
 </article>
-
 
 
 <style>
@@ -68,5 +89,14 @@
 
 	.done {
 		opacity: 0.7;
+	}
+
+	.danger {
+		color: #dc2626;
+	}
+
+	.danger:hover {
+		background-color: #fef2f2;
+		color: #991b1b;
 	}
 </style>

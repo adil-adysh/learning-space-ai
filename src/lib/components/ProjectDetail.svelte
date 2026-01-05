@@ -2,7 +2,9 @@
   import { projectManager } from '../projectManager.svelte';
   import { cardManager } from '../cardManager.svelte';
   import AddForm from './AddForm.svelte';
+  import EditCardForm from './EditCardForm.svelte';
   import CardList from './CardList.svelte';
+  import type { LearningCard } from '../../types';
 
   interface Props {
     projectId: string;
@@ -39,7 +41,7 @@
     cardManager.closeForm();
   }
 
-  async function handleStart(card: typeof import('../../types').LearningCard) {
+  async function handleStart(card: LearningCard) {
     // Get the project's system prompt if the card belongs to a project
     let systemPrompt: string | undefined;
     if (card.project) {
@@ -53,6 +55,27 @@
 
   async function handleCardToggle(id: string, status: 'active' | 'done') {
     await cardManager.updateCardStatus(id, status);
+  }
+
+  let editingCard = $state<LearningCard | null>(null);
+
+  function handleCardEdit(card: LearningCard) {
+    editingCard = card;
+  }
+
+  async function handleEditSubmit(data: { id: string; title: string; prompt: string; topic?: string; project?: string }) {
+    await cardManager.updateCard(data);
+    editingCard = null;
+  }
+
+  function handleEditCancel() {
+    editingCard = null;
+  }
+
+  async function handleCardDelete(id: string) {
+    if (confirm('Are you sure you want to delete this learning card?')) {
+      await cardManager.deleteCard(id);
+    }
   }
 </script>
 
@@ -75,9 +98,36 @@
     <AddForm onSubmit={handleFormSubmit} />
   {/if}
 
+  {#if editingCard}
+    <div
+      class="modal-overlay"
+      role="presentation"
+      tabindex="-1"
+      onclick={handleEditCancel}
+      onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
+    >
+      <div
+        class="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-heading"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
+      >
+        <EditCardForm 
+          card={editingCard}
+          onSubmit={handleEditSubmit}
+          onCancel={handleEditCancel}
+        />
+      </div>
+    </div>
+  {/if}
+
   <CardList
-    onStart={handleCardStart}
+    onStart={handleStart}
     onToggle={handleCardToggle}
+    onEdit={handleCardEdit}
+    onDelete={handleCardDelete}
   />
 </section>
 
