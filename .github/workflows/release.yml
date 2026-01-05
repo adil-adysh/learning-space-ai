@@ -74,11 +74,26 @@ jobs:
             exit 1
           }
 
-      - name: Create electron-builder temp config (use repo owner/repo)
-        env:
-          REPO: ${{ github.repository }}
-        run: |
-          node -e "const fs=require('fs'); const repo=process.env.REPO||''; const [owner,repoName]=repo.split('/'); const cfg={asar:false, files:['build/**/*','dist/**/*','package.json'], extraMetadata:{main:'dist/main.cjs'}, linux:{target:['AppImage','deb'], icon:'assets'}, publish:[{provider:'github', owner:owner||'__OWNER__', repo:repoName||'__REPO__'}]}; fs.writeFileSync('build-ci-config.json', JSON.stringify(cfg, null, 2)); console.log('Wrote build-ci-config.json');"
+      - name: Create electron-builder temp config (use repo owner/repo and tag version)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            // Prefer GITHUB_REF (refs/tags/v1.2.3) and fallback to GITHUB_REF_NAME
+            const githubRef = process.env.GITHUB_REF || '';
+            const tag = githubRef.startsWith('refs/tags/') ? githubRef.replace('refs/tags/','') : (process.env.GITHUB_REF_NAME || '');
+            const ver = (tag || '').replace(/^v/, '') || '0.0.1';
+            const repo = process.env.GITHUB_REPOSITORY || '';
+            const [owner, repoName] = (repo || '').split('/');
+            const cfg = {
+              asar: false,
+              files: ['build/**/*', 'dist/**/*', 'package.json'],
+              extraMetadata: { main: 'dist/main.cjs', version: ver },
+              linux: { target: ['AppImage', 'deb'], icon: 'assets' },
+              publish: [{ provider: 'github', owner: owner || '__OWNER__', repo: repoName || '__REPO__' }]
+            };
+            fs.writeFileSync('build-ci-config.json', JSON.stringify(cfg, null, 2));
+            core.info(`Wrote build-ci-config.json with version ${ver}`);
 
       - name: Package and publish (Windows)
         if: runner.os == 'Windows'
