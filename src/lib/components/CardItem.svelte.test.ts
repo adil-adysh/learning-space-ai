@@ -23,7 +23,7 @@ test('CardItem Start button clickable and triggers callback', async () => {
     },
   });
 
-  const startBtn = page.getByRole('button', { name: /Start in ChatGPT/i });
+  const startBtn = page.getByRole('button', { name: /Start chat/i });
   await expect.element(startBtn).toBeVisible();
   await startBtn.click();
 
