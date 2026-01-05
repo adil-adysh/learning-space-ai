@@ -36,8 +36,8 @@
 
 	$effect(() => {
 		const trimmedSystemPrompt = formData.systemPrompt.trim();
-		if (trimmedSystemPrompt.length > 1500) {
-			fieldErrors.systemPrompt = 'System prompt must be less than 1500 characters';
+		if (trimmedSystemPrompt.length > 8000) {
+			fieldErrors.systemPrompt = 'System prompt must be less than 8000 characters';
 		} else {
 			fieldErrors.systemPrompt = '';
 		}

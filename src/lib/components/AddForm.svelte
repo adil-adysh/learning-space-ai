@@ -30,7 +30,7 @@
 		const trimmed = prompt.trim();
 		if (trimmed.length === 0) return '';
 		if (trimmed.length < 10) return 'Prompt must be at least 10 characters';
-		if (trimmed.length > 1000) return 'Prompt must be less than 1000 characters';
+		if (trimmed.length > 8000) return 'Prompt must be less than 8000 characters';
 		return '';
 	});
 
