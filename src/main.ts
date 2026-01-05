@@ -92,7 +92,7 @@ function getMime(ext: string) {
 function createWindow() {
   // Construct preload path - __dirname in esbuild context points to dist directory
   const preloadPath = path.join(__dirname, 'preload.cjs');
-  console.log('[main] Loading preload from:', preloadPath);
+  console.info('[main] Loading preload from:', preloadPath);
 
   const win = new BrowserWindow({
     width: 900,
@@ -120,9 +120,9 @@ function createWindow() {
 
   // Debug: Check if preload loaded
   win.webContents.on('dom-ready', () => {
-    console.log('[main] DOM ready, checking if API is available...');
+    console.info('[main] DOM ready, checking if API is available...');
     void win.webContents.executeJavaScript(
-      "console.log('[renderer] window.api available:', typeof window.api !== 'undefined')"
+      "console.info('[renderer] window.api available:', typeof window.api !== 'undefined')"
     );
   });
 
@@ -218,9 +218,9 @@ app.whenReady().then(async () => {
       }
 
       const updates: Partial<RawCard> = {};
-      if (payload.title !== undefined) updates.title = payload.title;
-      if (payload.prompt !== undefined) updates.prompt = payload.prompt;
-      if (payload.topic !== undefined) updates.topic = payload.topic;
+      if (payload.title !== undefined) {updates.title = payload.title;}
+      if (payload.prompt !== undefined) {updates.prompt = payload.prompt;}
+      if (payload.topic !== undefined) {updates.topic = payload.topic;}
       if (payload.project !== undefined) {
         let projectId = payload.project.trim();
         if (projectId) {
@@ -277,11 +277,11 @@ app.whenReady().then(async () => {
       return existing;
     }
 
-    const newProj = { 
-      id: randomUUID(), 
-      name: n, 
+    const newProj = {
+      id: randomUUID(),
+      name: n,
       systemPrompt: payload.systemPrompt?.trim() || undefined,
-      createdAt: new Date().toISOString() 
+      createdAt: new Date().toISOString()
     };
     return await dbAddProject(newProj);
   });
@@ -293,7 +293,7 @@ app.whenReady().then(async () => {
       throw new Error('Invalid input');
     }
 
-    const updated = await dbUpdateProject(id, { 
+    const updated = await dbUpdateProject(id, {
       name,
       systemPrompt: payload.systemPrompt?.trim() || undefined
     });

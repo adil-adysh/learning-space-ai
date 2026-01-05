@@ -73,7 +73,7 @@
   }
 
   async function handleCardDelete(id: string) {
-    if (confirm('Are you sure you want to delete this learning card?')) {
+    if (window.confirm('Are you sure you want to delete this learning card?')) {
       await cardManager.deleteCard(id);
     }
   }

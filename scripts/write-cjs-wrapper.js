@@ -19,4 +19,4 @@ const content = `// Auto-generated CommonJS wrapper to dynamically import ESM ma
 `;
 
 writeFileSync(join(dist, 'main.cjs'), content, 'utf8');
-console.log('Wrote dist/main.cjs wrapper');
+console.info('Wrote dist/main.cjs wrapper');

@@ -1,4 +1,5 @@
 <script lang="ts">
+/* global HTMLElement setTimeout */
 	import { cardManager } from '../cardManager.svelte';
 	import { projectManager } from '../projectManager.svelte';
 

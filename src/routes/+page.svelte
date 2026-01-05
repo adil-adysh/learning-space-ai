@@ -18,12 +18,7 @@
 		const projectId = detail.project;
 		projectManager.selectProject(projectId);
 	}
-
-	let selectedProjectId = $state(projectManager.selectedProject);
-
-	$effect(() => {
-		selectedProjectId = projectManager.selectedProject;
-	});
+	 
 
 	function handleProjectFilterChange(e: Event) {
 		const select = e.target as HTMLSelectElement;

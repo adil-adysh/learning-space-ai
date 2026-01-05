@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { LearningCard, RawCard, Status, Project, RawProject } from './types';
 
-console.log('[preload] Preload script loaded');
+console.info('[preload] Preload script loaded');
 
 async function toLearningCard(raw: RawCard): Promise<LearningCard> {
   return {
@@ -63,7 +63,7 @@ try {
       await ipcRenderer.invoke('cards:run', prompt);
     },
   });
-  console.log('[preload] API exposed successfully');
+  console.info('[preload] API exposed successfully');
 } catch (err) {
   console.error('[preload] Failed to expose API:', err);
 }

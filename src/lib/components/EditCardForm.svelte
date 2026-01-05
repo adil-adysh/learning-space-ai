@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cardManager } from '../cardManager.svelte';
+	/* global HTMLElement setTimeout */
 	import { projectManager } from '../projectManager.svelte';
 	import type { LearningCard } from '../../types';
 

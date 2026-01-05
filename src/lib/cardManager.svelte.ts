@@ -123,12 +123,12 @@ class CardManager {
       const updated: LearningCard = await (
         window as typeof window & { api: typeof window.api }
       ).api.updateCard(payload);
-      
+
       const index = this.all.findIndex((c) => c.id === payload.id);
       if (index !== -1) {
         this.all[index] = updated;
       }
-      
+
       return updated;
     } catch (err) {
       console.error('Failed to update card:', err);

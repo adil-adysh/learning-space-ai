@@ -121,13 +121,13 @@ class ProjectManager {
     const updated: Project = await (
       window as typeof window & { api: typeof window.api }
     ).api.updateProject(payload);
-    
+
     const index = this.all.findIndex((p) => p.id === payload.id);
     if (index !== -1) {
       this.all[index] = updated;
       this.all.sort((a, b) => a.name.localeCompare(b.name));
     }
-    
+
     return updated;
   }
 
@@ -145,7 +145,7 @@ class ProjectManager {
 
     await (window as typeof window & { api: typeof window.api }).api.deleteProject(id);
     this.all = this.all.filter((p) => p.id !== id);
-    
+
     // If viewing this project, go back to all projects
     if (this.selectedProjectId === id) {
       this.selectAll();

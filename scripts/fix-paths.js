@@ -10,4 +10,4 @@ html = html.replace(/import\("\/_app\//g, 'import("./_app/');
 html = html.replace(/src="\/_app\//g, 'src="./_app/');
 
 writeFileSync(indexPath, html);
-console.log('✓ Converted paths to relative in index.html');
+console.info('✓ Converted paths to relative in index.html');

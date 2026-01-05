@@ -10,7 +10,7 @@ files.forEach((file) => {
     const oldPath = join(distDir, file);
     const newPath = join(distDir, file.replace('.js', '.cjs'));
     renameSync(oldPath, newPath);
-    console.log(`Renamed ${file} to ${file.replace('.js', '.cjs')}`);
+    console.info(`Renamed ${file} to ${file.replace('.js', '.cjs')}`);
   }
 });
 
@@ -21,6 +21,6 @@ mainContent = mainContent
   .replace(/require\("\.\/storage"\)/g, 'require("./storage.cjs")')
   .replace(/require\("\.\/util"\)/g, 'require("./util.cjs")');
 writeFileSync(mainPath, mainContent);
-console.log('Updated imports in main.cjs');
+console.info('Updated imports in main.cjs');
 
-console.log('✓ Electron main process files ready');
+console.info('✓ Electron main process files ready');

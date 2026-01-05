@@ -397,7 +397,7 @@ function AddForm($$renderer, $$props) {
       const trimmed = prompt.trim();
       if (trimmed.length === 0) return "";
       if (trimmed.length < 10) return "Prompt must be at least 10 characters";
-      if (trimmed.length > 1e3) return "Prompt must be less than 1000 characters";
+      if (trimmed.length > 8e3) return "Prompt must be less than 8000 characters";
       return "";
     })();
     let projectError = (() => {
@@ -521,7 +521,7 @@ function EditCardForm($$renderer, $$props) {
       const trimmed = prompt.trim();
       if (trimmed.length === 0) return "Prompt is required";
       if (trimmed.length < 10) return "Prompt must be at least 10 characters";
-      if (trimmed.length > 1e3) return "Prompt must be less than 1000 characters";
+      if (trimmed.length > 8e3) return "Prompt must be less than 8000 characters";
       return "";
     })();
     let projectError = (() => {

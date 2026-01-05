@@ -17,7 +17,7 @@
   async function handleDeleteProject(e: Event, projectId: string) {
     e.stopPropagation();
     const project = projectManager.all.find(p => p.id === projectId);
-    if (confirm(`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`)) {
+    if (window.confirm(`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`)) {
       await projectManager.deleteProject(projectId);
     }
   }
