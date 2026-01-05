@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test-and-build:
@@ -45,71 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-dist-${{ matrix.os }}-node-${{ matrix.node-version }}
+          retention-days: 5
           path: |
             dist
             release
-
-  package-release:
-    name: Package Release (main only)
-    runs-on: ubuntu-latest
-    needs: test-and-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build (for packaging)
-        run: npm run build
-
-      - name: Create release artifacts (pack)
-        run: |
-          npm run pack:win || true
-          npm run pack:linux || true
-
-      - name: Upload packaged artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: packaged-release
-          path: release
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  actionlint:
-    name: Validate workflow with actionlint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run actionlint
-        uses: rhysd/actionlint@v1
-
-  test:
-    name: Build and test
-    runs-on: ubuntu-latest
-    needs: actionlint
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Run tests
-        run: npm test
