@@ -47,7 +47,11 @@ try {
       const created = (await ipcRenderer.invoke('projects:create', payload)) as RawProject;
       return { ...created, createdAt: created.createdAt ? new Date(created.createdAt) : undefined };
     },
-    updateProject: async (payload: { id: string; name: string; systemPrompt?: string }): Promise<Project> => {
+    updateProject: async (payload: {
+      id: string;
+      name: string;
+      systemPrompt?: string;
+    }): Promise<Project> => {
       const updated = (await ipcRenderer.invoke('projects:update', payload)) as RawProject;
       return { ...updated, createdAt: updated.createdAt ? new Date(updated.createdAt) : undefined };
     },

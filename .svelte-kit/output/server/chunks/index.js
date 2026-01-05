@@ -1,4 +1,4 @@
-import { e as escape_html, a as set_ssr_context, b as ssr_context, p as push, c as pop } from "./context.js";
+import { e as escape_html, b as set_ssr_context, a as ssr_context, p as push, c as pop } from "./context.js";
 import { clsx as clsx$1 } from "clsx";
 const DERIVED = 1 << 1;
 const EFFECT = 1 << 2;
@@ -948,6 +948,15 @@ function slot(renderer, $$props, name, slot_props, fallback_fn) {
     slot_fn(renderer, slot_props);
   }
 }
+function bind_props(props_parent, props_now) {
+  for (const key in props_now) {
+    const initial_value = props_parent[key];
+    const value = props_now[key];
+    if (initial_value === void 0 && value !== void 0 && Object.getOwnPropertyDescriptor(props_parent, key)?.set) {
+      props_parent[key] = value;
+    }
+  }
+}
 function ensure_array_like(array_like_or_iterator) {
   if (array_like_or_iterator) {
     return array_like_or_iterator.length !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
@@ -960,7 +969,8 @@ export {
   COMMENT_NODE as C,
   DIRTY as D,
   ERROR_VALUE as E,
-  head as F,
+  bind_props as F,
+  head as G,
   HYDRATION_ERROR as H,
   INERT as I,
   LEGACY_PROPS as L,

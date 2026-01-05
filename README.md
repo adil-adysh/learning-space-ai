@@ -12,10 +12,10 @@ The app stores prompts locally and provides intentional structure so learning pr
 
 People learning with AI often face:
 
-* Prompts scattered across chat histories and notes
-* No clear system to organize prompts by learning context
-* Repeating prompts without knowing what was already learned
-* No sense of completion or closure
+- Prompts scattered across chat histories and notes
+- No clear system to organize prompts by learning context
+- Repeating prompts without knowing what was already learned
+- No sense of completion or closure
 
 **Learning Space AI solves prompt organization for learning—nothing more, nothing less.**
 
@@ -25,19 +25,19 @@ People learning with AI often face:
 
 ### ✅ What This App Does
 
-* Stores **AI prompts for learning** as structured learning cards
-* Organizes prompts by **projects (learning contexts)**
-* Launches prompts **only in ChatGPT**
-* Opens ChatGPT in the **user’s default browser**
-* Helps users mark learning as **completed**
+- Stores **AI prompts for learning** as structured learning cards
+- Organizes prompts by **projects (learning contexts)**
+- Launches prompts **only in ChatGPT**
+- Opens ChatGPT in the **user’s default browser**
+- Helps users mark learning as **completed**
 
 ### ❌ What This App Does Not Do
 
-* It does **not** store AI responses
-* It does **not** send prompts automatically
-* It does **not** embed ChatGPT
-* It does **not** support multiple AI providers
-* It does **not** act as a chat client
+- It does **not** store AI responses
+- It does **not** send prompts automatically
+- It does **not** embed ChatGPT
+- It does **not** support multiple AI providers
+- It does **not** act as a chat client
 
 ---
 
@@ -47,10 +47,10 @@ People learning with AI often face:
 2. Assign it to a **Project** (topic, course, or goal)
 3. Click **“Start learning with ChatGPT”**
 4. The app:
+   - Opens ChatGPT in your **default browser**
+   - Prefills the chat input with your stored prompt
+   - Leaves final control to you (you click _Send_)
 
-   * Opens ChatGPT in your **default browser**
-   * Prefills the chat input with your stored prompt
-   * Leaves final control to you (you click *Send*)
 5. After learning, return and **mark the card as completed**
 
 This design preserves **user agency**, transparency, and accessibility.
@@ -63,16 +63,16 @@ Each learning card provides two primary actions:
 
 ### ▶️ Start Learning with ChatGPT
 
-* Opens `chat.openai.com` in the user’s default browser
-* Prefills the chat input with the stored prompt
-* User manually sends the prompt
-* No background automation or hidden execution
+- Opens `chat.openai.com` in the user’s default browser
+- Prefills the chat input with the stored prompt
+- User manually sends the prompt
+- No background automation or hidden execution
 
 ### ✅ Mark as Completed
 
-* Explicitly marks the learning intent as finished
-* Helps reduce mental clutter
-* Separates active learning from completed understanding
+- Explicitly marks the learning intent as finished
+- Helps reduce mental clutter
+- Separates active learning from completed understanding
 
 ---
 
@@ -80,53 +80,53 @@ Each learning card provides two primary actions:
 
 ### 📝 Learning Cards
 
-* Prompt-first design
-* Title, prompt, topic, and project assignment
-* Clear active vs completed state
-* Accessible form validation with helpful feedback
+- Prompt-first design
+- Title, prompt, topic, and project assignment
+- Clear active vs completed state
+- Accessible form validation with helpful feedback
 
 ### 📂 Project Organization
 
-* Group prompts by learning context
-* Project switcher for focused views
-* Default project assignment for new cards
+- Group prompts by learning context
+- Project switcher for focused views
+- Default project assignment for new cards
 
 ### 🔍 Search & Filters
 
-* Search across titles, prompts, topics, and projects
-* Filter by status (all / active / completed)
-* Grouped views with counts
+- Search across titles, prompts, topics, and projects
+- Filter by status (all / active / completed)
+- Grouped views with counts
 
 ### ♿ Accessibility
 
-* Full keyboard navigation
-* Screen reader–friendly semantics
-* Clear focus indicators
-* No reliance on color alone
-* Minimal cognitive load UI
+- Full keyboard navigation
+- Screen reader–friendly semantics
+- Clear focus indicators
+- No reliance on color alone
+- Minimal cognitive load UI
 
 ---
 
 ## Design Principles
 
-* **Prompts are learning artifacts**, not disposable text
-* **Completion matters** for learning
-* **User intent stays explicit**
-* **Accessibility is non-negotiable**
-* **Local-first by default**
-* **No silent automation**
+- **Prompts are learning artifacts**, not disposable text
+- **Completion matters** for learning
+- **User intent stays explicit**
+- **Accessibility is non-negotiable**
+- **Local-first by default**
+- **No silent automation**
 
 ---
 
 ## Technology Stack
 
-* **Desktop:** Electron
-* **UI:** Svelte 5 + SvelteKit
-* **Language:** TypeScript
-* **State:** Svelte runes (`$state`, `$derived`, `$effect`)
-* **Storage:** LowDB (local JSON)
-* **Build:** Vite, esbuild
-* **Packaging:** electron-builder
+- **Desktop:** Electron
+- **UI:** Svelte 5 + SvelteKit
+- **Language:** TypeScript
+- **State:** Svelte runes (`$state`, `$derived`, `$effect`)
+- **Storage:** LowDB (local JSON)
+- **Build:** Vite, esbuild
+- **Packaging:** electron-builder
 
 ---
 
@@ -134,8 +134,8 @@ Each learning card provides two primary actions:
 
 ### Prerequisites
 
-* Node.js 18+
-* npm
+- Node.js 18+
+- npm
 
 ### Setup
 
@@ -183,10 +183,10 @@ learning-space-ai/
 
 ## Accessibility Notes
 
-* Uses semantic HTML wherever possible
-* Native controls preferred over custom widgets
-* Focus trapping for dialogs and forms
-* Screen reader announcements for validation and state changes
+- Uses semantic HTML wherever possible
+- Native controls preferred over custom widgets
+- Focus trapping for dialogs and forms
+- Screen reader announcements for validation and state changes
 
 Accessibility issues and suggestions are **strongly encouraged**.
 
@@ -194,10 +194,10 @@ Accessibility issues and suggestions are **strongly encouraged**.
 
 ## Roadmap (Intentional, Not Promised)
 
-* Prompt templates
-* Import / export learning cards
-* Optional notes on completion
-* Improved keyboard workflows
+- Prompt templates
+- Import / export learning cards
+- Optional notes on completion
+- Improved keyboard workflows
 
 Multi-AI-provider support is **out of scope for now**.
 
@@ -207,10 +207,10 @@ Multi-AI-provider support is **out of scope for now**.
 
 Contributions are welcome—especially around:
 
-* Accessibility improvements
-* UX clarity
-* Prompt-focused workflows
-* Documentation
+- Accessibility improvements
+- UX clarity
+- Prompt-focused workflows
+- Documentation
 
 ### Guidelines
 
@@ -221,6 +221,7 @@ Contributions are welcome—especially around:
    ```bash
    npm run check
    ```
+
 4. Keep changes focused and intentional
 5. Open a Pull Request with context
 

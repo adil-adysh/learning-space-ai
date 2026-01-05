@@ -28,4 +28,11 @@ test('CardItem Start button clickable and triggers callback', async () => {
   await startBtn.click();
 
   expect(onStart).toHaveBeenCalledOnce();
+
+  // Verify checkbox toggles status
+  const toggleCheckbox = page.getByRole('checkbox', { name: /Mark Test Card as done/i });
+  await expect.element(toggleCheckbox).toBeVisible();
+  await toggleCheckbox.click();
+  expect(onToggle).toHaveBeenCalledOnce();
+  expect(onToggle).toHaveBeenCalledWith('c1', 'done');
 });

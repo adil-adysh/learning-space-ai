@@ -109,7 +109,11 @@ class ProjectManager {
   /**
    * Update an existing project
    */
-  async updateProject(payload: { id: string; name: string; systemPrompt?: string }): Promise<Project> {
+  async updateProject(payload: {
+    id: string;
+    name: string;
+    systemPrompt?: string;
+  }): Promise<Project> {
     if (!payload.id || !payload.name.trim()) {
       throw new Error('Project ID and name are required');
     }

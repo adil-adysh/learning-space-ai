@@ -70,22 +70,22 @@ async function startStaticServer() {
 
 function getMime(ext: string) {
   switch (ext) {
-    case '.js':
-      return 'application/javascript';
-    case '.css':
-      return 'text/css';
-    case '.json':
-      return 'application/json';
-    case '.svg':
-      return 'image/svg+xml';
-    case '.woff2':
-      return 'font/woff2';
-    case '.woff':
-      return 'font/woff';
-    case '.ttf':
-      return 'font/ttf';
-    default:
-      return 'text/html';
+  case '.js':
+    return 'application/javascript';
+  case '.css':
+    return 'text/css';
+  case '.json':
+    return 'application/json';
+  case '.svg':
+    return 'image/svg+xml';
+  case '.woff2':
+    return 'font/woff2';
+  case '.woff':
+    return 'font/woff';
+  case '.ttf':
+    return 'font/ttf';
+  default:
+    return 'text/html';
   }
 }
 
@@ -211,16 +211,25 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(
     'cards:update',
-    async (_ev, payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }) => {
+    async (
+      _ev,
+      payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }
+    ) => {
       const id = (payload.id || '').trim();
       if (!id) {
         throw new Error('Card ID is required');
       }
 
       const updates: Partial<RawCard> = {};
-      if (payload.title !== undefined) {updates.title = payload.title;}
-      if (payload.prompt !== undefined) {updates.prompt = payload.prompt;}
-      if (payload.topic !== undefined) {updates.topic = payload.topic;}
+      if (payload.title !== undefined) {
+        updates.title = payload.title;
+      }
+      if (payload.prompt !== undefined) {
+        updates.prompt = payload.prompt;
+      }
+      if (payload.topic !== undefined) {
+        updates.topic = payload.topic;
+      }
       if (payload.project !== undefined) {
         let projectId = payload.project.trim();
         if (projectId) {
@@ -265,44 +274,50 @@ app.whenReady().then(async () => {
     return projects.find((p) => p.id === id) || null;
   });
 
-  ipcMain.handle('projects:create', async (_ev, payload: { name: string; systemPrompt?: string }) => {
-    const n = (payload.name || '').trim();
-    if (!n) {
-      throw new Error('Invalid project name');
+  ipcMain.handle(
+    'projects:create',
+    async (_ev, payload: { name: string; systemPrompt?: string }) => {
+      const n = (payload.name || '').trim();
+      if (!n) {
+        throw new Error('Invalid project name');
+      }
+
+      // prevent duplicate names
+      const existing = await findProjectByName(n);
+      if (existing) {
+        return existing;
+      }
+
+      const newProj = {
+        id: randomUUID(),
+        name: n,
+        systemPrompt: payload.systemPrompt?.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      };
+      return await dbAddProject(newProj);
     }
+  );
 
-    // prevent duplicate names
-    const existing = await findProjectByName(n);
-    if (existing) {
-      return existing;
+  ipcMain.handle(
+    'projects:update',
+    async (_ev, payload: { id: string; name: string; systemPrompt?: string }) => {
+      const id = (payload.id || '').trim();
+      const name = (payload.name || '').trim();
+      if (!id || !name) {
+        throw new Error('Invalid input');
+      }
+
+      const updated = await dbUpdateProject(id, {
+        name,
+        systemPrompt: payload.systemPrompt?.trim() || undefined,
+      });
+      if (!updated) {
+        throw new Error('Project not found');
+      }
+
+      return updated;
     }
-
-    const newProj = {
-      id: randomUUID(),
-      name: n,
-      systemPrompt: payload.systemPrompt?.trim() || undefined,
-      createdAt: new Date().toISOString()
-    };
-    return await dbAddProject(newProj);
-  });
-
-  ipcMain.handle('projects:update', async (_ev, payload: { id: string; name: string; systemPrompt?: string }) => {
-    const id = (payload.id || '').trim();
-    const name = (payload.name || '').trim();
-    if (!id || !name) {
-      throw new Error('Invalid input');
-    }
-
-    const updated = await dbUpdateProject(id, {
-      name,
-      systemPrompt: payload.systemPrompt?.trim() || undefined
-    });
-    if (!updated) {
-      throw new Error('Project not found');
-    }
-
-    return updated;
-  });
+  );
 
   ipcMain.handle('projects:delete', async (_ev, id: string) => {
     const removed = await dbDeleteProject(id);

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { projectManager } from '../projectManager.svelte';
   import EditProjectForm from './EditProjectForm.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import type { Project } from '../../types';
 
   interface Props {
@@ -29,6 +30,19 @@
     const project = projectManager.all.find(p => p.id === projectId);
     if (project) {
       editingProject = project;
+    }
+  }
+
+  // wrappers for menu-based actions (no DOM event available)
+  function handleEditProjectFromMenu(projectId: string) {
+    const project = projectManager.all.find(p => p.id === projectId);
+    if (project) editingProject = project;
+  }
+
+  async function handleDeleteProjectFromMenu(projectId: string) {
+    const project = projectManager.all.find(p => p.id === projectId);
+    if (window.confirm(`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`)) {
+      await projectManager.deleteProject(projectId);
     }
   }
 
@@ -66,22 +80,7 @@
               <span class="project-name">{p.name}</span>
             </button>
             <div class="project-actions">
-              <button
-                class="icon-btn"
-                onclick={(e) => handleEditProject(e, p.id)}
-                aria-label={`Edit project ${p.name}`}
-                title="Edit project"
-              >
-                ✏️
-              </button>
-              <button
-                class="icon-btn danger"
-                onclick={(e) => handleDeleteProject(e, p.id)}
-                aria-label={`Delete project ${p.name}`}
-                title="Delete project"
-              >
-                🗑️
-              </button>
+              <MoreMenu ariaLabel={`More actions for project ${p.name}`} on:edit={() => handleEditProjectFromMenu(p.id)} on:delete={() => handleDeleteProjectFromMenu(p.id)} />
             </div>
           </div>
         </li>
@@ -125,7 +124,7 @@
   .project-actions { position: absolute; bottom: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; }
   .icon-btn { background: none; border: none; cursor: pointer; padding: 0.25rem; font-size: 1.2rem; opacity: 0.6; transition: opacity 0.2s; }
   .icon-btn:hover { opacity: 1; }
-  .icon-btn.danger:hover { filter: brightness(1.2); }
+  /* danger hover moved to MoreMenu for consistent styling */
   .empty { color:var(--muted,#666); }
 </style>
 

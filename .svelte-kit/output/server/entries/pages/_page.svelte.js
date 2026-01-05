@@ -1,6 +1,11 @@
-import { x as ensure_array_like, y as attr, z as attr_class, F as head } from "../../chunks/index.js";
+import { x as ensure_array_like, y as attr, z as attr_class, F as bind_props, G as head } from "../../chunks/index.js";
 import "clsx";
-import { e as escape_html } from "../../chunks/context.js";
+import { a as ssr_context, e as escape_html } from "../../chunks/context.js";
+import { j as fallback } from "../../chunks/utils2.js";
+function onDestroy(fn) {
+  /** @type {SSRContext} */
+  ssr_context.r.on_destroy(fn);
+}
 class CardManager {
   constructor() {
     this.all = [];
@@ -619,6 +624,28 @@ function EditCardForm($$renderer, $$props) {
     $$renderer2.push(`<!--]--></div> <div class="form-actions"><button type="submit" class="primary"${attr("disabled", !isValid || isSubmitting, true)}>${escape_html("Save changes")}</button> <button type="button" class="ghost"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
   });
 }
+function MoreMenu($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let ariaLabel = fallback($$props["ariaLabel"], "More actions");
+    let open = false;
+    function onKeyDown(e) {
+      return;
+    }
+    function onDocumentClick(e) {
+      return;
+    }
+    onDestroy(() => {
+      document.removeEventListener("click", onDocumentClick);
+      document.removeEventListener("keydown", onKeyDown);
+    });
+    $$renderer2.push(`<div class="more-menu svelte-rmjvfi"><button type="button" class="more-trigger svelte-rmjvfi" aria-haspopup="true"${attr("aria-expanded", open)}${attr("aria-label", ariaLabel)}><span aria-hidden="true">⋮</span></button> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div>`);
+    bind_props($$props, { ariaLabel });
+  });
+}
 function CardItem($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     const { card, onStart, onToggle, onEdit, onDelete } = $$props;
@@ -644,20 +671,8 @@ function CardItem($$renderer, $$props) {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--></header> <section><div${attr_class("status svelte-ybr5in", void 0, { "done": isDone })}>${escape_html(statusText)}</div> <pre class="prompt">${escape_html(card.prompt)}</pre></section> <footer class="card-actions"><button type="button" class="primary"${attr("aria-label", `Start chat with prompt for ${card.title}`)}>Start in ChatGPT</button> <button type="button" class="ghost"${attr("aria-pressed", isDone)}${attr("aria-label", isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`)}>${escape_html(buttonLabel)}</button> `);
-    if (onEdit) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button type="button" class="ghost"${attr("aria-label", `Edit ${card.title}`)}>Edit</button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
-    if (onDelete) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button type="button" class="ghost danger svelte-ybr5in"${attr("aria-label", `Delete ${card.title}`)}>Delete</button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></footer></article>`);
+    MoreMenu($$renderer2, { ariaLabel: `More actions for ${card.title}` });
+    $$renderer2.push(`<!----></footer></article>`);
   });
 }
 function CardList($$renderer, $$props) {
@@ -760,7 +775,7 @@ function ProjectDetail($$renderer, $$props) {
       editingCard = card;
     }
     async function handleCardDelete(id) {
-      if (confirm("Are you sure you want to delete this learning card?")) {
+      if (window.confirm("Are you sure you want to delete this learning card?")) {
         await cardManager.deleteCard(id);
       }
     }
@@ -794,7 +809,6 @@ function ProjectDetail($$renderer, $$props) {
 }
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    projectManager.selectedProject;
     function handleProjectFilterChange(e) {
       const select = e.target;
       const projectId = select.value;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { LearningCard } from '../../types';
 	import { projectManager } from '../projectManager.svelte';
+	import MoreMenu from './MoreMenu.svelte';
 
 	interface Props {
 		card: LearningCard;
@@ -49,35 +50,16 @@
 		>
 			Start in ChatGPT
 		</button>
-		<button
-			type="button"
-			class="ghost"
-			aria-pressed={isDone}
-			onclick={() => onToggle(card.id, isDone ? 'active' : 'done')}
-			aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
-		>
-			{buttonLabel}
-		</button>
-		{#if onEdit}
-			<button
-				type="button"
-				class="ghost"
-				onclick={() => onEdit?.(card)}
-				aria-label={`Edit ${card.title}`}
-			>
-				Edit
-			</button>
-		{/if}
-		{#if onDelete}
-			<button
-				type="button"
-				class="ghost danger"
-				onclick={() => onDelete?.(card.id)}
-				aria-label={`Delete ${card.title}`}
-			>
-				Delete
-			</button>
-		{/if}
+		<label class="check">
+			<input
+				type="checkbox"
+				checked={isDone}
+				onchange={() => onToggle(card.id, isDone ? 'active' : 'done')}
+				aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
+			/>
+			<span class="check-label">{isDone ? 'Completed' : 'Mark done'}</span>
+		</label>
+		<MoreMenu ariaLabel={`More actions for ${card.title}`} on:edit={() => onEdit?.(card)} on:delete={() => onDelete?.(card.id)} />
 	</footer>
 </article>
 
@@ -87,16 +69,25 @@
 		margin-bottom: 1rem;
 	}
 
+	.check {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.check input[type="checkbox"] {
+		width: 1.1rem;
+		height: 1.1rem;
+	}
+
+	.check-label {
+		font-size: 0.9rem;
+		color: var(--muted, #666);
+	}
+
 	.done {
 		opacity: 0.7;
 	}
 
-	.danger {
-		color: #dc2626;
-	}
-
-	.danger:hover {
-		background-color: #fef2f2;
-		color: #991b1b;
-	}
+	/* moved danger styles to MoreMenu where Delete lives */
 </style>

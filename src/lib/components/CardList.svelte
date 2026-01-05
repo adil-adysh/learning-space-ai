@@ -15,7 +15,6 @@
 
 	// Helper function to group cards by project
 	function groupByProject(list: LearningCard[]) {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const map = new Map<string, LearningCard[]>();
 		for (const c of list) {
 			const key = c.project || '';
