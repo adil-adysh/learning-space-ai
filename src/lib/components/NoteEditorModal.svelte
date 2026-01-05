@@ -35,13 +35,16 @@
     if (!resolved) return;
 
     if (note && note.id) {
-      await resolved.updateNote({ id: note.id, title, content, tags });
+      const updated = await resolved.updateNote({ id: note.id, title, content, tags });
+      // notify list with updated id
+      window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId, noteId: updated.id } }));
     } else if (cardId) {
-      await resolved.createNote({ cardId, title, content, tags });
+      const created = await resolved.createNote({ cardId, title, content, tags });
+      // notify list and include created note id so the list can focus it
+      window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId, noteId: created.id } }));
     }
 
-    // notify list and go back
-    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId } }));
+    // close editor
     modalStore.pop();
   }
 

@@ -5,6 +5,7 @@ import ModalContainer from './ModalContainer.svelte';
 import NoteModal from './NoteModal.svelte';
 import { modalStore } from '../stores/modalStore';
 import { get } from 'svelte/store';
+import type { SvelteComponent } from 'svelte';
 
 test('ModalContainer clears modalStore when child dispatches close', async () => {
   // mock window.api used by NoteModal
@@ -18,7 +19,8 @@ test('ModalContainer clears modalStore when child dispatches close', async () =>
   render(ModalContainer);
 
   // open the NoteModal through the store (cast component to any to satisfy typings in tests)
-  modalStore.open(NoteModal as any, { cardId: 'c1', cardTitle: 'Card 1', confirmFn: () => true });
+  const noteModalComponent = NoteModal as unknown as typeof SvelteComponent;
+  modalStore.open(noteModalComponent, { cardId: 'c1', cardTitle: 'Card 1', confirmFn: () => true });
 
   // ensure the modal is visible
   const heading = page.getByRole('heading', { name: /Notes for Card 1/i });

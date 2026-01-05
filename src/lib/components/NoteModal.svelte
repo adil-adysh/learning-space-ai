@@ -1,6 +1,9 @@
 <script lang="ts">
 /* global setTimeout */
   import NoteEditorModal from './NoteEditorModal.svelte';
+  import NoteContent from './NoteContent.svelte';
+  import NoteView from './NoteView.svelte';
+  import MoreMenu from './MoreMenu.svelte';
   import { modalStore } from '../stores/modalStore';
   import type { Note } from '../../types';
   import { createEventDispatcher } from 'svelte';
@@ -22,6 +25,7 @@
   let notes: Note[] = $state([] as Note[]);
   let editing: Note | null = $state(null);
   let dialogRef: HTMLElement | null = $state(null);
+  let lastCreatedNoteId: string | null = $state(null);
 
   function resolveApi() {
     if (api) return api;
@@ -54,6 +58,11 @@
     modalStore.push(NoteEditorModal, { cardId, note: n, api: resolved });
   }
 
+  function openView(n: Note) {
+    const resolved = resolveApi();
+    modalStore.push(NoteView, { cardId, note: n, api: resolved });
+  }
+
   // NoteEditor will perform saves itself and dispatch a global event when notes change.
 
   async function handleDelete(id: string) {
@@ -73,7 +82,18 @@
   function onNotesChanged(e: Event) {
     const detail = (e as CustomEvent).detail as { cardId?: string } | undefined;
     if (!detail || detail.cardId !== cardId) return;
-    load();
+    // remember created note id so we can focus after reload
+    lastCreatedNoteId = detail['noteId'] || null;
+    load().then(() => {
+      if (lastCreatedNoteId) {
+        // focus the newly created note element if present
+        const el = document.getElementById(`note-${lastCreatedNoteId}`) as HTMLElement | null;
+        if (el && typeof el.focus === 'function') {
+          setTimeout(() => el.focus(), 0);
+        }
+        lastCreatedNoteId = null;
+      }
+    });
   }
 
   import { onDestroy } from 'svelte';
@@ -104,17 +124,23 @@
         {#if notes.length === 0}
           <div class="empty">No notes yet. Click "New Note" to add one.</div>
         {:else}
-          {#each notes as n}
-            <article class="note-item">
-              <h4>{n.title || '(untitled)'}</h4>
-              <div class="meta">{n.tags?.map(t => `#${t}`).join(' ')}</div>
-              <pre class="content">{n.content}</pre>
-              <div class="actions">
-                <button type="button" onclick={() => editNote(n)}>Edit</button>
-                <button type="button" class="danger" onclick={() => handleDelete(n.id)}>Delete</button>
-              </div>
-            </article>
-          {/each}
+          <ul class="notes" role="list">
+            {#each notes as n}
+              <li>
+                <div class="note-item">
+                    <button id={"note-" + n.id} type="button" class="note-open" onclick={() => openView(n)} aria-label={`Open note ${n.title || 'untitled'}`}>
+                    <h4>{n.title || '(untitled)'}</h4>
+                    <div class="meta">{n.tags?.map(t => `#${t}`).join(' ')}</div>
+                    <!-- render markdown content safely -->
+                    <div class="content"><NoteContent markdown={n.content} /></div>
+                  </button>
+                  <div class="actions">
+                    <MoreMenu ariaLabel={`More actions for note ${n.title || 'untitled'}`} on:edit={() => editNote(n)} on:delete={() => handleDelete(n.id)} />
+                  </div>
+                </div>
+              </li>
+            {/each}
+          </ul>
         {/if}
       </div>
 

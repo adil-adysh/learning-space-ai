@@ -3,7 +3,7 @@ import { writable, derived } from 'svelte/store';
 
 type StackItem = {
   component: typeof SvelteComponent;
-  props?: Record<string, any> | null;
+  props?: Record<string, unknown> | null;
   opener?: HTMLElement | null;
 };
 
@@ -13,7 +13,7 @@ function createModalStore() {
 
   function push(
     component: typeof SvelteComponent,
-    props: Record<string, any> = {},
+    props: Record<string, unknown> = {},
     opener: HTMLElement | null = null
   ) {
     stack.update((s) => [...s, { component, props, opener }]);
@@ -45,7 +45,7 @@ function createModalStore() {
   // backward-compatible alias for `push`
   function open(
     component: typeof SvelteComponent,
-    props: Record<string, any> = {},
+    props: Record<string, unknown> = {},
     opener: HTMLElement | null = null
   ) {
     push(component, props, opener);

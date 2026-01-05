@@ -10,8 +10,9 @@ export function rawToLearningCard(raw: RawCard): LearningCard {
   // Safeguard: Fallback to current time if the date is corrupted
   const validDate = isNaN(date.getTime()) ? new Date() : date;
 
+  const clone: RawCard = { ...raw };
   return {
-    ...JSON.parse(JSON.stringify(raw)), // Deep clone to prevent reference leaks
+    ...clone,
     createdAt: validDate,
   };
 }

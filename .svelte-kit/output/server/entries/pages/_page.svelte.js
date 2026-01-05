@@ -2,6 +2,8 @@ import { b as attr, e as ensure_array_like, a as attr_class, h as head } from ".
 import "clsx";
 import { X as escape_html } from "../../chunks/context.js";
 import "../../chunks/modalStore.js";
+import "markdown-it";
+import "dompurify";
 class CardManager {
   constructor() {
     this.all = [];

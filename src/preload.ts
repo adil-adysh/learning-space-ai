@@ -1,9 +1,21 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { LearningCard, RawCard, Status, Project, RawProject, RawNote } from './types';
 
-console.info('[preload] Preload script loaded');
+function formatPreloadItem(item: unknown) {
+  if (typeof item === 'string') {
+    return item;
+  }
+  if (item instanceof Error) {
+    return item.stack ?? item.message;
+  }
+  return String(item);
+}
 
-async function toLearningCard(raw: RawCard): Promise<LearningCard> {
+function logPreloadError(...items: unknown[]) {
+  process.stderr.write(items.map(formatPreloadItem).join(' ') + '\n');
+}
+
+function toLearningCard(raw: RawCard): LearningCard {
   return {
     ...raw,
     createdAt: new Date(raw.createdAt),
@@ -14,7 +26,7 @@ try {
   contextBridge.exposeInMainWorld('api', {
     getCards: async (): Promise<LearningCard[]> => {
       const raws = (await ipcRenderer.invoke('cards:get')) as RawCard[];
-      return Promise.all(raws.map(toLearningCard));
+      return raws.map(toLearningCard);
     },
     addCard: async (data: {
       title: string;
@@ -106,9 +118,8 @@ try {
       await ipcRenderer.invoke('cards:run', prompt);
     },
   });
-  console.info('[preload] API exposed successfully');
 } catch (err) {
-  console.error('[preload] Failed to expose API:', err);
+  logPreloadError('[preload] Failed to expose API:', err);
 }
 
 export {};

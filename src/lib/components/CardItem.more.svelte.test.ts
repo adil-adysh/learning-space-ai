@@ -27,7 +27,7 @@ test('More menu Edit/Delete dispatch actions', async () => {
     },
   });
 
-  const moreBtn = page.getByRole('button', { name: /More actions for Test Card/i });
+  const moreBtn = page.getByLabelText('More actions for Test Card');
   await expect.element(moreBtn).toBeVisible();
   await moreBtn.click();
 

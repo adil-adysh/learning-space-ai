@@ -1,7 +1,6 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
-import NoteModal from './NoteModal.svelte';
 
 const sampleNote = (id = 'n1') => ({
   id,
@@ -55,7 +54,7 @@ test('NoteModal delete calls deleteNote', async () => {
     getNotes: vi.fn().mockResolvedValue([sampleNote('n1')]),
     createNote: vi.fn().mockResolvedValue(null),
     updateNote: vi.fn().mockResolvedValue(null),
-    deleteNote: vi.fn().mockImplementation(async (id: string) => {
+    deleteNote: vi.fn().mockImplementation((id: string) => {
       deleted = id;
       return { id };
     }),
@@ -64,7 +63,12 @@ test('NoteModal delete calls deleteNote', async () => {
   const NoteWrapper = (await import('./__tests__/NoteModalTestWrapper.svelte')).default;
   render(NoteWrapper, { props: { cardId: 'c1', cardTitle: 'Card 1', confirmFn: () => true } });
 
-  const deleteBtn = page.getByRole('button', { name: /Delete/i });
+  // open the more menu first (summary uses aria-label)
+  const moreTrigger = page.getByLabelText('More actions for note Existing Note');
+  await expect.element(moreTrigger).toBeVisible();
+  await moreTrigger.click();
+
+  const deleteBtn = page.getByRole('menuitem', { name: /Delete/i });
   await expect.element(deleteBtn).toBeVisible();
   await deleteBtn.click();
 

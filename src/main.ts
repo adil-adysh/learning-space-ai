@@ -1,8 +1,9 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import * as path from 'path';
+import { inspect } from 'node:util';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
-import type { Server } from 'http';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
 import { createServer } from 'http';
 import type { RawCard, Status, RawNote } from './types';
 import {
@@ -29,47 +30,65 @@ let staticServer: Server | null = null;
 
 let mainWindow: BrowserWindow | null = null;
 
+function formatLogItem(item: unknown) {
+  if (typeof item === 'string') {
+    return item;
+  }
+  if (item instanceof Error) {
+    return item.stack ?? item.message;
+  }
+  return inspect(item, { depth: 1 });
+}
+
+function logError(...items: unknown[]) {
+  process.stderr.write(items.map(formatLogItem).join(' ') + '\n');
+}
+
 async function startStaticServer() {
   if (staticServer) {
     return;
   }
 
-  staticServer = createServer(async (req, res) => {
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    const pathname = decodeURIComponent(url.pathname);
-    const normalized = path.normalize(path.join(BUILD_DIR, pathname));
-    let target = normalized;
-
-    if (!target.startsWith(BUILD_DIR)) {
-      target = path.join(BUILD_DIR, 'index.html');
-    }
-
-    try {
-      const stat = await fs.stat(target);
-      if (stat.isDirectory()) {
-        target = path.join(target, 'index.html');
-      }
-    } catch {
-      target = path.join(BUILD_DIR, 'index.html');
-    }
-
-    const ext = path.extname(target);
-    res.setHeader('Content-Type', getMime(ext));
-
-    try {
-      const data = await fs.readFile(target);
-      res.writeHead(200);
-      res.end(data);
-    } catch {
-      const fallback = await fs.readFile(path.join(BUILD_DIR, 'index.html'));
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(fallback);
-    }
+  staticServer = createServer((req, res) => {
+    void handleStaticRequest(req, res);
   });
 
   await new Promise<void>((resolve) => {
     staticServer!.listen(STATIC_PORT, '127.0.0.1', () => resolve());
   });
+}
+
+async function handleStaticRequest(req: IncomingMessage, res: ServerResponse) {
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const pathname = decodeURIComponent(url.pathname);
+  const normalized = path.normalize(path.join(BUILD_DIR, pathname));
+  let target = normalized;
+
+  if (!target.startsWith(BUILD_DIR)) {
+    target = path.join(BUILD_DIR, 'index.html');
+  }
+
+  try {
+    const stat = await fs.stat(target);
+    if (stat.isDirectory()) {
+      target = path.join(target, 'index.html');
+    }
+  } catch {
+    target = path.join(BUILD_DIR, 'index.html');
+  }
+
+  const ext = path.extname(target);
+  res.setHeader('Content-Type', getMime(ext));
+
+  try {
+    const data = await fs.readFile(target);
+    res.writeHead(200);
+    res.end(data);
+  } catch {
+    const fallback = await fs.readFile(path.join(BUILD_DIR, 'index.html'));
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(fallback);
+  }
 }
 
 function getMime(ext: string) {
@@ -96,7 +115,6 @@ function getMime(ext: string) {
 function createWindow() {
   // Construct preload path - __dirname in esbuild context points to dist directory
   const preloadPath = path.join(__dirname, 'preload.cjs');
-  console.info('[main] Loading preload from:', preloadPath);
 
   const win = new BrowserWindow({
     width: 900,
@@ -114,21 +132,13 @@ function createWindow() {
   });
 
   // Debug: Log when preload is loaded
-  win.webContents.on('preload-error', (event, processType, error) => {
-    console.error('[main] Preload error:', processType, error);
+  win.webContents.on('preload-error', (_event, processType, error) => {
+    logError('[main] Preload error:', processType, error);
   });
 
   // Load the SvelteKit build output via local server to avoid file:// 404s
   const targetUrl = `http://127.0.0.1:${STATIC_PORT}`;
   void win.loadURL(targetUrl);
-
-  // Debug: Check if preload loaded
-  win.webContents.on('dom-ready', () => {
-    console.info('[main] DOM ready, checking if API is available...');
-    void win.webContents.executeJavaScript(
-      "console.info('[renderer] window.api available:', typeof window.api !== 'undefined')"
-    );
-  });
 
   // Security: open external links in user's default browser and prevent in-app navigation
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -158,7 +168,8 @@ app.on('second-instance', () => {
   }
 });
 
-app.whenReady().then(async () => {
+async function bootstrap() {
+  await app.whenReady();
   await startStaticServer();
 
   // Initialize the lowdb database
@@ -333,7 +344,7 @@ app.whenReady().then(async () => {
     try {
       await clearProjectFromCards(id);
     } catch (err) {
-      console.error('Failed to cleanup card project references', err);
+      logError('[main] Failed to cleanup card project references', err);
     }
 
     return removed;
@@ -413,7 +424,9 @@ app.whenReady().then(async () => {
       createWindow();
     }
   });
-});
+}
+
+void bootstrap();
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

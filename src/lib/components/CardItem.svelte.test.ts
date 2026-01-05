@@ -39,10 +39,10 @@ test('CardItem Start button clickable and triggers callback', async () => {
 
 test('Open Notes button shows the notes modal', async () => {
   const api = {
-    getNotes: vi.fn(async () => []),
-    createNote: vi.fn(async () => null),
-    updateNote: vi.fn(async () => null),
-    deleteNote: vi.fn(async () => null),
+    getNotes: vi.fn(() => Promise.resolve([])),
+    createNote: vi.fn(() => Promise.resolve(null)),
+    updateNote: vi.fn(() => Promise.resolve(null)),
+    deleteNote: vi.fn(() => Promise.resolve(null)),
   };
 
   const card = {
