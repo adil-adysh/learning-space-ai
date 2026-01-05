@@ -31,8 +31,18 @@ declare global {
       toggleCard(id: string, status: Status): Promise<LearningCard>;
       runPrompt(prompt: string): Promise<void>;
       getNotes(cardId?: string): Promise<Note[]>;
-      createNote(payload: { cardId: string; title: string; content: string; tags?: string[] }): Promise<Note>;
-      updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
+      createNote(payload: {
+        cardId: string;
+        title: string;
+        content: string;
+        tags?: string[];
+      }): Promise<Note>;
+      updateNote(payload: {
+        id: string;
+        title?: string;
+        content?: string;
+        tags?: string[];
+      }): Promise<Note>;
       deleteNote(id: string): Promise<RawNote>;
     };
   }

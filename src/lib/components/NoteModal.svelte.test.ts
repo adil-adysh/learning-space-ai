@@ -16,8 +16,11 @@ test('NoteModal lists notes and New Note opens editor and triggers createNote', 
   // Mock the global window.api that the component resolves when no `api` prop is provided
   let created: any = null;
   (globalThis as any).api = {
-    getNotes: vi.fn().mockResolvedValue([ sampleNote('n1') ]),
-    createNote: vi.fn().mockImplementation(async (payload: any) => { created = payload; return { ...payload, id: 'n2', createdAt: new Date().toISOString() }; }),
+    getNotes: vi.fn().mockResolvedValue([sampleNote('n1')]),
+    createNote: vi.fn().mockImplementation(async (payload: any) => {
+      created = payload;
+      return { ...payload, id: 'n2', createdAt: new Date().toISOString() };
+    }),
     updateNote: vi.fn().mockResolvedValue(null),
     deleteNote: vi.fn().mockResolvedValue(null),
   };
@@ -49,10 +52,13 @@ test('NoteModal lists notes and New Note opens editor and triggers createNote', 
 test('NoteModal delete calls deleteNote', async () => {
   let deleted: any = null;
   (globalThis as any).api = {
-    getNotes: vi.fn().mockResolvedValue([ sampleNote('n1') ]),
+    getNotes: vi.fn().mockResolvedValue([sampleNote('n1')]),
     createNote: vi.fn().mockResolvedValue(null),
     updateNote: vi.fn().mockResolvedValue(null),
-    deleteNote: vi.fn().mockImplementation(async (id: string) => { deleted = id; return { id }; }),
+    deleteNote: vi.fn().mockImplementation(async (id: string) => {
+      deleted = id;
+      return { id };
+    }),
   };
 
   const NoteWrapper = (await import('./__tests__/NoteModalTestWrapper.svelte')).default;

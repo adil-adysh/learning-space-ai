@@ -74,22 +74,22 @@ async function startStaticServer() {
 
 function getMime(ext: string) {
   switch (ext) {
-  case '.js':
-    return 'application/javascript';
-  case '.css':
-    return 'text/css';
-  case '.json':
-    return 'application/json';
-  case '.svg':
-    return 'image/svg+xml';
-  case '.woff2':
-    return 'font/woff2';
-  case '.woff':
-    return 'font/woff';
-  case '.ttf':
-    return 'font/ttf';
-  default:
-    return 'text/html';
+    case '.js':
+      return 'application/javascript';
+    case '.css':
+      return 'text/css';
+    case '.json':
+      return 'application/json';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.woff2':
+      return 'font/woff2';
+    case '.woff':
+      return 'font/woff';
+    case '.ttf':
+      return 'font/ttf';
+    default:
+      return 'text/html';
   }
 }
 
@@ -353,32 +353,38 @@ app.whenReady().then(async () => {
     return await readNotes(cardId);
   });
 
-  ipcMain.handle('notes:create', async (_ev, payload: { cardId: string; title: string; content: string; tags?: string[] }) => {
-    const cardId = (payload.cardId || '').trim();
-    if (!cardId) throw new Error('cardId required');
-    const newNote: RawNote = {
-      id: randomUUID(),
-      cardId,
-      title: payload.title || '',
-      content: payload.content || '',
-      tags: payload.tags || [],
-      createdAt: new Date().toISOString(),
-    };
-    return await dbAddNote(newNote);
-  });
+  ipcMain.handle(
+    'notes:create',
+    async (_ev, payload: { cardId: string; title: string; content: string; tags?: string[] }) => {
+      const cardId = (payload.cardId || '').trim();
+      if (!cardId) throw new Error('cardId required');
+      const newNote: RawNote = {
+        id: randomUUID(),
+        cardId,
+        title: payload.title || '',
+        content: payload.content || '',
+        tags: payload.tags || [],
+        createdAt: new Date().toISOString(),
+      };
+      return await dbAddNote(newNote);
+    }
+  );
 
-  ipcMain.handle('notes:update', async (_ev, payload: { id: string; title?: string; content?: string; tags?: string[] }) => {
-    const id = (payload.id || '').trim();
-    if (!id) throw new Error('note id required');
-    const updates: Partial<RawNote> = {};
-    if (payload.title !== undefined) updates.title = payload.title;
-    if (payload.content !== undefined) updates.content = payload.content;
-    if (payload.tags !== undefined) updates.tags = payload.tags;
-    updates.updatedAt = new Date().toISOString();
-    const updated = await dbUpdateNote(id, updates);
-    if (!updated) throw new Error('Note not found');
-    return updated;
-  });
+  ipcMain.handle(
+    'notes:update',
+    async (_ev, payload: { id: string; title?: string; content?: string; tags?: string[] }) => {
+      const id = (payload.id || '').trim();
+      if (!id) throw new Error('note id required');
+      const updates: Partial<RawNote> = {};
+      if (payload.title !== undefined) updates.title = payload.title;
+      if (payload.content !== undefined) updates.content = payload.content;
+      if (payload.tags !== undefined) updates.tags = payload.tags;
+      updates.updatedAt = new Date().toISOString();
+      const updated = await dbUpdateNote(id, updates);
+      if (!updated) throw new Error('Note not found');
+      return updated;
+    }
+  );
 
   ipcMain.handle('notes:delete', async (_ev, id: string) => {
     const nid = (id || '').trim();

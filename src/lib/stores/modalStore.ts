@@ -11,7 +11,11 @@ function createModalStore() {
   const stack = writable<StackItem[]>([]);
   const lastOpener = writable<HTMLElement | null>(null);
 
-  function push(component: typeof SvelteComponent, props: Record<string, any> = {}, opener: HTMLElement | null = null) {
+  function push(
+    component: typeof SvelteComponent,
+    props: Record<string, any> = {},
+    opener: HTMLElement | null = null
+  ) {
     stack.update((s) => [...s, { component, props, opener }]);
   }
 
@@ -39,7 +43,11 @@ function createModalStore() {
   }
 
   // backward-compatible alias for `push`
-  function open(component: typeof SvelteComponent, props: Record<string, any> = {}, opener: HTMLElement | null = null) {
+  function open(
+    component: typeof SvelteComponent,
+    props: Record<string, any> = {},
+    opener: HTMLElement | null = null
+  ) {
     push(component, props, opener);
   }
 
