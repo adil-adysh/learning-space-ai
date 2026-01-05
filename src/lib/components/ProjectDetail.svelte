@@ -4,6 +4,7 @@
   import AddForm from './AddForm.svelte';
   import EditCardForm from './EditCardForm.svelte';
   import CardList from './CardList.svelte';
+  import { modalStore } from '../stores/modalStore';
   import type { LearningCard } from '../../types';
 
   interface Props {
@@ -25,8 +26,15 @@
     }
   });
 
-  function handleToggleAdd() {
-    cardManager.toggleForm();
+  function openAddForm() {
+    modalStore.open(AddForm, {
+      initialProject: projectId,
+      onSubmit: async (data: { title: string; prompt: string; topic?: string; project?: string }) => {
+        await handleFormSubmit(data);
+        modalStore.close();
+      },
+      onCancel: () => modalStore.close(),
+    });
   }
 
   async function handleFormSubmit(data: {
@@ -85,35 +93,22 @@
     <div class="actions">
       <button
         class="primary"
-        onclick={handleToggleAdd}
-        aria-expanded={cardManager.isFormOpen}
-        aria-controls="add-section"
+        onclick={openAddForm}
+        type="button"
       >
         + New Learning Item
       </button>
     </div>
   </header>
 
-  {#if cardManager.isFormOpen}
-    <AddForm onSubmit={handleFormSubmit} />
-  {/if}
+  
 
   {#if editingCard}
-    <div
-      class="modal-overlay"
-      role="presentation"
-      tabindex="-1"
-      onclick={handleEditCancel}
-      onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
-    >
+    <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}>
       <div
         class="modal-content"
-        role="dialog"
-        tabindex="-1"
-        aria-modal="true"
         aria-labelledby="edit-heading"
-        onclick={(e) => e.stopPropagation()}
-        onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
+        role="document"
       >
         <EditCardForm 
           card={editingCard}
@@ -121,7 +116,7 @@
           onCancel={handleEditCancel}
         />
       </div>
-    </div>
+    </dialog>
   {/if}
 
   <CardList

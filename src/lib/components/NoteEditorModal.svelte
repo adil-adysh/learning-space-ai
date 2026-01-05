@@ -1,64 +1,63 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { Note } from '../../types';
+  import { modalStore } from '../stores/modalStore';
 
-  export let open = false;
   export let note: Note | null = null; // null => create new
   export let cardId: string | null = null;
-
-  // Events
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
+  export let api: any = null;
 
   let title = '';
   let content = '';
   let tagsText = '';
   let firstInput: HTMLInputElement | null = null;
-  let previouslyFocused: Element | null = null;
 
-  $: if (open) {
+  $: {
     // populate from note
     title = note?.title || '';
     content = note?.content || '';
     tagsText = (note?.tags || []).join(', ');
   }
 
-  onMount(() => {
-    // nothing here
-  });
-
-  function onOpen() {
-    previouslyFocused = document.activeElement as Element | null;
-    requestAnimationFrame(() => firstInput?.focus());
+  function resolveApi() {
+    if (api) return api;
+    if (typeof window !== 'undefined' && (window as any).api) return (window as any).api;
+    return null;
   }
 
-  function close() {
-    dispatch('cancel');
-  }
-
-  function save() {
+  async function doSave() {
     const tags = tagsText
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
 
-    if (note) {
-      dispatch('save', { id: note.id, title, content, tags });
+    const resolved = resolveApi();
+    if (!resolved) return;
+
+    if (note && note.id) {
+      await resolved.updateNote({ id: note.id, title, content, tags });
     } else if (cardId) {
-      dispatch('save', { cardId, title, content, tags });
+      await resolved.createNote({ cardId, title, content, tags });
     }
+
+    // notify list and go back
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId } }));
+    modalStore.pop();
+  }
+
+  function cancel() {
+    modalStore.pop();
   }
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       e.stopPropagation();
-      close();
+      cancel();
     }
   }
 </script>
 
-{#if open}
-  <div class="modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" on:keydown={onKey} on:introstart={onOpen}>
+  <div class="modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" onkeydown={onKey}>
     <div class="modal" role="document">
       <header>
         <h2>{note ? 'Edit Note' : 'New Note'}</h2>
@@ -82,12 +81,11 @@
       </div>
 
       <footer>
-        <button type="button" class="secondary" on:click={close}>Cancel</button>
-        <button type="button" class="primary" on:click={save}>Save</button>
+        <button type="button" class="secondary" onclick={cancel}>Cancel</button>
+        <button type="button" class="primary" onclick={doSave}>Save</button>
       </footer>
     </div>
   </div>
-{/if}
 
 <style>
   .modal-backdrop {

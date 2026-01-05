@@ -1,7 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
-import CardItem from './CardItem.svelte';
+import CardItemTestWrapper from './__tests__/CardItemTestWrapper.svelte';
 
 test('CardItem Start button clickable and triggers callback', async () => {
   const card = {
@@ -15,7 +15,7 @@ test('CardItem Start button clickable and triggers callback', async () => {
   const onStart = vi.fn();
   const onToggle = vi.fn();
 
-  render(CardItem, {
+  render(CardItemTestWrapper, {
     props: {
       card,
       onStart,
@@ -35,4 +35,38 @@ test('CardItem Start button clickable and triggers callback', async () => {
   await toggleCheckbox.click();
   expect(onToggle).toHaveBeenCalledOnce();
   expect(onToggle).toHaveBeenCalledWith('c1', 'done');
+});
+
+test('Open Notes button shows the notes modal', async () => {
+  const api = {
+    getNotes: vi.fn(async () => []),
+    createNote: vi.fn(async () => null),
+    updateNote: vi.fn(async () => null),
+    deleteNote: vi.fn(async () => null),
+  };
+
+  const card = {
+    id: 'c2',
+    title: 'Notes Card',
+    prompt: 'Look at notes',
+    status: 'active',
+    createdAt: new Date().toISOString(),
+  };
+
+  render(CardItemTestWrapper, {
+    props: {
+      card,
+      onStart: () => {},
+      onToggle: () => {},
+      noteApi: api,
+    },
+  });
+
+  const openNotes = page.getByRole('button', { name: /Open Notes/i });
+  await expect.element(openNotes).toBeVisible();
+  await openNotes.click();
+
+  const modalHeading = page.getByRole('heading', { name: /Notes for Notes Card/i });
+  await expect.element(modalHeading).toBeVisible();
+  expect(api.getNotes).toHaveBeenCalledWith('c2');
 });

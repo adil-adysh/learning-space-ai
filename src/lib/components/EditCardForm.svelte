@@ -12,13 +12,21 @@
 	const { card, onSubmit, onCancel }: Props = $props();
 
 	// Local state using Svelte 5 runes
-	let title = $state(card.title);
-	let topic = $state(card.topic || '');
-	let project = $state(card.project || '');
+	let title = $state('');
+	let topic = $state('');
+	let project = $state('');
 	let creatingProject = $state(false);
-	let prompt = $state(card.prompt);
+	let prompt = $state('');
 	let status = $state('');
 	let isSubmitting = $state(false);
+
+	$effect(() => {
+		title = card.title;
+		topic = card.topic || '';
+		project = card.project || '';
+		prompt = card.prompt;
+		creatingProject = false;
+	});
 
 	// Derived validation state
 	let titleError = $derived.by(() => {

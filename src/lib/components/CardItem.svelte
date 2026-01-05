@@ -1,8 +1,9 @@
-<script lang="ts">
-	import type { LearningCard } from '../../types';
+﻿<script lang="ts">
+ 	import type { LearningCard, Note } from '../../types';
 	import { projectManager } from '../projectManager.svelte';
 	import MoreMenu from './MoreMenu.svelte';
 	import NoteModal from './NoteModal.svelte';
+	import { modalStore } from '../stores/modalStore';
 
 	interface Props {
 		card: LearningCard;
@@ -10,9 +11,15 @@
 		onToggle: (id: string, status: 'active' | 'done') => void;
 		onEdit?: (card: LearningCard) => void;
 		onDelete?: (id: string) => void;
+		noteApi?: {
+			getNotes(cardId: string): Promise<Note[]>;
+			createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
+			updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
+			deleteNote(id: string): Promise<Note>;
+		};
 	}
 
-	const { card, onStart, onToggle, onEdit, onDelete }: Props = $props();
+	const { card, onStart, onToggle, onEdit, onDelete, noteApi }: Props = $props();
 
 	// Derived computed values
 	const isDone = $derived(card.status === 'done');
@@ -23,7 +30,7 @@
 		return projectManager.all.find((p) => p.id === card.project)?.name || card.project;
 	});
 
-	// local modal state (Svelte 5 rune)
+	// local modal state (Svelte 5 rune) - replaced by centralized modalStore
 	let notesOpen = $state(false);
 </script>
 
@@ -47,7 +54,7 @@
 		<button
 			type="button"
 			class="primary"
-			on:click|stopPropagation={() => onStart(card)}
+			onclick={(e) => { e.stopPropagation(); onStart(card); }}
 			aria-label={`Start chat with prompt for ${card.title}`}
 		>
 			Start in ChatGPT
@@ -57,26 +64,29 @@
 			<input
 				type="checkbox"
 				checked={isDone}
-				on:click|stopPropagation={() => onToggle(card.id, isDone ? 'active' : 'done')}
+				onclick={(e) => { e.stopPropagation(); onToggle(card.id, isDone ? 'active' : 'done'); }}
 				aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
 			/>
 			<span class="check-label">{isDone ? 'Completed' : 'Mark done'}</span>
 		</label>
 
-		<button
-			type="button"
-			class="secondary open-notes"
-			on:click|stopPropagation={() => (notesOpen = true)}
-			aria-label={`Open notes for ${card.title}`}
-		>
-			Open Notes
-		</button>
+			<button
+				type="button"
+				class="secondary open-notes"
+				onclick={(e) => {
+					e.stopPropagation();
+					modalStore.open(NoteModal, { cardId: card.id, cardTitle: card.title, api: noteApi });
+				}}
+				aria-label={`Open notes for ${card.title}`}
+			>
+				Open Notes
+			</button>
 
 		<MoreMenu ariaLabel={`More actions for ${card.title}`} on:edit={() => onEdit?.(card)} on:delete={() => onDelete?.(card.id)} />
 	</footer>
 </article>
 
-<NoteModal open={notesOpen} cardId={card.id} cardTitle={card.title} on:close={() => (notesOpen = false)} />
+<!-- Modal is now rendered by ModalContainer via modalStore -->
 
 
 <style>

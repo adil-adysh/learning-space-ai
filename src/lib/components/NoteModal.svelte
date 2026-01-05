@@ -1,63 +1,103 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+/* global setTimeout */
   import NoteEditorModal from './NoteEditorModal.svelte';
+  import { modalStore } from '../stores/modalStore';
   import type { Note } from '../../types';
+  import { createEventDispatcher } from 'svelte';
 
-  export let open = false;
-  export let cardId: string;
-  export let cardTitle: string | undefined;
+  interface Props {
+    cardId: string;
+    cardTitle?: string;
+    api?: {
+      getNotes(cardId: string): Promise<Note[]>;
+      createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
+      updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
+      deleteNote(id: string): Promise<Note>;
+    } | null;
+    confirmFn?: (message: string) => boolean;
+  }
+  const { cardId, cardTitle, api, confirmFn }: Props = $props();
+  const dispatch = createEventDispatcher();
 
-  let notes: Note[] = [];
-  let editorOpen = false;
-  let editing: Note | null = null;
+  let notes: Note[] = $state([] as Note[]);
+  let editing: Note | null = $state(null);
+  let dialogRef: HTMLElement | null = $state(null);
+
+  function resolveApi() {
+    if (api) return api;
+    if (typeof window !== 'undefined' && (window as any).api) return (window as any).api;
+    return null;
+  }
 
   async function load() {
     if (!cardId) return;
-    notes = await window.api.getNotes(cardId);
+    const resolved = resolveApi();
+    if (!resolved) return;
+    notes = await resolved.getNotes(cardId);
   }
 
-  $: if (open) {
+  import { onMount } from 'svelte';
+
+  onMount(() => {
     load();
-  }
+    setTimeout(() => dialogRef?.focus(), 0);
+  });
 
   function openNew() {
-    editing = null;
-    editorOpen = true;
+    const resolved = resolveApi();
+    // push the editor onto the modal stack so the list remains mounted underneath
+    modalStore.push(NoteEditorModal, { cardId, note: null, api: resolved });
   }
 
   function editNote(n: Note) {
-    editing = n;
-    editorOpen = true;
+    const resolved = resolveApi();
+    modalStore.push(NoteEditorModal, { cardId, note: n, api: resolved });
   }
 
-  async function handleSave(e: CustomEvent) {
-    const payload = e.detail;
-    if (payload.id) {
-      await window.api.updateNote({ id: payload.id, title: payload.title, content: payload.content, tags: payload.tags });
-    } else {
-      await window.api.createNote({ cardId, title: payload.title, content: payload.content, tags: payload.tags });
-    }
-    editorOpen = false;
-    await load();
-  }
+  // NoteEditor will perform saves itself and dispatch a global event when notes change.
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this note?')) return;
-    await window.api.deleteNote(id);
+    const resolvedConfirm = confirmFn ?? (typeof window !== 'undefined' ? window.confirm.bind(window) : () => true);
+    if (!resolvedConfirm('Delete this note?')) return;
+    const resolved = resolveApi();
+    if (!resolved) return;
+    await resolved.deleteNote(id);
     await load();
   }
 
   function close() {
-    open = false;
+    dispatch('close');
   }
+
+  // listen for global note-change events so the list refreshes when the editor creates/updates
+  function onNotesChanged(e: Event) {
+    const detail = (e as CustomEvent).detail as { cardId?: string } | undefined;
+    if (!detail || detail.cardId !== cardId) return;
+    load();
+  }
+
+  import { onDestroy } from 'svelte';
+  onMount(() => {
+    load();
+    setTimeout(() => dialogRef?.focus(), 0);
+    window.addEventListener('notes:changed', onNotesChanged as EventListener);
+  });
+  onDestroy(() => window.removeEventListener('notes:changed', onNotesChanged as EventListener));
 </script>
 
-{#if open}
-  <div class="notes-modal-backdrop" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="notes-modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" bind:this={dialogRef}>
     <div class="notes-modal">
       <header>
         <h3>Notes for {cardTitle || 'Card'}</h3>
-        <button type="button" class="close" on:click={close}>✕</button>
+        <button
+          type="button"
+          class="close"
+          onclick={close}
+          aria-label={"Close notes for " + (cardTitle || 'card')}
+          title={"Close notes"}
+        >
+          ✕
+        </button>
       </header>
 
       <div class="notes-list">
@@ -70,8 +110,8 @@
               <div class="meta">{n.tags?.map(t => `#${t}`).join(' ')}</div>
               <pre class="content">{n.content}</pre>
               <div class="actions">
-                <button type="button" on:click={() => editNote(n)}>Edit</button>
-                <button type="button" class="danger" on:click={() => handleDelete(n.id)}>Delete</button>
+                <button type="button" onclick={() => editNote(n)}>Edit</button>
+                <button type="button" class="danger" onclick={() => handleDelete(n.id)}>Delete</button>
               </div>
             </article>
           {/each}
@@ -79,13 +119,12 @@
       </div>
 
       <footer>
-        <button type="button" class="primary" on:click={openNew}>New Note</button>
+        <button type="button" class="primary" onclick={openNew}>New Note</button>
       </footer>
     </div>
   </div>
 
-  <NoteEditorModal open={editorOpen} note={editing} cardId={cardId} on:save={handleSave} on:cancel={() => (editorOpen = false)} />
-{/if}
+  <!-- NoteEditorModal instances are pushed onto the modal stack so they're rendered by ModalContainer -->
 
 <style>
   .notes-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:60; }

@@ -1,101 +1,54 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
 
   const dispatch = createEventDispatcher();
 
-  export let ariaLabel = 'More actions';
+  const { ariaLabel }: { ariaLabel?: string } = $props();
 
-  let open = false;
-  let buttonEl: HTMLButtonElement | null = null;
+  let detailsEl: HTMLDetailsElement | null = null;
   let menuEl: HTMLDivElement | null = null;
 
-  function toggle() {
-    open = !open;
-    if (open) focusFirst();
-  }
-
-  function close() {
-    open = false;
-    buttonEl?.focus();
-  }
-
-  function focusFirst() {
-    requestAnimationFrame(() => {
-      const first = menuEl?.querySelector<HTMLElement>('button');
-      first?.focus();
-    });
-  }
-
-  function onKeyDown(e: KeyboardEvent) {
-    if (!open) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
-    }
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const items = Array.from(menuEl?.querySelectorAll<HTMLElement>('button') || []);
-      if (!items.length) return;
-      const idx = items.indexOf(document.activeElement as HTMLElement);
-      let next = 0;
-      if (e.key === 'ArrowDown') next = (idx + 1) % items.length;
-      else next = (idx - 1 + items.length) % items.length;
-      items[next].focus();
-    }
-  }
-
-  function onDocumentClick(e: MouseEvent) {
-    if (!open) return;
-    const target = e.target as Node;
-    if (buttonEl && buttonEl.contains(target)) return;
-    if (menuEl && menuEl.contains(target)) return;
-    close();
-  }
-
-  onMount(() => {
-    document.addEventListener('click', onDocumentClick);
-    document.addEventListener('keydown', onKeyDown as any);
-  });
-  onDestroy(() => {
-    document.removeEventListener('click', onDocumentClick);
-    document.removeEventListener('keydown', onKeyDown as any);
-  });
-
-  // Forward actions
   function handleEdit() {
     dispatch('edit');
-    close();
+    detailsEl && (detailsEl.open = false);
   }
+
   function handleDelete() {
     dispatch('delete');
-    close();
+    detailsEl && (detailsEl.open = false);
   }
+
+  // when the disclosure opens, focus first actionable item
+  $effect(() => {
+    if (detailsEl?.open) {
+      requestAnimationFrame(() => {
+        const first = menuEl?.querySelector<HTMLElement>('button');
+        first?.focus();
+      });
+    }
+  });
 </script>
 
-<div class="more-menu">
-  <button
-    bind:this={buttonEl}
-    type="button"
+<details class="more-menu" bind:this={detailsEl}>
+  <summary
     class="more-trigger"
-    aria-haspopup="true"
-    aria-expanded={open}
     aria-label={ariaLabel}
-    on:click={toggle}
+    
+    onkeydown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        detailsEl && (detailsEl.open = !detailsEl.open);
+      }
+    }}
   >
     <span aria-hidden="true">⋮</span>
-  </button>
+  </summary>
 
-  {#if open}
-    <div
-      class="menu"
-      role="menu"
-      bind:this={menuEl}
-    >
-      <button type="button" role="menuitem" on:click={handleEdit}>Edit</button>
-      <button type="button" role="menuitem" class="danger" on:click={handleDelete}>Delete</button>
-    </div>
-  {/if}
-</div>
+    <div class="menu" bind:this={menuEl} role="menu">
+    <button type="button" role="menuitem" onclick={handleEdit}>Edit</button>
+    <button type="button" role="menuitem" class="danger" onclick={handleDelete}>Delete</button>
+  </div>
+</details>
 
 <style>
   .more-menu { position: relative; display: inline-block; }

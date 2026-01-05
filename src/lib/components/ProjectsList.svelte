@@ -89,21 +89,11 @@
   </ul>
 
     {#if editingProject}
-      <div
-        class="modal-overlay"
-        role="presentation"
-        tabindex="-1"
-        onclick={handleEditCancel}
-        onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
-      >
+      <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}>
         <div
           class="modal-content"
-          role="dialog"
-          tabindex="-1"
-          aria-modal="true"
           aria-labelledby="edit-project-heading"
-          onclick={(e) => e.stopPropagation()}
-          onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}
+          role="document"
         >
           <EditProjectForm 
             project={editingProject}
@@ -111,7 +101,7 @@
             onCancel={handleEditCancel}
           />
         </div>
-      </div>
+      </dialog>
     {/if}
 </section>
 
@@ -123,8 +113,6 @@
   .project-card { width:100%; text-align:left; padding:0.75rem 0.75rem 2.5rem 0.75rem; border-radius:6px; border:1px solid var(--muted,#ddd); background:var(--card,#fff); }
   .project-name { font-weight:600; }
   .project-actions { position: absolute; bottom: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; }
-  .icon-btn { background: none; border: none; cursor: pointer; padding: 0.25rem; font-size: 1.2rem; opacity: 0.6; transition: opacity 0.2s; }
-  .icon-btn:hover { opacity: 1; }
   /* danger hover moved to MoreMenu for consistent styling */
   .empty { color:var(--muted,#666); }
 </style>

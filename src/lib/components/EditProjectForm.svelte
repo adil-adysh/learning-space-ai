@@ -11,8 +11,8 @@
 	const { project, onSubmit, onCancel }: Props = $props();
 
 	let formData = $state({
-		name: project.name,
-		systemPrompt: project.systemPrompt || '',
+		name: '',
+		systemPrompt: '',
 	});
 
 	let fieldErrors = $state({
@@ -22,6 +22,13 @@
 
 	let submissionError = $state('');
 	let isSubmitting = $state(false);
+
+	$effect(() => {
+		formData = {
+			name: project.name,
+			systemPrompt: project.systemPrompt || '',
+		};
+	});
 
 	// Validate on input
 	$effect(() => {

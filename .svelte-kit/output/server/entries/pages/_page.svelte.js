@@ -1,11 +1,7 @@
-import { x as attr, y as bind_props, z as ensure_array_like, F as attr_class, G as head } from "../../chunks/index.js";
+import { b as attr, e as ensure_array_like, a as attr_class, h as head } from "../../chunks/index2.js";
 import "clsx";
-import { a as ssr_context, e as escape_html } from "../../chunks/context.js";
-import { j as fallback } from "../../chunks/utils2.js";
-function onDestroy(fn) {
-  /** @type {SSRContext} */
-  ssr_context.r.on_destroy(fn);
-}
+import { X as escape_html } from "../../chunks/context.js";
+import "../../chunks/modalStore.js";
 class CardManager {
   constructor() {
     this.all = [];
@@ -330,24 +326,12 @@ class ProjectManager {
 const projectManager = new ProjectManager();
 function MoreMenu($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let ariaLabel = fallback($$props["ariaLabel"], "More actions");
-    let open = false;
-    function onKeyDown(e) {
-      return;
-    }
-    function onDocumentClick(e) {
-      return;
-    }
-    onDestroy(() => {
-      document.removeEventListener("click", onDocumentClick);
-      document.removeEventListener("keydown", onKeyDown);
-    });
-    $$renderer2.push(`<div class="more-menu svelte-rmjvfi"><button type="button" class="more-trigger svelte-rmjvfi" aria-haspopup="true"${attr("aria-expanded", open)}${attr("aria-label", ariaLabel)}><span aria-hidden="true">⋮</span></button> `);
-    {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></div>`);
-    bind_props($$props, { ariaLabel });
+    const { ariaLabel } = $$props;
+    $$renderer2.push(`<details class="more-menu svelte-rmjvfi"><summary class="more-trigger svelte-rmjvfi"${attr(
+      "aria-label",
+      // when the disclosure opens, focus first actionable item
+      ariaLabel
+    )}><span aria-hidden="true">⋮</span></summary> <div class="menu svelte-rmjvfi" role="menu"><button type="button" role="menuitem" class="svelte-rmjvfi">Edit</button> <button type="button" role="menuitem" class="danger svelte-rmjvfi">Delete</button></div></details>`);
   });
 }
 function ProjectsList($$renderer, $$props) {
@@ -407,137 +391,13 @@ function ProjectCreate($$renderer, $$props) {
     $$renderer2.push(`<!--]--> <div class="actions svelte-t06kqd"><button type="submit" class="primary svelte-t06kqd"${attr("disabled", isSubmitting, true)}>${escape_html("Create project")}</button> <button type="button" class="ghost svelte-t06kqd"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
   });
 }
-function AddForm($$renderer, $$props) {
+function EditCardForm($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let title = "";
     let topic = "";
-    let project = projectManager.selectedProject !== "all" && projectManager.selectedProject !== "create" ? projectManager.selectedProject : "";
+    let project = "";
     let creatingProject = false;
     let prompt = "";
-    let isSubmitting = false;
-    let titleError = (() => {
-      const trimmed = title.trim();
-      if (trimmed.length === 0) return "";
-      if (trimmed.length < 3) return "Title must be at least 3 characters";
-      if (trimmed.length > 100) return "Title must be less than 100 characters";
-      return "";
-    })();
-    let promptError = (() => {
-      const trimmed = prompt.trim();
-      if (trimmed.length === 0) return "";
-      if (trimmed.length < 10) return "Prompt must be at least 10 characters";
-      if (trimmed.length > 8e3) return "Prompt must be less than 8000 characters";
-      return "";
-    })();
-    let projectError = (() => {
-      if (creatingProject) {
-        const trimmed = project.trim();
-        if (trimmed.length === 0) return "Project name is required";
-        if (trimmed.length < 2) return "Project name must be at least 2 characters";
-        if (trimmed.length > 50) return "Project name must be less than 50 characters";
-        if (projectManager.all.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
-          return "A project with this name already exists";
-        }
-      }
-      return "";
-    })();
-    let isValid = (() => {
-      return title.trim().length > 0 && prompt.trim().length > 0 && !titleError && !promptError && !projectError;
-    })();
-    function handleProjectChange(e) {
-      const select = e.target;
-      if (select.value === "__create__") {
-        creatingProject = true;
-        project = "";
-      } else {
-        creatingProject = false;
-        project = select.value;
-      }
-    }
-    if (cardManager.isFormOpen) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<section id="add-section"><form aria-labelledby="add-heading"><h2>New Card Details</h2> `);
-      {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]--> <div class="field"><label for="title">Title <span class="required">*</span></label> <input id="title"${attr("value", title)} type="text" autocomplete="off" required${attr("disabled", isSubmitting, true)}${attr_class("", void 0, { "error": titleError })}/> `);
-      if (titleError) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<span class="error-message">${escape_html(titleError)}</span>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<span class="hint">Give your learning card a clear, memorable name.</span>`);
-      }
-      $$renderer2.push(`<!--]--></div> <div class="field"><label for="topic">Topic <span class="optional">(optional)</span></label> <input id="topic"${attr("value", topic)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}/> <span class="hint">e.g., JavaScript, Design Patterns, Math</span></div> <div class="field"><label for="project-select">Project <span class="optional">(optional)</span></label> `);
-      $$renderer2.select(
-        {
-          id: "project-select",
-          value: project,
-          onchange: handleProjectChange,
-          disabled: isSubmitting,
-          "aria-describedby": "project-hint"
-        },
-        ($$renderer3) => {
-          $$renderer3.option({ value: "" }, ($$renderer4) => {
-            $$renderer4.push(`Select a project`);
-          });
-          $$renderer3.push(`<!--[-->`);
-          const each_array = ensure_array_like(projectManager.all);
-          for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-            let p = each_array[$$index];
-            $$renderer3.option({ value: p.id }, ($$renderer4) => {
-              $$renderer4.push(`${escape_html(p.name)}`);
-            });
-          }
-          $$renderer3.push(`<!--]-->`);
-          $$renderer3.option({ value: "__create__" }, ($$renderer4) => {
-            $$renderer4.push(`+ Create new project...`);
-          });
-        }
-      );
-      $$renderer2.push(` <span id="project-hint" class="hint">Assign this card to a project or create a new one.</span></div> `);
-      if (creatingProject) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="field"><label for="project">New project name <span class="required">*</span></label> <input id="project"${attr("value", project)} type="text" autocomplete="off"${attr("disabled", isSubmitting, true)}${attr_class("", void 0, { "error": projectError })}/> `);
-        if (projectError) {
-          $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<span class="error-message">${escape_html(projectError)}</span>`);
-        } else {
-          $$renderer2.push("<!--[!-->");
-          $$renderer2.push(`<span class="hint">Give your project a short, unique name.</span>`);
-        }
-        $$renderer2.push(`<!--]--></div>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]--> <div class="field"><label for="prompt">Learning prompt <span class="required">*</span></label> <textarea id="prompt" required${attr("disabled", isSubmitting, true)} placeholder="e.g. Explain the concept of closures in JavaScript"${attr_class("", void 0, { "error": promptError })}>`);
-      const $$body = escape_html(prompt);
-      if ($$body) {
-        $$renderer2.push(`${$$body}`);
-      }
-      $$renderer2.push(`</textarea> `);
-      if (promptError) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<span class="error-message">${escape_html(promptError)}</span>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<span class="hint">What do you want to learn or understand?</span>`);
-      }
-      $$renderer2.push(`<!--]--></div> <div class="form-actions"><button type="submit" class="primary"${attr("disabled", !isValid || isSubmitting, true)}>${escape_html("Save card")}</button> <button type="button" class="ghost"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-  });
-}
-function EditCardForm($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    const { card } = $$props;
-    let title = card.title;
-    let topic = card.topic || "";
-    let project = card.project || "";
-    let creatingProject = false;
-    let prompt = card.prompt;
     let isSubmitting = false;
     let titleError = (() => {
       const trimmed = title.trim();
@@ -648,92 +508,15 @@ function EditCardForm($$renderer, $$props) {
     $$renderer2.push(`<!--]--></div> <div class="form-actions"><button type="submit" class="primary"${attr("disabled", !isValid || isSubmitting, true)}>${escape_html("Save changes")}</button> <button type="button" class="ghost"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
   });
 }
-function NoteEditorModal($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let open = fallback($$props["open"], false);
-    let note = fallback(
-      $$props["note"],
-      null
-      // null => create new
-    );
-    let cardId = fallback($$props["cardId"], null);
-    let title = "";
-    let content = "";
-    let tagsText = "";
-    if (open) {
-      title = note?.title || "";
-      content = note?.content || "";
-      tagsText = (note?.tags || []).join(", ");
-    }
-    if (
-      // nothing here
-      open
-    ) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="modal-backdrop svelte-10arwa" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-10arwa" role="document"><header class="svelte-10arwa"><h2 class="svelte-10arwa">${escape_html(note ? "Edit Note" : "New Note")}</h2></header> <div class="body svelte-10arwa"><label class="svelte-10arwa">Title <input${attr("value", title)} class="svelte-10arwa"/></label> <label class="svelte-10arwa">Content <textarea${attr("rows", 8)} class="svelte-10arwa">`);
-      const $$body = escape_html(content);
-      if ($$body) {
-        $$renderer2.push(`${$$body}`);
-      }
-      $$renderer2.push(`</textarea></label> <label class="svelte-10arwa">Tags (comma separated) <input${attr("value", tagsText)} class="svelte-10arwa"/></label></div> <footer class="svelte-10arwa"><button type="button" class="secondary svelte-10arwa">Cancel</button> <button type="button" class="primary svelte-10arwa">Save</button></footer></div></div>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-    bind_props($$props, { open, note, cardId });
-  });
-}
-function NoteModal($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let open = fallback($$props["open"], false);
-    let cardId = $$props["cardId"];
-    let cardTitle = $$props["cardTitle"];
-    let notes = [];
-    let editorOpen = false;
-    let editing = null;
-    async function load() {
-      if (!cardId) return;
-      notes = await window.api.getNotes(cardId);
-    }
-    if (open) {
-      load();
-    }
-    if (open) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="notes-modal-backdrop svelte-1t0p0k1" role="dialog" aria-modal="true" tabindex="-1"><div class="notes-modal svelte-1t0p0k1"><header class="svelte-1t0p0k1"><h3>Notes for ${escape_html(cardTitle || "Card")}</h3> <button type="button" class="close svelte-1t0p0k1">✕</button></header> <div class="notes-list svelte-1t0p0k1">`);
-      if (notes.length === 0) {
-        $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="empty">No notes yet. Click "New Note" to add one.</div>`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-        $$renderer2.push(`<!--[-->`);
-        const each_array = ensure_array_like(notes);
-        for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-          let n = each_array[$$index];
-          $$renderer2.push(`<article class="note-item svelte-1t0p0k1"><h4>${escape_html(n.title || "(untitled)")}</h4> <div class="meta svelte-1t0p0k1">${escape_html(n.tags?.map((t) => `#${t}`).join(" "))}</div> <pre class="content svelte-1t0p0k1">${escape_html(n.content)}</pre> <div class="actions svelte-1t0p0k1"><button type="button">Edit</button> <button type="button" class="danger svelte-1t0p0k1">Delete</button></div></article>`);
-        }
-        $$renderer2.push(`<!--]-->`);
-      }
-      $$renderer2.push(`<!--]--></div> <footer><button type="button" class="primary svelte-1t0p0k1">New Note</button></footer></div></div> `);
-      NoteEditorModal($$renderer2, { open: editorOpen, note: editing, cardId });
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-    bind_props($$props, { open, cardId, cardTitle });
-  });
-}
 function CardItem($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    const { card, onStart, onToggle, onEdit, onDelete } = $$props;
+    const { card, onStart, onToggle, onEdit, onDelete, noteApi } = $$props;
     const isDone = card.status === "done";
     const statusText = isDone ? "✓ Completed" : "Active";
     const projectName = (() => {
       if (!card.project) return "";
       return projectManager.all.find((p) => p.id === card.project)?.name || card.project;
     })();
-    let notesOpen = false;
     $$renderer2.push(`<article${attr_class("card svelte-ybr5in", void 0, { "done": isDone })}><header><h3>${escape_html(card.title)}</h3> `);
     if (card.topic) {
       $$renderer2.push("<!--[-->");
@@ -750,9 +533,7 @@ function CardItem($$renderer, $$props) {
     }
     $$renderer2.push(`<!--]--></header> <section><div${attr_class("status svelte-ybr5in", void 0, { "done": isDone })}>${escape_html(statusText)}</div> <pre class="prompt">${escape_html(card.prompt)}</pre></section> <footer class="card-actions"><button type="button" class="primary"${attr("aria-label", `Start chat with prompt for ${card.title}`)}>Start in ChatGPT</button> <label class="check svelte-ybr5in"><input type="checkbox"${attr("checked", isDone, true)}${attr("aria-label", isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`)} class="svelte-ybr5in"/> <span class="check-label svelte-ybr5in">${escape_html(isDone ? "Completed" : "Mark done")}</span></label> <button type="button" class="secondary open-notes"${attr("aria-label", `Open notes for ${card.title}`)}>Open Notes</button> `);
     MoreMenu($$renderer2, { ariaLabel: `More actions for ${card.title}` });
-    $$renderer2.push(`<!----></footer></article> `);
-    NoteModal($$renderer2, { open: notesOpen, cardId: card.id, cardTitle: card.title });
-    $$renderer2.push(`<!---->`);
+    $$renderer2.push(`<!----></footer></article>`);
   });
 }
 function CardList($$renderer, $$props) {
@@ -859,21 +640,12 @@ function ProjectDetail($$renderer, $$props) {
         await cardManager.deleteCard(id);
       }
     }
-    $$renderer2.push(`<section class="project-detail svelte-1ykxz3w"><header><h2>${escape_html(project ? project.name : "Project")}</h2> <div class="actions svelte-1ykxz3w"><button class="primary"${attr("aria-expanded", cardManager.isFormOpen)} aria-controls="add-section">+ New Learning Item</button></div></header> `);
-    if (cardManager.isFormOpen) {
-      $$renderer2.push("<!--[-->");
-      AddForm($$renderer2);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
+    $$renderer2.push(`<section class="project-detail svelte-1ykxz3w"><header><h2>${escape_html(project ? project.name : "Project")}</h2> <div class="actions svelte-1ykxz3w"><button class="primary" type="button">+ New Learning Item</button></div></header> `);
     if (editingCard) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="modal-overlay" role="presentation" tabindex="-1"><div class="modal-content" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="edit-heading">`);
-      EditCardForm($$renderer2, {
-        card: editingCard
-      });
-      $$renderer2.push(`<!----></div></div>`);
+      $$renderer2.push(`<dialog open class="modal-overlay"><div class="modal-content" aria-labelledby="edit-heading" role="document">`);
+      EditCardForm($$renderer2);
+      $$renderer2.push(`<!----></div></dialog>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }

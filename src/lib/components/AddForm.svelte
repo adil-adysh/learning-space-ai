@@ -1,18 +1,22 @@
 <script lang="ts">
 /* global HTMLElement setTimeout */
-	import { cardManager } from '../cardManager.svelte';
 	import { projectManager } from '../projectManager.svelte';
 
 	interface Props {
 		onSubmit: (data: { title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
+		onCancel?: () => void;
+		initialProject?: string;
 	}
 
-	const { onSubmit }: Props = $props();
+	const { onSubmit, onCancel, initialProject }: Props = $props();
 
 	// Local state using Svelte 5 runes
 	let title = $state('');
 	let topic = $state('');
-	let project = $state(projectManager.selectedProject !== 'all' && projectManager.selectedProject !== 'create' ? projectManager.selectedProject : '');
+	let project = $state('');
+	$effect(() => {
+		project = initialProject ?? (projectManager.selectedProject !== 'all' && projectManager.selectedProject !== 'create' ? projectManager.selectedProject : '');
+	});
 	let creatingProject = $state(false);
 	let prompt = $state('');
 	let status = $state('');
@@ -57,68 +61,14 @@
 		       !projectError;
 	});
 
-	let formElement: HTMLElement | null = null;
-	let firstFocusableElement: HTMLElement | null = null;
-	let lastFocusableElement: HTMLElement | null = null;
+	let formElement: HTMLElement | null = $state(null);
+	let firstFocusableElement: HTMLElement | null = $state(null);
+	let lastFocusableElement: HTMLElement | null = $state(null);
 
-	// Focus trap effect
+	// Focus / accessibility handled by ModalContainer when used as modal; keep simple on-mount focus
 	$effect(() => {
-		if (!cardManager.isFormOpen) return;
-
-		// Set initial focus to title input
-		const titleInput = document.getElementById('title') as HTMLInputElement;
-		if (titleInput) {
-			setTimeout(() => titleInput.focus(), 0);
-		}
-
-		// Get all focusable elements within the form
-		const updateFocusableElements = () => {
-			if (!formElement) return;
-			
-			const focusableSelectors = 'input:not([disabled]), textarea:not([disabled]), button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-			const focusableElements = formElement.querySelectorAll(focusableSelectors);
-			
-			if (focusableElements.length > 0) {
-				firstFocusableElement = focusableElements[0] as HTMLElement;
-				lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-			}
-		};
-
-		updateFocusableElements();
-
-		const handleTabKey = (e: KeyboardEvent) => {
-			if (e.key !== 'Tab') return;
-
-			updateFocusableElements();
-
-			if (e.shiftKey) {
-				// Shift + Tab
-				if (document.activeElement === firstFocusableElement) {
-					e.preventDefault();
-					lastFocusableElement?.focus();
-				}
-			} else {
-				// Tab
-				if (document.activeElement === lastFocusableElement) {
-					e.preventDefault();
-					firstFocusableElement?.focus();
-				}
-			}
-		};
-
-		const handleGlobalKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				handleCancel();
-			}
-		};
-
-		formElement?.addEventListener('keydown', handleTabKey);
-		window.addEventListener('keydown', handleGlobalKeydown);
-
-		return () => {
-			formElement?.removeEventListener('keydown', handleTabKey);
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
+		const titleInput = document.getElementById('title') as HTMLInputElement | null;
+		if (titleInput) setTimeout(() => titleInput.focus(), 0);
 	});
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -139,7 +89,7 @@
 
 			// Success - clear form and close
 			clearForm();
-			cardManager.closeForm();
+			onCancel?.();
 
 			// Announce to screen readers
 			announceToSR(`Card "${title}" added successfully`);
@@ -173,7 +123,7 @@
 
 	function handleCancel() {
 		clearForm();
-		cardManager.closeForm();
+		onCancel?.();
 	}
 
 	function announceToSR(message: string) {
@@ -184,7 +134,6 @@
 	}
 </script>
 
-{#if cardManager.isFormOpen}
 	<section id="add-section" bind:this={formElement}>
 		<form onsubmit={handleSubmit} aria-labelledby="add-heading">
 			<h2>New Card Details</h2>
@@ -293,4 +242,3 @@
 			</div>
 		</form>
 	</section>
-{/if}
