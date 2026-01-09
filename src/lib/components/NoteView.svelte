@@ -1,36 +1,42 @@
 <script lang="ts">
-  import NoteContent from './NoteContent.svelte';
-  import NoteEditorModal from './NoteEditorModal.svelte';
-  import MoreMenu from './MoreMenu.svelte';
-  import { modalStore } from '../stores/modalStore';
+import type { Note } from "../../types";
+import NoteContent from "./NoteContent.svelte";
+import NoteEditorModal from "./NoteEditorModal.svelte";
+import MoreMenu from "./MoreMenu.svelte";
+import { modalStore } from "../stores/modalStore";
 
-  export let note: any = null;
-  export let cardId: string | null = null;
-  export let api: any = null;
+type NoteApi = { deleteNote: (id: string) => Promise<void> };
 
-  function resolveApi() {
-    if (api) return api;
-    if (typeof window !== 'undefined' && (window as any).api) return (window as any).api;
-    return null;
-  }
+export const note: Note | null = null;
+export const cardId: string | null = null;
+export const api: NoteApi | null = null;
 
-  function close() {
-    modalStore.pop();
-  }
+function resolveApi(): NoteApi | null {
+	if (api) return api;
+	if (typeof window !== "undefined" && (window as unknown as { api?: NoteApi }).api)
+		return (window as unknown as { api?: NoteApi }).api;
+	return null;
+}
 
-  function edit() {
-    const resolved = resolveApi();
-    modalStore.push(NoteEditorModal, { cardId, note, api: resolved });
-  }
+function close() {
+	modalStore.pop();
+}
 
-  async function remove() {
-    const resolved = resolveApi();
-    if (!resolved) return;
-    if (!confirm('Delete this note?')) return;
-    await resolved.deleteNote(note.id);
-    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId } }));
-    modalStore.pop();
-  }
+function edit() {
+	const resolved = resolveApi();
+	modalStore.push(NoteEditorModal, { cardId, note, api: resolved });
+}
+
+async function remove() {
+	const resolved = resolveApi();
+	if (!resolved) return;
+	if (!confirm("Delete this note?")) return;
+	await resolved.deleteNote(note.id);
+	window.dispatchEvent(
+		new CustomEvent("notes:changed", { detail: { cardId } }),
+	);
+	modalStore.pop();
+}
 </script>
 
 <div class="note-view-backdrop" role="dialog" aria-modal="true" tabindex="-1">
@@ -60,6 +66,4 @@
   .body { margin-top: 0.5rem }
   footer { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.75rem }
   .close { background:transparent; border:none }
-  .secondary { background:transparent; border:1px solid rgba(0,0,0,0.08); padding:0.5rem 0.75rem; border-radius:6px }
-  .danger { color:#b91c1c; background:transparent; border:1px solid rgba(0,0,0,0.06); padding:0.5rem 0.75rem; border-radius:6px }
 </style>

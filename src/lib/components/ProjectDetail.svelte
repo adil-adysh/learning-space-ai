@@ -1,90 +1,101 @@
 <script lang="ts">
-  import { projectManager } from '../projectManager.svelte';
-  import { cardManager } from '../cardManager.svelte';
-  import AddForm from './AddForm.svelte';
-  import EditCardForm from './EditCardForm.svelte';
-  import CardList from './CardList.svelte';
-  import { modalStore } from '../stores/modalStore';
-  import type { LearningCard } from '../../types';
+import { projectManager } from "../projectManager.svelte";
+import { cardManager } from "../cardManager.svelte";
+import AddForm from "./AddForm.svelte";
+import EditCardForm from "./EditCardForm.svelte";
+import CardList from "./CardList.svelte";
+import { modalStore } from "../stores/modalStore";
+import type { LearningCard } from "../../types";
 
-  interface Props {
-    projectId: string;
-  }
+interface Props {
+	projectId: string;
+}
 
-  const { projectId }: Props = $props();
+const { projectId }: Props = $props();
 
-  // Derived value: find current project
-  const project = $derived.by(() => {
-    if (!projectManager.all || !projectId) return undefined;
-    return projectManager.all.find(p => p.id === projectId);
-  });
+// Derived value: find current project
+const project = $derived.by(() => {
+	if (!projectManager.all || !projectId) return undefined;
+	return projectManager.all.find((p) => p.id === projectId);
+});
 
-  // Effect: Ensure projects are loaded
-  $effect(() => {
-    if (!projectManager.all || projectManager.all.length === 0) {
-      projectManager.loadProjects();
-    }
-  });
+// Effect: Ensure projects are loaded
+$effect(() => {
+	if (!projectManager.all || projectManager.all.length === 0) {
+		projectManager.loadProjects();
+	}
+});
 
-  function openAddForm() {
-    modalStore.open(AddForm, {
-      initialProject: projectId,
-      onSubmit: async (data: { title: string; prompt: string; topic?: string; project?: string }) => {
-        await handleFormSubmit(data);
-        modalStore.close();
-      },
-      onCancel: () => modalStore.close(),
-    });
-  }
+function openAddForm() {
+	modalStore.open(AddForm, {
+		initialProject: projectId,
+		onSubmit: async (data: {
+			title: string;
+			prompt: string;
+			topic?: string;
+			project?: string;
+		}) => {
+			await handleFormSubmit(data);
+			modalStore.close();
+		},
+		onCancel: () => modalStore.close(),
+	});
+}
 
-  async function handleFormSubmit(data: {
-    title: string;
-    prompt: string;
-    topic?: string;
-    project?: string;
-  }) {
-    const hasProject = data.project && String(data.project).trim().length > 0;
-    const assignedProject = hasProject ? data.project : projectId || undefined;
-    await cardManager.addCard({ ...data, project: assignedProject });
-    cardManager.closeForm();
-  }
+async function handleFormSubmit(data: {
+	title: string;
+	prompt: string;
+	topic?: string;
+	project?: string;
+}) {
+	const hasProject = data.project && String(data.project).trim().length > 0;
+	const assignedProject = hasProject ? data.project : projectId || undefined;
+	await cardManager.addCard({ ...data, project: assignedProject });
+	cardManager.closeForm();
+}
 
-  async function handleStart(card: LearningCard) {
-    // Get the project's system prompt if the card belongs to a project
-    let systemPrompt: string | undefined;
-    if (card.project) {
-      const proj = projectManager.all.find(p => p.id === card.project);
-      systemPrompt = proj?.systemPrompt;
-    }
-    
-    // Pass both the card prompt and system prompt
-    await cardManager.runPromptWithSystem(card.prompt, systemPrompt);
-  }
+async function handleStart(card: LearningCard) {
+	// Get the project's system prompt if the card belongs to a project
+	let systemPrompt: string | undefined;
+	if (card.project) {
+		const proj = projectManager.all.find((p) => p.id === card.project);
+		systemPrompt = proj?.systemPrompt;
+	}
 
-  async function handleCardToggle(id: string, status: 'active' | 'done') {
-    await cardManager.updateCardStatus(id, status);
-  }
+	// Pass both the card prompt and system prompt
+	await cardManager.runPromptWithSystem(card.prompt, systemPrompt);
+}
 
-  let editingCard = $state<LearningCard | null>(null);
+async function handleCardToggle(id: string, status: "active" | "done") {
+	await cardManager.updateCardStatus(id, status);
+}
 
-  function handleCardEdit(card: LearningCard) {
-    editingCard = card;
-  }
+let editingCard = $state<LearningCard | null>(null);
 
-  async function handleEditSubmit(data: { id: string; title: string; prompt: string; topic?: string; project?: string }) {
-    await cardManager.updateCard(data);
-    editingCard = null;
-  }
+function handleCardEdit(card: LearningCard) {
+	editingCard = card;
+}
 
-  function handleEditCancel() {
-    editingCard = null;
-  }
+async function handleEditSubmit(data: {
+	id: string;
+	title: string;
+	prompt: string;
+	topic?: string;
+	project?: string;
+}) {
+	await cardManager.updateCard(data);
+	editingCard = null;
+}
 
-  async function handleCardDelete(id: string) {
-    if (window.confirm('Are you sure you want to delete this learning card?')) {
-      await cardManager.deleteCard(id);
-    }
-  }
+function handleEditCancel() {
+	editingCard = null;
+}
+
+async function handleCardDelete(id: string) {
+	if (window.confirm("Are you sure you want to delete this learning card?")) {
+		await cardManager.deleteCard(id);
+	}
+}
 </script>
 
 <section class="project-detail">

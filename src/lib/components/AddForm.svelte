@@ -1,137 +1,158 @@
 <script lang="ts">
 /* global HTMLElement setTimeout */
-	import { projectManager } from '../projectManager.svelte';
+import { projectManager } from "../projectManager.svelte";
 
-	interface Props {
-		onSubmit: (data: { title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
-		onCancel?: () => void;
-		initialProject?: string;
-	}
+interface Props {
+	onSubmit: (data: {
+		title: string;
+		prompt: string;
+		topic?: string;
+		project?: string;
+	}) => Promise<void>;
+	onCancel?: () => void;
+	initialProject?: string;
+}
 
-	const { onSubmit, onCancel, initialProject }: Props = $props();
+const { onSubmit, onCancel, initialProject }: Props = $props();
 
-	// Local state using Svelte 5 runes
-	let title = $state('');
-	let topic = $state('');
-	let project = $state('');
-	$effect(() => {
-		project = initialProject ?? (projectManager.selectedProject !== 'all' && projectManager.selectedProject !== 'create' ? projectManager.selectedProject : '');
-	});
-	let creatingProject = $state(false);
-	let prompt = $state('');
-	let status = $state('');
-	let isSubmitting = $state(false);
+// Local state using Svelte 5 runes
+let title = $state("");
+let topic = $state("");
+let project = $state("");
+$effect(() => {
+	project =
+		initialProject ??
+		(projectManager.selectedProject !== "all" &&
+		projectManager.selectedProject !== "create"
+			? projectManager.selectedProject
+			: "");
+});
+let creatingProject = $state(false);
+let prompt = $state("");
+let status = $state("");
+let isSubmitting = $state(false);
 
-	// Derived validation state
-	let titleError = $derived.by(() => {
-		const trimmed = title.trim();
-		if (trimmed.length === 0) return '';
-		if (trimmed.length < 3) return 'Title must be at least 3 characters';
-		if (trimmed.length > 100) return 'Title must be less than 100 characters';
-		return '';
-	});
+// Derived validation state
+const titleError = $derived.by(() => {
+	const trimmed = title.trim();
+	if (trimmed.length === 0) return "";
+	if (trimmed.length < 3) return "Title must be at least 3 characters";
+	if (trimmed.length > 100) return "Title must be less than 100 characters";
+	return "";
+});
 
-	let promptError = $derived.by(() => {
-		const trimmed = prompt.trim();
-		if (trimmed.length === 0) return '';
-		if (trimmed.length < 10) return 'Prompt must be at least 10 characters';
-		if (trimmed.length > 8000) return 'Prompt must be less than 8000 characters';
-		return '';
-	});
+const promptError = $derived.by(() => {
+	const trimmed = prompt.trim();
+	if (trimmed.length === 0) return "";
+	if (trimmed.length < 10) return "Prompt must be at least 10 characters";
+	if (trimmed.length > 8000) return "Prompt must be less than 8000 characters";
+	return "";
+});
 
-	let projectError = $derived.by(() => {
-		if (creatingProject) {
-			const trimmed = project.trim();
-			if (trimmed.length === 0) return 'Project name is required';
-			if (trimmed.length < 2) return 'Project name must be at least 2 characters';
-			if (trimmed.length > 50) return 'Project name must be less than 50 characters';
-			// Check for duplicate project names
-			if (projectManager.all.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
-				return 'A project with this name already exists';
-			}
-		}
-		return '';
-	});
-
-	let isValid = $derived.by(() => {
-		return title.trim().length > 0 && 
-		       prompt.trim().length > 0 && 
-		       !titleError && 
-		       !promptError && 
-		       !projectError;
-	});
-
-	let formElement: HTMLElement | null = $state(null);
-	let firstFocusableElement: HTMLElement | null = $state(null);
-	let lastFocusableElement: HTMLElement | null = $state(null);
-
-	// Focus / accessibility handled by ModalContainer when used as modal; keep simple on-mount focus
-	$effect(() => {
-		const titleInput = document.getElementById('title') as HTMLInputElement | null;
-		if (titleInput) setTimeout(() => titleInput.focus(), 0);
-	});
-
-	async function handleSubmit(e: SubmitEvent) {
-		e.preventDefault();
-
-		if (!isValid || isSubmitting) return;
-
-		isSubmitting = true;
-		status = '';
-
-		try {
-			await onSubmit({
-				title: title.trim(),
-				prompt: prompt.trim(),
-				topic: topic.trim() || undefined,
-				project: creatingProject ? project.trim() || undefined : (project || undefined),
-			});
-
-			// Success - clear form and close
-			clearForm();
-			onCancel?.();
-
-			// Announce to screen readers
-			announceToSR(`Card "${title}" added successfully`);
-		} catch (err) {
-			status = err instanceof Error ? err.message : 'Failed to add card';
-			announceToSR(status);
-		} finally {
-			isSubmitting = false;
+const projectError = $derived.by(() => {
+	if (creatingProject) {
+		const trimmed = project.trim();
+		if (trimmed.length === 0) return "Project name is required";
+		if (trimmed.length < 2) return "Project name must be at least 2 characters";
+		if (trimmed.length > 50)
+			return "Project name must be less than 50 characters";
+		// Check for duplicate project names
+		if (
+			projectManager.all.some(
+				(p) => p.name.toLowerCase() === trimmed.toLowerCase(),
+			)
+		) {
+			return "A project with this name already exists";
 		}
 	}
+	return "";
+});
 
-	function handleProjectChange(e: Event) {
-		const select = e.target as HTMLSelectElement;
-		if (select.value === '__create__') {
-			creatingProject = true;
-			project = '';
-		} else {
-			creatingProject = false;
-			project = select.value;
-		}
-	}
+const isValid = $derived.by(() => {
+	return (
+		title.trim().length > 0 &&
+		prompt.trim().length > 0 &&
+		!titleError &&
+		!promptError &&
+		!projectError
+	);
+});
 
-	function clearForm() {
-		title = '';
-		topic = '';
-		project = '';
-		creatingProject = false;
-		prompt = '';
-		status = '';
-	}
+let formElement: HTMLElement | null = null;
+let firstFocusableElement: HTMLElement | null = null;
+let lastFocusableElement: HTMLElement | null = null;
 
-	function handleCancel() {
+// Focus / accessibility handled by ModalContainer when used as modal; keep simple on-mount focus
+$effect(() => {
+	const titleInput = document.getElementById(
+		"title",
+	) as HTMLInputElement | null;
+	if (titleInput) setTimeout(() => titleInput.focus(), 0);
+});
+
+async function handleSubmit(e: SubmitEvent) {
+	e.preventDefault();
+
+	if (!isValid || isSubmitting) return;
+
+	isSubmitting = true;
+	status = "";
+
+	try {
+		await onSubmit({
+			title: title.trim(),
+			prompt: prompt.trim(),
+			topic: topic.trim() || undefined,
+			project: creatingProject
+				? project.trim() || undefined
+				: project || undefined,
+		});
+
+		// Success - clear form and close
 		clearForm();
 		onCancel?.();
-	}
 
-	function announceToSR(message: string) {
-		const announcer = document.getElementById('sr-announcements');
-		if (announcer) {
-			announcer.textContent = message;
-		}
+		// Announce to screen readers
+		announceToSR(`Card "${title}" added successfully`);
+	} catch (err) {
+		status = err instanceof Error ? err.message : "Failed to add card";
+		announceToSR(status);
+	} finally {
+		isSubmitting = false;
 	}
+}
+
+function handleProjectChange(e: Event) {
+	const select = e.target as HTMLSelectElement;
+	if (select.value === "__create__") {
+		creatingProject = true;
+		project = "";
+	} else {
+		creatingProject = false;
+		project = select.value;
+	}
+}
+
+function clearForm() {
+	title = "";
+	topic = "";
+	project = "";
+	creatingProject = false;
+	prompt = "";
+	status = "";
+}
+
+function handleCancel() {
+	clearForm();
+	onCancel?.();
+}
+
+function announceToSR(message: string) {
+	const announcer = document.getElementById("sr-announcements");
+	if (announcer) {
+		announcer.textContent = message;
+	}
+}
 </script>
 
 	<section id="add-section" bind:this={formElement}>

@@ -1,32 +1,32 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+import { createEventDispatcher } from "svelte";
 
-  const dispatch = createEventDispatcher();
+const dispatch = createEventDispatcher();
 
-  const { ariaLabel }: { ariaLabel?: string } = $props();
+const { ariaLabel }: { ariaLabel?: string } = $props();
 
-  let detailsEl: HTMLDetailsElement | null = null;
-  let menuEl: HTMLDivElement | null = null;
+let detailsEl: HTMLDetailsElement | null = null;
+let menuEl: HTMLDivElement | null = null;
 
-  function handleEdit() {
-    dispatch('edit');
-    detailsEl && (detailsEl.open = false);
-  }
+function _handleEdit() {
+	dispatch("edit");
+	if (detailsEl) detailsEl.open = false;
+}
 
-  function handleDelete() {
-    dispatch('delete');
-    detailsEl && (detailsEl.open = false);
-  }
+function _handleDelete() {
+	dispatch("delete");
+	if (detailsEl) detailsEl.open = false;
+}
 
-  // when the disclosure opens, focus first actionable item
-  $effect(() => {
-    if (detailsEl?.open) {
-      requestAnimationFrame(() => {
-        const first = menuEl?.querySelector<HTMLElement>('button');
-        first?.focus();
-      });
-    }
-  });
+// when the disclosure opens, focus first actionable item
+$effect(() => {
+	if (detailsEl?.open) {
+		requestAnimationFrame(() => {
+			const first = menuEl?.querySelector<HTMLElement>("button");
+			first?.focus();
+		});
+	}
+});
 </script>
 
 <details class="more-menu" bind:this={detailsEl}>
@@ -37,7 +37,7 @@
     onkeydown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        detailsEl && (detailsEl.open = !detailsEl.open);
+        if (detailsEl) detailsEl.open = !detailsEl.open;
       }
     }}
   >
@@ -45,8 +45,8 @@
   </summary>
 
     <div class="menu" bind:this={menuEl} role="menu">
-    <button type="button" role="menuitem" onclick={handleEdit}>Edit</button>
-    <button type="button" role="menuitem" class="danger" onclick={handleDelete}>Delete</button>
+    <button type="button" role="menuitem" onclick={_handleEdit}>Edit</button>
+    <button type="button" role="menuitem" class="danger" onclick={_handleDelete}>Delete</button>
   </div>
 </details>
 

@@ -1,37 +1,49 @@
 ﻿<script lang="ts">
- 	import type { LearningCard, Note } from '../../types';
-	import { projectManager } from '../projectManager.svelte';
-	import MoreMenu from './MoreMenu.svelte';
-	import NoteModal from './NoteModal.svelte';
-	import { modalStore } from '../stores/modalStore';
+import type { LearningCard, Note } from "../../types";
+import { projectManager } from "../projectManager.svelte";
+import MoreMenu from "./MoreMenu.svelte";
+import NoteModal from "./NoteModal.svelte";
+import { modalStore } from "../stores/modalStore";
 
-	interface Props {
-		card: LearningCard;
-		onStart: (card: LearningCard) => void;
-		onToggle: (id: string, status: 'active' | 'done') => void;
-		onEdit?: (card: LearningCard) => void;
-		onDelete?: (id: string) => void;
-		noteApi?: {
-			getNotes(cardId: string): Promise<Note[]>;
-			createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
-			updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
-			deleteNote(id: string): Promise<Note>;
-		};
-	}
+interface Props {
+	card: LearningCard;
+	onStart: (card: LearningCard) => void;
+	onToggle: (id: string, status: "active" | "done") => void;
+	onEdit?: (card: LearningCard) => void;
+	onDelete?: (id: string) => void;
+	noteApi?: {
+		getNotes(cardId: string): Promise<Note[]>;
+		createNote(payload: {
+			cardId: string;
+			title: string;
+			content: string;
+			tags: string[];
+		}): Promise<Note>;
+		updateNote(payload: {
+			id: string;
+			title?: string;
+			content?: string;
+			tags?: string[];
+		}): Promise<Note>;
+		deleteNote(id: string): Promise<Note>;
+	};
+}
 
-	const { card, onStart, onToggle, onEdit, onDelete, noteApi }: Props = $props();
+const { card, onStart, onToggle, onEdit, onDelete, noteApi }: Props = $props();
 
-	// Derived computed values
-	const isDone = $derived(card.status === 'done');
-	const buttonLabel = $derived(isDone ? 'Mark active' : 'Mark done');
-	const statusText = $derived(isDone ? '✓ Completed' : 'Active');
-	const projectName = $derived.by(() => {
-		if (!card.project) return '';
-		return projectManager.all.find((p) => p.id === card.project)?.name || card.project;
-	});
+// Derived computed values
+const isDone = $derived(card.status === "done");
+const buttonLabel = $derived(isDone ? "Mark active" : "Mark done");
+const statusText = $derived(isDone ? "✓ Completed" : "Active");
+const projectName = $derived.by(() => {
+	if (!card.project) return "";
+	return (
+		projectManager.all.find((p) => p.id === card.project)?.name || card.project
+	);
+});
 
-	// local modal state (Svelte 5 rune) - replaced by centralized modalStore
-	let notesOpen = $state(false);
+// local modal state (Svelte 5 rune) - replaced by centralized modalStore
+const notesOpen = $state(false);
 </script>
 
 <article class="card" class:done={isDone}>

@@ -1,64 +1,68 @@
 <script lang="ts">
-	import { cardManager } from '../cardManager.svelte';
-	import { projectManager } from '../projectManager.svelte';
-	import CardItem from './CardItem.svelte';
-	import type { LearningCard } from '../../types';
+import { cardManager } from "../cardManager.svelte";
+import { projectManager } from "../projectManager.svelte";
+import CardItem from "./CardItem.svelte";
+import type { LearningCard } from "../../types";
 
-	interface Props {
-		onStart: (card: LearningCard) => void;
-		onToggle: (id: string, status: 'active' | 'done') => void;
-		onEdit?: (card: LearningCard) => void;
-		onDelete?: (id: string) => void;
-	}
+interface Props {
+	onStart: (card: LearningCard) => void;
+	onToggle: (id: string, status: "active" | "done") => void;
+	onEdit?: (card: LearningCard) => void;
+	onDelete?: (id: string) => void;
+}
 
-	const { onStart, onToggle, onEdit, onDelete }: Props = $props();
+const { onStart: _onStart, onToggle: _onToggle, onEdit: _onEdit, onDelete: _onDelete }: Props = $props();
 
-	// Helper function to group cards by project
-	function groupByProject(list: LearningCard[]) {
-		const map = new Map<string, LearningCard[]>();
-		for (const c of list) {
-			const key = c.project || '';
-			if (!map.has(key)) map.set(key, []);
-			map.get(key)!.push(c);
-		}
-		const groups: { project: string; cards: LearningCard[]; headingId: string }[] = [];
-		for (const [project, cards] of map.entries()) {
-			groups.push({
-				project,
-				cards,
-				headingId: `project-${(project || 'unassigned').replace(/\s+/g, '-')}`,
-			});
-		}
-		// sort by project name when possible
-		groups.sort((a, b) => {
-			const aName = a.project
-				? projectManager.all.find(p => p.id === a.project)?.name || a.project
-				: 'Unassigned';
-			const bName = b.project
-				? projectManager.all.find(p => p.id === b.project)?.name || b.project
-				: 'Unassigned';
-			return aName.localeCompare(bName);
+// Helper function to group cards by project
+function groupByProject(list: LearningCard[]) {
+	const map = new Map<string, LearningCard[]>();
+	for (const c of list) {
+		const key = c.project || "";
+		if (!map.has(key)) map.set(key, []);
+		map.get(key)?.push(c);
+	} 
+	const groups: {
+		project: string;
+		cards: LearningCard[];
+		headingId: string;
+	}[] = [];
+	for (const [project, cards] of map.entries()) {
+		groups.push({
+			project,
+			cards,
+			headingId: `project-${(project || "unassigned").replace(/\s+/g, "-")}`,
 		});
-		return groups;
 	}
-
-	// Derived computed groups
-	const groupedCards = $derived.by(() => {
-		if (cardManager.filterProject === 'all') {
-			return groupByProject(cardManager.filtered);
-		}
-		return [];
+	// sort by project name when possible
+	groups.sort((a, b) => {
+		const aName = a.project
+			? projectManager.all.find((p) => p.id === a.project)?.name || a.project
+			: "Unassigned";
+		const bName = b.project
+			? projectManager.all.find((p) => p.id === b.project)?.name || b.project
+			: "Unassigned";
+		return aName.localeCompare(bName);
 	});
+	return groups;
+}
 
-	function handleStatusFilter(e: Event) {
-		const select = e.target as HTMLSelectElement;
-		cardManager.setFilterStatus(select.value as 'all' | 'active' | 'done');
+// Derived computed groups
+const _groupedCards = $derived.by(() => {
+	if (cardManager.filterProject === "all") {
+		return groupByProject(cardManager.filtered);
 	}
+	return [];
+});
 
-	function handleSearchInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		cardManager.setFilterQuery(input.value);
-	}
+function _handleStatusFilter(e: Event) {
+	const select = e.target as HTMLSelectElement;
+	cardManager.setFilterStatus(select.value as "all" | "active" | "done");
+}
+
+function _handleSearchInput(e: Event) {
+	const input = e.target as HTMLInputElement;
+	cardManager.setFilterQuery(input.value);
+}
 </script>
 
 <section>
@@ -67,7 +71,7 @@
 	<div class="filters">
 		<label class="filter">
 			Show:
-			<select onchange={handleStatusFilter}>
+			<select onchange={_handleStatusFilter}>
 				<option value="all">All ({cardManager.all.length})</option>
 				<option value="active">Active ({cardManager.activeCards.length})</option>
 				<option value="done">Completed ({cardManager.completedCards.length})</option>
@@ -79,7 +83,7 @@
 			<input
 				type="search"
 				placeholder="Search title, prompt, topic"
-				oninput={handleSearchInput}
+				oninput={_handleSearchInput}
 				aria-label="Search cards"
 			/>
 		</label>
@@ -91,7 +95,7 @@
 				No learning cards match your filters.
 			</p>
 		{:else if cardManager.filterProject === 'all'}
-			{#each groupedCards as group (group.headingId)}
+			{#each _groupedCards as group (group.headingId)}
 				<section class="project-group" aria-labelledby={group.headingId}>
 					<h3 id={group.headingId}>
 						{group.project
@@ -99,13 +103,13 @@
 							: 'Unassigned'}
 					</h3>
 					{#each group.cards as card (card.id)}
-						<CardItem {card} {onStart} {onToggle} {onEdit} {onDelete} />
+						<CardItem {card} onStart={_onStart} onToggle={_onToggle} onEdit={_onEdit} onDelete={_onDelete} />
 					{/each}
 				</section>
 			{/each}
 		{:else}
 			{#each cardManager.filtered as card (card.id)}
-				<CardItem {card} {onStart} {onToggle} {onEdit} {onDelete} />
+				<CardItem {card} onStart={_onStart} onToggle={_onToggle} onEdit={_onEdit} onDelete={_onDelete} />
 			{/each}
 		{/if}
 	</div>

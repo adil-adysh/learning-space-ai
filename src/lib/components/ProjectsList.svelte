@@ -1,59 +1,71 @@
 <script lang="ts">
-  import { projectManager } from '../projectManager.svelte';
-  import EditProjectForm from './EditProjectForm.svelte';
-  import MoreMenu from './MoreMenu.svelte';
-  import type { Project } from '../../types';
+import { projectManager } from "../projectManager.svelte";
+import EditProjectForm from "./EditProjectForm.svelte";
+import MoreMenu from "./MoreMenu.svelte";
+import type { Project } from "../../types";
 
-  interface Props {
-    onopen?: (detail: { projectId: string }) => void;
-  }
+interface Props {
+	onopen?: (detail: { projectId: string }) => void;
+}
 
-  const { onopen }: Props = $props();
+const { onopen }: Props = $props();
 
-  function handleOpenProject(projectId: string) {
-    projectManager.selectProject(projectId);
-    onopen?.({ projectId });
-  }
+function handleOpenProject(projectId: string) {
+	projectManager.selectProject(projectId);
+	onopen?.({ projectId });
+}
 
-  async function handleDeleteProject(e: Event, projectId: string) {
-    e.stopPropagation();
-    const project = projectManager.all.find(p => p.id === projectId);
-    if (window.confirm(`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`)) {
-      await projectManager.deleteProject(projectId);
-    }
-  }
+async function handleDeleteProject(e: Event, projectId: string) {
+	e.stopPropagation();
+	const project = projectManager.all.find((p) => p.id === projectId);
+	if (
+		window.confirm(
+			`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`,
+		)
+	) {
+		await projectManager.deleteProject(projectId);
+	}
+}
 
-  let editingProject = $state<Project | null>(null);
+let _editingProject = $state<Project | null>(null);
 
-  function handleEditProject(e: Event, projectId: string) {
-    e.stopPropagation();
-    const project = projectManager.all.find(p => p.id === projectId);
-    if (project) {
-      editingProject = project;
-    }
-  }
+function _handleEditProject(e: Event, projectId: string) {
+	e.stopPropagation();
+	const project = projectManager.all.find((p) => p.id === projectId);
+	if (project) {
+		_editingProject = project;
+	}
+} 
 
-  // wrappers for menu-based actions (no DOM event available)
-  function handleEditProjectFromMenu(projectId: string) {
-    const project = projectManager.all.find(p => p.id === projectId);
-    if (project) editingProject = project;
-  }
+// wrappers for menu-based actions (no DOM event available)
+function _handleEditProjectFromMenu(projectId: string) {
+	const project = projectManager.all.find((p) => p.id === projectId);
+	if (project) _editingProject = project;
+} 
 
-  async function handleDeleteProjectFromMenu(projectId: string) {
-    const project = projectManager.all.find(p => p.id === projectId);
-    if (window.confirm(`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`)) {
-      await projectManager.deleteProject(projectId);
-    }
-  }
+async function _handleDeleteProjectFromMenu(projectId: string) {
+	const project = projectManager.all.find((p) => p.id === projectId);
+	if (
+		window.confirm(
+			`Are you sure you want to delete the project "${project?.name}"?\n\nThis will unassign all cards from this project.`,
+		)
+	) {
+		await projectManager.deleteProject(projectId);
+	}
+}
 
-  async function handleEditSubmit(data: { id: string; name: string; systemPrompt?: string }) {
-    await projectManager.updateProject(data);
-    editingProject = null;
-  }
+async function _handleEditSubmit(data: {
+	id: string;
+	name: string;
+	systemPrompt?: string;
+}) {
+	await projectManager.updateProject(data);
+	_editingProject = null;
+} 
 
-  function handleEditCancel() {
-    editingProject = null;
-  }
+function _handleEditCancel() {
+	_editingProject = null;
+} 
 </script>
 
 <section class="projects">
@@ -80,7 +92,7 @@
               <span class="project-name">{p.name}</span>
             </button>
             <div class="project-actions">
-              <MoreMenu ariaLabel={`More actions for project ${p.name}`} on:edit={() => handleEditProjectFromMenu(p.id)} on:delete={() => handleDeleteProjectFromMenu(p.id)} />
+              <MoreMenu ariaLabel={`More actions for project ${p.name}`} on:edit={() => _handleEditProjectFromMenu(p.id)} on:delete={() => _handleDeleteProjectFromMenu(p.id)} />
             </div>
           </div>
         </li>
@@ -88,17 +100,17 @@
     {/if}
   </ul>
 
-    {#if editingProject}
-      <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}>
+    {#if _editingProject}
+      <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) _handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && _handleEditCancel()}>
         <div
           class="modal-content"
           aria-labelledby="edit-project-heading"
           role="document"
         >
           <EditProjectForm 
-            project={editingProject}
-            onSubmit={handleEditSubmit}
-            onCancel={handleEditCancel}
+            project={_editingProject}
+            onSubmit={_handleEditSubmit}
+            onCancel={_handleEditCancel}
           />
         </div>
       </dialog>

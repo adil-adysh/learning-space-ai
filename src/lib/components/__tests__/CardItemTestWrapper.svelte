@@ -1,12 +1,12 @@
 <script lang="ts">
-  import CardItem from '../CardItem.svelte';
-  import ModalContainer from '../ModalContainer.svelte';
-  export let card: any;
-  export let onStart: any;
-  export let onToggle: any;
-  export let onEdit: any;
-  export let onDelete: any;
-  export let noteApi: any;
+import CardItem from "../CardItem.svelte";
+import ModalContainer from "../ModalContainer.svelte";
+export let card: unknown;
+export let onStart: (...args: unknown[]) => void;
+export let onToggle: (...args: unknown[]) => void;
+export let onEdit: (...args: unknown[]) => void;
+export let onDelete: (...args: unknown[]) => void;
+export let noteApi: unknown;
 </script>
 
 <ModalContainer />

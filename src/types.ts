@@ -1,59 +1,59 @@
-export type Status = 'active' | 'done';
+export type Status = "active" | "done";
 
 // Public model used in renderer and app logic
 export interface LearningCard {
-  id: string;
-  title: string;
-  prompt: string;
-  topic?: string;
-  project?: string; // optional project id the card belongs to
-  status: Status;
-  createdAt: Date;
+	id: string;
+	title: string;
+	prompt: string;
+	topic?: string;
+	project?: string; // optional project id the card belongs to
+	status: Status;
+	createdAt: Date;
 }
 
 // Raw model used for JSON storage
 export interface RawCard {
-  id: string;
-  title: string;
-  prompt: string;
-  topic?: string;
-  project?: string; // project id
-  status: Status;
-  createdAt: string; // ISO
+	id: string;
+	title: string;
+	prompt: string;
+	topic?: string;
+	project?: string; // project id
+	status: Status;
+	createdAt: string; // ISO
 }
 
 // Project model
 export interface Project {
-  id: string;
-  name: string;
-  systemPrompt?: string; // Optional system prompt that prepends to all cards in this project
-  createdAt?: Date;
+	id: string;
+	name: string;
+	systemPrompt?: string; // Optional system prompt that prepends to all cards in this project
+	createdAt?: Date;
 }
 
 export interface RawProject {
-  id: string;
-  name: string;
-  systemPrompt?: string;
-  createdAt?: string;
+	id: string;
+	name: string;
+	systemPrompt?: string;
+	createdAt?: string;
 }
 
 // Notes attached to LearningCard
 export interface Note {
-  id: string;
-  cardId: string;
-  title: string;
-  content: string;
-  tags?: string[]; // simple string tags
-  createdAt: Date;
-  updatedAt?: Date;
+	id: string;
+	cardId: string;
+	title: string;
+	content: string;
+	tags?: string[]; // simple string tags
+	createdAt: Date;
+	updatedAt?: Date;
 }
 
 export interface RawNote {
-  id: string;
-  cardId: string;
-  title: string;
-  content: string;
-  tags?: string[];
-  createdAt: string; // ISO
-  updatedAt?: string;
+	id: string;
+	cardId: string;
+	title: string;
+	content: string;
+	tags?: string[];
+	createdAt: string; // ISO
+	updatedAt?: string;
 }

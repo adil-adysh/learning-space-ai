@@ -1,110 +1,122 @@
 <script lang="ts">
 /* global HTMLElement setTimeout */
-	import type { Project } from '../../types';
+import type { Project } from "../../types";
 
-	interface Props {
-		project: Project;
-		onSubmit: (data: { id: string; name: string; systemPrompt?: string }) => Promise<void>;
-		onCancel: () => void;
+interface Props {
+	project: Project;
+	onSubmit: (data: {
+		id: string;
+		name: string;
+		systemPrompt?: string;
+	}) => Promise<void>;
+	onCancel: () => void;
+}
+
+const { project, onSubmit, onCancel }: Props = $props();
+
+let formData = $state({
+	name: "",
+	systemPrompt: "",
+});
+
+const fieldErrors = $state({
+	name: "",
+	systemPrompt: "",
+});
+
+let submissionError = $state("");
+let isSubmitting = $state(false);
+
+$effect(() => {
+	formData = {
+		name: project.name,
+		systemPrompt: project.systemPrompt || "",
+	};
+});
+
+// Validate on input
+$effect(() => {
+	const trimmedName = formData.name.trim();
+	if (trimmedName.length === 0) {
+		fieldErrors.name = "Project name is required";
+	} else if (trimmedName.length > 50) {
+		fieldErrors.name = "Project name must be less than 50 characters";
+	} else {
+		fieldErrors.name = "";
+	}
+});
+
+$effect(() => {
+	const trimmedSystemPrompt = formData.systemPrompt.trim();
+	if (trimmedSystemPrompt.length > 8000) {
+		fieldErrors.systemPrompt =
+			"System prompt must be less than 8000 characters";
+	} else {
+		fieldErrors.systemPrompt = "";
+	}
+});
+
+const isValid = $derived(
+	!fieldErrors.name &&
+		!fieldErrors.systemPrompt &&
+		formData.name.trim().length > 0,
+);
+
+let formElement: HTMLElement | null = null;
+
+$effect(() => {
+	const nameInput = document.getElementById(
+		"edit-project-name",
+	) as HTMLInputElement;
+	if (nameInput) {
+		setTimeout(() => nameInput.focus(), 0);
 	}
 
-	const { project, onSubmit, onCancel }: Props = $props();
-
-	let formData = $state({
-		name: '',
-		systemPrompt: '',
-	});
-
-	let fieldErrors = $state({
-		name: '',
-		systemPrompt: '',
-	});
-
-	let submissionError = $state('');
-	let isSubmitting = $state(false);
-
-	$effect(() => {
-		formData = {
-			name: project.name,
-			systemPrompt: project.systemPrompt || '',
-		};
-	});
-
-	// Validate on input
-	$effect(() => {
-		const trimmedName = formData.name.trim();
-		if (trimmedName.length === 0) {
-			fieldErrors.name = 'Project name is required';
-		} else if (trimmedName.length > 50) {
-			fieldErrors.name = 'Project name must be less than 50 characters';
-		} else {
-			fieldErrors.name = '';
+	const handleGlobalKeydown = (e: KeyboardEvent) => {
+		if (e.key === "Escape") {
+			onCancel();
 		}
-	});
+	};
 
-	$effect(() => {
+	window.addEventListener("keydown", handleGlobalKeydown);
+
+	return () => {
+		window.removeEventListener("keydown", handleGlobalKeydown);
+	};
+});
+
+async function handleSubmit(e: SubmitEvent) {
+	e.preventDefault();
+
+	if (!isValid || isSubmitting) return;
+
+	isSubmitting = true;
+	submissionError = "";
+
+	try {
 		const trimmedSystemPrompt = formData.systemPrompt.trim();
-		if (trimmedSystemPrompt.length > 8000) {
-			fieldErrors.systemPrompt = 'System prompt must be less than 8000 characters';
-		} else {
-			fieldErrors.systemPrompt = '';
-		}
-	});
+		await onSubmit({
+			id: project.id,
+			name: formData.name.trim(),
+			systemPrompt: trimmedSystemPrompt || undefined,
+		});
 
-	let isValid = $derived(!fieldErrors.name && !fieldErrors.systemPrompt && formData.name.trim().length > 0);
-
-	let formElement: HTMLElement | null = null;
-
-	$effect(() => {
-		const nameInput = document.getElementById('edit-project-name') as HTMLInputElement;
-		if (nameInput) {
-			setTimeout(() => nameInput.focus(), 0);
-		}
-
-		const handleGlobalKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				onCancel();
-			}
-		};
-
-		window.addEventListener('keydown', handleGlobalKeydown);
-
-		return () => {
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
-	});
-
-	async function handleSubmit(e: SubmitEvent) {
-		e.preventDefault();
-
-		if (!isValid || isSubmitting) return;
-
-		isSubmitting = true;
-		submissionError = '';
-
-		try {
-			const trimmedSystemPrompt = formData.systemPrompt.trim();
-			await onSubmit({
-				id: project.id,
-				name: formData.name.trim(),
-				systemPrompt: trimmedSystemPrompt || undefined,
-			});
-
-			announceToSR(`Project "${formData.name}" updated successfully`);
-		} catch (err) {
-			submissionError = err instanceof Error ? err.message : 'Failed to update project';
-			announceToSR(submissionError);
-		} finally {
-			isSubmitting = false;
-		}
+		announceToSR(`Project "${formData.name}" updated successfully`);
+	} catch (err) {
+		submissionError =
+			err instanceof Error ? err.message : "Failed to update project";
+		announceToSR(submissionError);
+	} finally {
+		isSubmitting = false;
 	}
+}
 
-	function announceToSR(message: string) {
-		const announcer = document.getElementById('sr-announcements');
-		if (announcer) {
-			announcer.textContent = message;
-		}
+function announceToSR(message: string) {
+	const announcer = document.getElementById("sr-announcements");
+	if (announcer) {
+		announcer.textContent = message;
 	}
+}
 </script>
 
 <section id="edit-project-section" bind:this={formElement}>

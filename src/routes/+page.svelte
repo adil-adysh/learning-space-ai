@@ -1,34 +1,33 @@
 <script lang="ts">
-	import { projectManager } from '../lib/projectManager.svelte';
-	import { cardManager } from '../lib/cardManager.svelte';
-	import ProjectsList from '../lib/components/ProjectsList.svelte';
-	import ProjectCreate from '../lib/components/ProjectCreate.svelte';
-	import ProjectDetail from '../lib/components/ProjectDetail.svelte';
-	import '../styles.css';
+import { projectManager } from "../lib/projectManager.svelte";
+import { cardManager } from "../lib/cardManager.svelte";
+import ProjectsList from "../lib/components/ProjectsList.svelte";
+import ProjectCreate from "../lib/components/ProjectCreate.svelte";
+import ProjectDetail from "../lib/components/ProjectDetail.svelte";
+import "../styles.css";
 
-	// Initial data load effect
-	$effect.pre(() => {
-		const loadInitialData = async () => {
-			await Promise.all([cardManager.loadCards(), projectManager.loadProjects()]);
-		};
-		loadInitialData();
-	});
+// Initial data load effect
+$effect.pre(() => {
+	const loadInitialData = async () => {
+		await Promise.all([cardManager.loadCards(), projectManager.loadProjects()]);
+	};
+	loadInitialData();
+});
 
-	function handleProjectCreated(detail: { project: string }) {
-		const projectId = detail.project;
+function handleProjectCreated(detail: { project: string }) {
+	const projectId = detail.project;
+	projectManager.selectProject(projectId);
+}
+
+function handleProjectFilterChange(e: Event) {
+	const select = e.target as HTMLSelectElement;
+	const projectId = select.value;
+	if (projectId === "all") {
+		projectManager.selectAll();
+	} else if (projectId) {
 		projectManager.selectProject(projectId);
 	}
-	 
-
-	function handleProjectFilterChange(e: Event) {
-		const select = e.target as HTMLSelectElement;
-		const projectId = select.value;
-		if (projectId === 'all') {
-			projectManager.selectAll();
-		} else if (projectId) {
-			projectManager.selectProject(projectId);
-		}
-	}
+}
 </script>
 
 <svelte:head>

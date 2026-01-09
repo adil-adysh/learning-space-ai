@@ -1,442 +1,477 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
-import * as path from 'path';
-import { inspect } from 'node:util';
-import { randomUUID } from 'crypto';
-import { promises as fs } from 'fs';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { createServer } from 'http';
-import type { RawCard, Status, RawNote } from './types';
+import { app, BrowserWindow, ipcMain, shell } from "electron";
+import * as path from "path";
+import { inspect } from "node:util";
+import { randomUUID } from "crypto";
+import { promises as fs } from "fs";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import { createServer } from "http";
+import type { RawCard, Status, RawNote } from "./types";
 import {
-  initDatabase,
-  readCards,
-  addCard as dbAddCard,
-  updateCard,
-  deleteCard,
-  readNotes,
-  addNote as dbAddNote,
-  updateNote as dbUpdateNote,
-  deleteNote as dbDeleteNote,
-  readProjects,
-  addProject as dbAddProject,
-  updateProject as dbUpdateProject,
-  deleteProject as dbDeleteProject,
-  findProjectByName,
-  clearProjectFromCards,
-} from './db';
-import { buildChatGPTUrl } from './util';
+	initDatabase,
+	readCards,
+	addCard as dbAddCard,
+	updateCard,
+	deleteCard,
+	readNotes,
+	addNote as dbAddNote,
+	updateNote as dbUpdateNote,
+	deleteNote as dbDeleteNote,
+	readProjects,
+	addProject as dbAddProject,
+	updateProject as dbUpdateProject,
+	deleteProject as dbDeleteProject,
+	findProjectByName,
+	clearProjectFromCards,
+} from "./db";
+import { buildChatGPTUrl } from "./util";
 const STATIC_PORT = Number(process.env.STATIC_PORT) || 4173;
-const BUILD_DIR = path.join(__dirname, '..', 'build');
+const BUILD_DIR = path.join(__dirname, "..", "build");
 let staticServer: Server | null = null;
 
 let mainWindow: BrowserWindow | null = null;
 
 function formatLogItem(item: unknown) {
-  if (typeof item === 'string') {
-    return item;
-  }
-  if (item instanceof Error) {
-    return item.stack ?? item.message;
-  }
-  return inspect(item, { depth: 1 });
+	if (typeof item === "string") {
+		return item;
+	}
+	if (item instanceof Error) {
+		return item.stack ?? item.message;
+	}
+	return inspect(item, { depth: 1 });
 }
 
 function logError(...items: unknown[]) {
-  process.stderr.write(items.map(formatLogItem).join(' ') + '\n');
+	process.stderr.write(items.map(formatLogItem).join(" ") + "\n");
 }
 
 async function startStaticServer() {
-  if (staticServer) {
-    return;
-  }
+	if (staticServer) {
+		return;
+	}
 
-  staticServer = createServer((req, res) => {
-    void handleStaticRequest(req, res);
-  });
+	staticServer = createServer((req, res) => {
+		void handleStaticRequest(req, res);
+	});
 
-  await new Promise<void>((resolve) => {
-    staticServer!.listen(STATIC_PORT, '127.0.0.1', () => resolve());
-  });
+	await new Promise<void>((resolve) => {
+		staticServer!.listen(STATIC_PORT, "127.0.0.1", () => resolve());
+	});
 }
 
 async function handleStaticRequest(req: IncomingMessage, res: ServerResponse) {
-  const url = new URL(req.url ?? '/', 'http://localhost');
-  const pathname = decodeURIComponent(url.pathname);
-  const normalized = path.normalize(path.join(BUILD_DIR, pathname));
-  let target = normalized;
+	const url = new URL(req.url ?? "/", "http://localhost");
+	const pathname = decodeURIComponent(url.pathname);
+	const normalized = path.normalize(path.join(BUILD_DIR, pathname));
+	let target = normalized;
 
-  if (!target.startsWith(BUILD_DIR)) {
-    target = path.join(BUILD_DIR, 'index.html');
-  }
+	if (!target.startsWith(BUILD_DIR)) {
+		target = path.join(BUILD_DIR, "index.html");
+	}
 
-  try {
-    const stat = await fs.stat(target);
-    if (stat.isDirectory()) {
-      target = path.join(target, 'index.html');
-    }
-  } catch {
-    target = path.join(BUILD_DIR, 'index.html');
-  }
+	try {
+		const stat = await fs.stat(target);
+		if (stat.isDirectory()) {
+			target = path.join(target, "index.html");
+		}
+	} catch {
+		target = path.join(BUILD_DIR, "index.html");
+	}
 
-  const ext = path.extname(target);
-  res.setHeader('Content-Type', getMime(ext));
+	const ext = path.extname(target);
+	res.setHeader("Content-Type", getMime(ext));
 
-  try {
-    const data = await fs.readFile(target);
-    res.writeHead(200);
-    res.end(data);
-  } catch {
-    const fallback = await fs.readFile(path.join(BUILD_DIR, 'index.html'));
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(fallback);
-  }
+	try {
+		const data = await fs.readFile(target);
+		res.writeHead(200);
+		res.end(data);
+	} catch {
+		const fallback = await fs.readFile(path.join(BUILD_DIR, "index.html"));
+		res.writeHead(200, { "Content-Type": "text/html" });
+		res.end(fallback);
+	}
 }
 
 function getMime(ext: string) {
-  switch (ext) {
-    case '.js':
-      return 'application/javascript';
-    case '.css':
-      return 'text/css';
-    case '.json':
-      return 'application/json';
-    case '.svg':
-      return 'image/svg+xml';
-    case '.woff2':
-      return 'font/woff2';
-    case '.woff':
-      return 'font/woff';
-    case '.ttf':
-      return 'font/ttf';
-    default:
-      return 'text/html';
-  }
+	switch (ext) {
+		case ".js":
+			return "application/javascript";
+		case ".css":
+			return "text/css";
+		case ".json":
+			return "application/json";
+		case ".svg":
+			return "image/svg+xml";
+		case ".woff2":
+			return "font/woff2";
+		case ".woff":
+			return "font/woff";
+		case ".ttf":
+			return "font/ttf";
+		default:
+			return "text/html";
+	}
 }
 
 function createWindow() {
-  // Construct preload path - __dirname in esbuild context points to dist directory
-  const preloadPath = path.join(__dirname, 'preload.cjs');
+	// Construct preload path - __dirname in esbuild context points to dist directory
+	const preloadPath = path.join(__dirname, "preload.cjs");
 
-  const win = new BrowserWindow({
-    width: 900,
-    height: 700,
-    webPreferences: {
-      preload: preloadPath,
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
+	const win = new BrowserWindow({
+		width: 900,
+		height: 700,
+		webPreferences: {
+			preload: preloadPath,
+			contextIsolation: true,
+			nodeIntegration: false,
+		},
+	});
 
-  mainWindow = win;
-  win.on('closed', () => {
-    mainWindow = null;
-  });
+	mainWindow = win;
+	win.on("closed", () => {
+		mainWindow = null;
+	});
 
-  // Debug: Log when preload is loaded
-  win.webContents.on('preload-error', (_event, processType, error) => {
-    logError('[main] Preload error:', processType, error);
-  });
+	// Debug: Log when preload is loaded
+	win.webContents.on("preload-error", (_event, processType, error) => {
+		logError("[main] Preload error:", processType, error);
+	});
 
-  // Load the SvelteKit build output via local server to avoid file:// 404s
-  const targetUrl = `http://127.0.0.1:${STATIC_PORT}`;
-  void win.loadURL(targetUrl);
+	// Load the SvelteKit build output via local server to avoid file:// 404s
+	const targetUrl = `http://127.0.0.1:${STATIC_PORT}`;
+	void win.loadURL(targetUrl);
 
-  // Security: open external links in user's default browser and prevent in-app navigation
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    void shell.openExternal(url);
-    return { action: 'deny' };
-  });
+	// Security: open external links in user's default browser and prevent in-app navigation
+	win.webContents.setWindowOpenHandler(({ url }) => {
+		void shell.openExternal(url);
+		return { action: "deny" };
+	});
 
-  win.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith('file:')) {
-      event.preventDefault();
-      void shell.openExternal(url);
-    }
-  });
+	win.webContents.on("will-navigate", (event, url) => {
+		if (!url.startsWith("file:")) {
+			event.preventDefault();
+			void shell.openExternal(url);
+		}
+	});
 }
 
 // Ensure single instance for a cleaner UX
 if (!app.requestSingleInstanceLock()) {
-  app.quit();
+	app.quit();
 }
 
-app.on('second-instance', () => {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore();
-    }
-    mainWindow.focus();
-  }
+app.on("second-instance", () => {
+	if (mainWindow) {
+		if (mainWindow.isMinimized()) {
+			mainWindow.restore();
+		}
+		mainWindow.focus();
+	}
 });
 
 async function bootstrap() {
-  await app.whenReady();
-  await startStaticServer();
+	await app.whenReady();
+	await startStaticServer();
 
-  // Initialize the lowdb database
-  const userDataPath = app.getPath('userData');
-  await initDatabase(userDataPath);
+	// Initialize the lowdb database
+	const userDataPath = app.getPath("userData");
+	await initDatabase(userDataPath);
 
-  ipcMain.handle('cards:get', async () => {
-    return await readCards();
-  });
+	ipcMain.handle("cards:get", async () => {
+		return await readCards();
+	});
 
-  ipcMain.handle(
-    'cards:add',
-    async (_ev, data: { title: string; prompt: string; topic?: string; project?: string }) => {
-      if (!data || typeof data.title !== 'string' || typeof data.prompt !== 'string') {
-        throw new Error('Invalid input');
-      }
+	ipcMain.handle(
+		"cards:add",
+		async (
+			_ev,
+			data: { title: string; prompt: string; topic?: string; project?: string },
+		) => {
+			if (
+				!data ||
+				typeof data.title !== "string" ||
+				typeof data.prompt !== "string"
+			) {
+				throw new Error("Invalid input");
+			}
 
-      let projectId = (data.project || '').trim();
-      if (projectId) {
-        // if provided value matches a project name, resolve to id
-        const foundByName = await findProjectByName(projectId);
-        if (foundByName) {
-          projectId = foundByName.id;
-        } else {
-          // Check if it's an existing project id
-          const projects = await readProjects();
-          const existsById = projects.find((p) => p.id === projectId);
-          if (!existsById) {
-            // Create new project
-            const newProj = {
-              id: randomUUID(),
-              name: projectId,
-              createdAt: new Date().toISOString(),
-            };
-            await dbAddProject(newProj);
-            projectId = newProj.id;
-          }
-        }
-      }
+			let projectId = (data.project || "").trim();
+			if (projectId) {
+				// if provided value matches a project name, resolve to id
+				const foundByName = await findProjectByName(projectId);
+				if (foundByName) {
+					projectId = foundByName.id;
+				} else {
+					// Check if it's an existing project id
+					const projects = await readProjects();
+					const existsById = projects.find((p) => p.id === projectId);
+					if (!existsById) {
+						// Create new project
+						const newProj = {
+							id: randomUUID(),
+							name: projectId,
+							createdAt: new Date().toISOString(),
+						};
+						await dbAddProject(newProj);
+						projectId = newProj.id;
+					}
+				}
+			}
 
-      const newCard: RawCard = {
-        id: randomUUID(),
-        title: data.title,
-        prompt: data.prompt,
-        topic: data.topic || '',
-        project: projectId || '',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      };
+			const newCard: RawCard = {
+				id: randomUUID(),
+				title: data.title,
+				prompt: data.prompt,
+				topic: data.topic || "",
+				project: projectId || "",
+				status: "active",
+				createdAt: new Date().toISOString(),
+			};
 
-      return await dbAddCard(newCard);
-    }
-  );
+			return await dbAddCard(newCard);
+		},
+	);
 
-  ipcMain.handle(
-    'cards:update',
-    async (
-      _ev,
-      payload: { id: string; title?: string; prompt?: string; topic?: string; project?: string }
-    ) => {
-      const id = (payload.id || '').trim();
-      if (!id) {
-        throw new Error('Card ID is required');
-      }
+	ipcMain.handle(
+		"cards:update",
+		async (
+			_ev,
+			payload: {
+				id: string;
+				title?: string;
+				prompt?: string;
+				topic?: string;
+				project?: string;
+			},
+		) => {
+			const id = (payload.id || "").trim();
+			if (!id) {
+				throw new Error("Card ID is required");
+			}
 
-      const updates: Partial<RawCard> = {};
-      if (payload.title !== undefined) {
-        updates.title = payload.title;
-      }
-      if (payload.prompt !== undefined) {
-        updates.prompt = payload.prompt;
-      }
-      if (payload.topic !== undefined) {
-        updates.topic = payload.topic;
-      }
-      if (payload.project !== undefined) {
-        let projectId = payload.project.trim();
-        if (projectId) {
-          const foundByName = await findProjectByName(projectId);
-          if (foundByName) {
-            projectId = foundByName.id;
-          }
-        }
-        updates.project = projectId;
-      }
+			const updates: Partial<RawCard> = {};
+			if (payload.title !== undefined) {
+				updates.title = payload.title;
+			}
+			if (payload.prompt !== undefined) {
+				updates.prompt = payload.prompt;
+			}
+			if (payload.topic !== undefined) {
+				updates.topic = payload.topic;
+			}
+			if (payload.project !== undefined) {
+				let projectId = payload.project.trim();
+				if (projectId) {
+					const foundByName = await findProjectByName(projectId);
+					if (foundByName) {
+						projectId = foundByName.id;
+					}
+				}
+				updates.project = projectId;
+			}
 
-      const updated = await updateCard(id, updates);
-      if (!updated) {
-        throw new Error('Card not found');
-      }
+			const updated = await updateCard(id, updates);
+			if (!updated) {
+				throw new Error("Card not found");
+			}
 
-      return updated;
-    }
-  );
+			return updated;
+		},
+	);
 
-  ipcMain.handle('cards:delete', async (_ev, id: string) => {
-    const cardId = (id || '').trim();
-    if (!cardId) {
-      throw new Error('Card ID is required');
-    }
+	ipcMain.handle("cards:delete", async (_ev, id: string) => {
+		const cardId = (id || "").trim();
+		if (!cardId) {
+			throw new Error("Card ID is required");
+		}
 
-    const deleted = await deleteCard(cardId);
-    if (!deleted) {
-      throw new Error('Card not found');
-    }
+		const deleted = await deleteCard(cardId);
+		if (!deleted) {
+			throw new Error("Card not found");
+		}
 
-    return deleted;
-  });
+		return deleted;
+	});
 
-  // Projects CRUD IPC
-  ipcMain.handle('projects:list', async () => {
-    return await readProjects();
-  });
+	// Projects CRUD IPC
+	ipcMain.handle("projects:list", async () => {
+		return await readProjects();
+	});
 
-  ipcMain.handle('projects:get', async (_ev, id: string) => {
-    const projects = await readProjects();
-    return projects.find((p) => p.id === id) || null;
-  });
+	ipcMain.handle("projects:get", async (_ev, id: string) => {
+		const projects = await readProjects();
+		return projects.find((p) => p.id === id) || null;
+	});
 
-  ipcMain.handle(
-    'projects:create',
-    async (_ev, payload: { name: string; systemPrompt?: string }) => {
-      const n = (payload.name || '').trim();
-      if (!n) {
-        throw new Error('Invalid project name');
-      }
+	ipcMain.handle(
+		"projects:create",
+		async (_ev, payload: { name: string; systemPrompt?: string }) => {
+			const n = (payload.name || "").trim();
+			if (!n) {
+				throw new Error("Invalid project name");
+			}
 
-      // prevent duplicate names
-      const existing = await findProjectByName(n);
-      if (existing) {
-        return existing;
-      }
+			// prevent duplicate names
+			const existing = await findProjectByName(n);
+			if (existing) {
+				return existing;
+			}
 
-      const newProj = {
-        id: randomUUID(),
-        name: n,
-        systemPrompt: payload.systemPrompt?.trim() || undefined,
-        createdAt: new Date().toISOString(),
-      };
-      return await dbAddProject(newProj);
-    }
-  );
+			const newProj = {
+				id: randomUUID(),
+				name: n,
+				systemPrompt: payload.systemPrompt?.trim() || undefined,
+				createdAt: new Date().toISOString(),
+			};
+			return await dbAddProject(newProj);
+		},
+	);
 
-  ipcMain.handle(
-    'projects:update',
-    async (_ev, payload: { id: string; name: string; systemPrompt?: string }) => {
-      const id = (payload.id || '').trim();
-      const name = (payload.name || '').trim();
-      if (!id || !name) {
-        throw new Error('Invalid input');
-      }
+	ipcMain.handle(
+		"projects:update",
+		async (
+			_ev,
+			payload: { id: string; name: string; systemPrompt?: string },
+		) => {
+			const id = (payload.id || "").trim();
+			const name = (payload.name || "").trim();
+			if (!id || !name) {
+				throw new Error("Invalid input");
+			}
 
-      const updated = await dbUpdateProject(id, {
-        name,
-        systemPrompt: payload.systemPrompt?.trim() || undefined,
-      });
-      if (!updated) {
-        throw new Error('Project not found');
-      }
+			const updated = await dbUpdateProject(id, {
+				name,
+				systemPrompt: payload.systemPrompt?.trim() || undefined,
+			});
+			if (!updated) {
+				throw new Error("Project not found");
+			}
 
-      return updated;
-    }
-  );
+			return updated;
+		},
+	);
 
-  ipcMain.handle('projects:delete', async (_ev, id: string) => {
-    const removed = await dbDeleteProject(id);
-    if (!removed) {
-      throw new Error('Project not found');
-    }
+	ipcMain.handle("projects:delete", async (_ev, id: string) => {
+		const removed = await dbDeleteProject(id);
+		if (!removed) {
+			throw new Error("Project not found");
+		}
 
-    // Remove project references from cards
-    try {
-      await clearProjectFromCards(id);
-    } catch (err) {
-      logError('[main] Failed to cleanup card project references', err);
-    }
+		// Remove project references from cards
+		try {
+			await clearProjectFromCards(id);
+		} catch (err) {
+			logError("[main] Failed to cleanup card project references", err);
+		}
 
-    return removed;
-  });
+		return removed;
+	});
 
-  ipcMain.handle('cards:toggle', async (_ev, args: { id: string; status: Status }) => {
-    const { id, status } = args;
-    const updated = await updateCard(id, { status });
-    if (!updated) {
-      throw new Error('Card not found');
-    }
-    return updated;
-  });
+	ipcMain.handle(
+		"cards:toggle",
+		async (_ev, args: { id: string; status: Status }) => {
+			const { id, status } = args;
+			const updated = await updateCard(id, { status });
+			if (!updated) {
+				throw new Error("Card not found");
+			}
+			return updated;
+		},
+	);
 
-  // Notes IPC
-  ipcMain.handle('notes:list', async (_ev, cardId?: string) => {
-    return await readNotes(cardId);
-  });
+	// Notes IPC
+	ipcMain.handle("notes:list", async (_ev, cardId?: string) => {
+		return await readNotes(cardId);
+	});
 
-  ipcMain.handle(
-    'notes:create',
-    async (_ev, payload: { cardId: string; title: string; content: string; tags?: string[] }) => {
-      const cardId = (payload.cardId || '').trim();
-      if (!cardId) throw new Error('cardId required');
-      const newNote: RawNote = {
-        id: randomUUID(),
-        cardId,
-        title: payload.title || '',
-        content: payload.content || '',
-        tags: payload.tags || [],
-        createdAt: new Date().toISOString(),
-      };
-      return await dbAddNote(newNote);
-    }
-  );
+	ipcMain.handle(
+		"notes:create",
+		async (
+			_ev,
+			payload: {
+				cardId: string;
+				title: string;
+				content: string;
+				tags?: string[];
+			},
+		) => {
+			const cardId = (payload.cardId || "").trim();
+			if (!cardId) throw new Error("cardId required");
+			const newNote: RawNote = {
+				id: randomUUID(),
+				cardId,
+				title: payload.title || "",
+				content: payload.content || "",
+				tags: payload.tags || [],
+				createdAt: new Date().toISOString(),
+			};
+			return await dbAddNote(newNote);
+		},
+	);
 
-  ipcMain.handle(
-    'notes:update',
-    async (_ev, payload: { id: string; title?: string; content?: string; tags?: string[] }) => {
-      const id = (payload.id || '').trim();
-      if (!id) throw new Error('note id required');
-      const updates: Partial<RawNote> = {};
-      if (payload.title !== undefined) updates.title = payload.title;
-      if (payload.content !== undefined) updates.content = payload.content;
-      if (payload.tags !== undefined) updates.tags = payload.tags;
-      updates.updatedAt = new Date().toISOString();
-      const updated = await dbUpdateNote(id, updates);
-      if (!updated) throw new Error('Note not found');
-      return updated;
-    }
-  );
+	ipcMain.handle(
+		"notes:update",
+		async (
+			_ev,
+			payload: {
+				id: string;
+				title?: string;
+				content?: string;
+				tags?: string[];
+			},
+		) => {
+			const id = (payload.id || "").trim();
+			if (!id) throw new Error("note id required");
+			const updates: Partial<RawNote> = {};
+			if (payload.title !== undefined) updates.title = payload.title;
+			if (payload.content !== undefined) updates.content = payload.content;
+			if (payload.tags !== undefined) updates.tags = payload.tags;
+			updates.updatedAt = new Date().toISOString();
+			const updated = await dbUpdateNote(id, updates);
+			if (!updated) throw new Error("Note not found");
+			return updated;
+		},
+	);
 
-  ipcMain.handle('notes:delete', async (_ev, id: string) => {
-    const nid = (id || '').trim();
-    if (!nid) throw new Error('note id required');
-    const removed = await dbDeleteNote(nid);
-    if (!removed) throw new Error('Note not found');
-    return removed;
-  });
+	ipcMain.handle("notes:delete", async (_ev, id: string) => {
+		const nid = (id || "").trim();
+		if (!nid) throw new Error("note id required");
+		const removed = await dbDeleteNote(nid);
+		if (!removed) throw new Error("Note not found");
+		return removed;
+	});
 
-  ipcMain.handle('cards:run', async (_ev, prompt: string) => {
-    if (typeof prompt !== 'string') {
-      throw new Error('Invalid prompt');
-    }
-    const url = buildChatGPTUrl(prompt);
-    if (!url.startsWith('https://chat.openai.com/')) {
-      throw new Error('Blocked external URL');
-    }
-    await shell.openExternal(url);
-    return true;
-  });
+	ipcMain.handle("cards:run", async (_ev, prompt: string) => {
+		if (typeof prompt !== "string") {
+			throw new Error("Invalid prompt");
+		}
+		const url = buildChatGPTUrl(prompt);
+		if (!url.startsWith("https://chat.openai.com/")) {
+			throw new Error("Blocked external URL");
+		}
+		await shell.openExternal(url);
+		return true;
+	});
 
-  createWindow();
+	createWindow();
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+	app.on("activate", () => {
+		if (BrowserWindow.getAllWindows().length === 0) {
+			createWindow();
+		}
+	});
 }
 
 void bootstrap();
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+	}
 });
 
-app.on('before-quit', () => {
-  if (staticServer) {
-    staticServer.close();
-    staticServer = null;
-  }
+app.on("before-quit", () => {
+	if (staticServer) {
+		staticServer.close();
+		staticServer = null;
+	}
 });

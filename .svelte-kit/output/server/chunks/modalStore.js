@@ -27,7 +27,10 @@ function createModalStore() {
   function open(component, props = {}, opener = null) {
     push(component, props, opener);
   }
-  const current = derived(stack, ($stack) => $stack.length ? $stack[$stack.length - 1] : null);
+  const current = derived(
+    stack,
+    ($stack) => $stack.length ? $stack[$stack.length - 1] : null
+  );
   return {
     // expose the raw stack subscribe so consumers can render all items
     subscribe: stack.subscribe,

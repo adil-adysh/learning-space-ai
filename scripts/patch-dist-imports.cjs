@@ -1,6 +1,6 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const DIR = path.join(__dirname, '..', 'dist');
 
@@ -35,7 +35,7 @@ function fixContent(content) {
       if (!isRelativeImport(p) || shouldSkipExt(p)) {
         return match;
       }
-      const fixed = p + '.js';
+      const fixed = `${p}.js`;
       return match.replace(p, fixed);
     });
   }

@@ -1,79 +1,86 @@
 <script lang="ts">
-  import { projectManager } from '../projectManager.svelte';
+import { projectManager } from "../projectManager.svelte";
 
-  interface Props {
-    oncreated?: (detail: { project: string }) => void;
-  }
+interface Props {
+	oncreated?: (detail: { project: string }) => void;
+}
 
-  type FormValues = { name: string; systemPrompt: string };
+type FormValues = { name: string; systemPrompt: string };
 
-  const { oncreated }: Props = $props();
+const { oncreated }: Props = $props();
 
-  // Form state using Svelte 5 runes
-  let formData: FormValues = $state({ name: '', systemPrompt: '' });
-  let submissionError: string | null = $state(null);
-  let isSubmitting = $state(false);
-  let fieldErrors = $state<{ name?: string; systemPrompt?: string }>({});
+// Form state using Svelte 5 runes
+let formData: FormValues = $state({ name: "", systemPrompt: "" });
+let submissionError: string | null = $state(null);
+let _isSubmitting = $state(false);
+let fieldErrors = $state<{ name?: string; systemPrompt?: string }>({});
 
-  // Derived computed values for accessibility
-  let descriptionIds = $derived(
-    fieldErrors.name ? 'name-error project-hint' : 'project-hint'
-  );
+// Derived computed values for accessibility
+const _descriptionIds = $derived(
+	fieldErrors.name ? "name-error project-hint" : "project-hint",
+);
 
-  // Validation function
-  function validateForm(values: FormValues): { name?: string; systemPrompt?: string } {
-    const errors: { name?: string; systemPrompt?: string } = {};
-    if (!values.name || values.name.trim() === '') {
-      errors.name = 'Project name is required';
-    }
-    if (values.systemPrompt && values.systemPrompt.length > 8000) {
-      errors.systemPrompt = 'System prompt must be less than 8000 characters';
-    }
-    return errors;
-  }
+// Validation function
+function validateForm(values: FormValues): {
+	name?: string;
+	systemPrompt?: string;
+} {
+	const errors: { name?: string; systemPrompt?: string } = {};
+	if (!values.name || values.name.trim() === "") {
+		errors.name = "Project name is required";
+	}
+	if (values.systemPrompt && values.systemPrompt.length > 8000) {
+		errors.systemPrompt = "System prompt must be less than 8000 characters";
+	}
+	return errors;
+}
 
-  // Handle form submission
-  async function handleSubmit(e: SubmitEvent) {
-    e.preventDefault();
+// Handle form submission
+async function handleSubmit(e: SubmitEvent) {
+	e.preventDefault();
 
-    fieldErrors = validateForm(formData);
-    if (Object.keys(fieldErrors).length > 0) return;
+	fieldErrors = validateForm(formData);
+	if (Object.keys(fieldErrors).length > 0) return;
 
-    submissionError = null;
-    isSubmitting = true;
+	submissionError = null;
+	_isSubmitting = true;
 
-    try {
-      const trimmedName = formData.name.trim();
-      const trimmedSystemPrompt = formData.systemPrompt.trim() || undefined;
-      const created = await projectManager.createProject(trimmedName, trimmedSystemPrompt);
+	try {
+		const trimmedName = formData.name.trim();
+		const trimmedSystemPrompt = formData.systemPrompt.trim() || undefined;
+		const created = await projectManager.createProject(
+			trimmedName,
+			trimmedSystemPrompt,
+		);
 
-      // Reset form
-      formData = { name: '', systemPrompt: '' };
-      fieldErrors = {};
+		// Reset form
+		formData = { name: "", systemPrompt: "" };
+		fieldErrors = {};
 
-      // Emit event via callback
-      oncreated?.({ project: created.id });
-    } catch (error) {
-      console.error('Failed to create project', error);
-      submissionError =
-        error instanceof Error ? error.message :
-        'Unable to create project right now. Try again in a moment.';
-    } finally {
-      isSubmitting = false;
-    }
-  }
+		// Emit event via callback
+		oncreated?.({ project: created.id });
+	} catch (error) {
+		console.error("Failed to create project", error);
+		submissionError =
+			error instanceof Error
+				? error.message
+				: "Unable to create project right now. Try again in a moment.";
+	} finally {
+		_isSubmitting = false;
+	}
+}
 
-  function cancel() {
-    formData = { name: '', systemPrompt: '' };
-    fieldErrors = {};
-    submissionError = null;
-    projectManager.selectProject('all');
-  }
+function cancel() {
+	formData = { name: "", systemPrompt: "" };
+	fieldErrors = {};
+	submissionError = null;
+	projectManager.selectProject("all");
+}
 </script>
 
 <section class="project-create">
   <h2>Create project</h2>
-  <form onsubmit={handleSubmit} aria-describedby={descriptionIds} class="project-form">
+  <form onsubmit={handleSubmit} aria-describedby={_descriptionIds} class="project-form">
     <label for="proj-name">Project name</label>
     <input
       id="proj-name"
@@ -82,7 +89,7 @@
       placeholder="e.g. JavaScript"
       aria-invalid={fieldErrors.name ? 'true' : 'false'}
       class:error={fieldErrors.name}
-      disabled={isSubmitting}
+      disabled={_isSubmitting}
     />
     {#if fieldErrors.name}
       <p id="name-error" class="field-error" role="alert">
@@ -98,7 +105,7 @@
       placeholder="e.g. You are an expert JavaScript developer. Always provide code examples and explain best practices."
       aria-invalid={fieldErrors.systemPrompt ? 'true' : 'false'}
       class:error={fieldErrors.systemPrompt}
-      disabled={isSubmitting}
+      disabled={_isSubmitting}
       rows="4"
     ></textarea>
     {#if fieldErrors.systemPrompt}
@@ -112,10 +119,10 @@
       <p class="submission-error" role="alert">{submissionError}</p>
     {/if}
     <div class="actions">
-      <button type="submit" class="primary" disabled={isSubmitting}>
-        {isSubmitting ? 'Creating...' : 'Create project'}
+      <button type="submit" class="primary" disabled={_isSubmitting}>
+        {_isSubmitting ? 'Creating...' : 'Create project'}
       </button>
-      <button type="button" class="ghost" onclick={cancel} disabled={isSubmitting}>
+      <button type="button" class="ghost" onclick={cancel} disabled={_isSubmitting}>
         Cancel
       </button>
     </div>

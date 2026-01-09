@@ -1,66 +1,89 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { Note } from '../../types';
-  import { modalStore } from '../stores/modalStore';
 
-  export let note: Note | null = null; // null => create new
-  export let cardId: string | null = null;
-  export let api: any = null;
+import type { Note } from "../../types";
+import { modalStore } from "../stores/modalStore";
 
-  let title = '';
-  let content = '';
-  let tagsText = '';
-  let firstInput: HTMLInputElement | null = null;
+export const note: Note | null = null; // null => create new
+export const cardId: string | null = null;
+type NoteApi = {
+	getNotes(cardId: string): Promise<Note[]>;
+	createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
+	updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
+	deleteNote(id: string): Promise<Note>;
+};
 
-  $: {
-    // populate from note
-    title = note?.title || '';
-    content = note?.content || '';
-    tagsText = (note?.tags || []).join(', ');
-  }
+export const api: NoteApi | null = null;
 
-  function resolveApi() {
-    if (api) return api;
-    if (typeof window !== 'undefined' && (window as any).api) return (window as any).api;
-    return null;
-  }
 
-  async function doSave() {
-    const tags = tagsText
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
 
-    const resolved = resolveApi();
-    if (!resolved) return;
+let title = "";
+let content = "";
+let tagsText = "";
+let _firstInput: HTMLInputElement | null = null;
 
-    if (note && note.id) {
-      const updated = await resolved.updateNote({ id: note.id, title, content, tags });
-      // notify list with updated id
-      window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId, noteId: updated.id } }));
-    } else if (cardId) {
-      const created = await resolved.createNote({ cardId, title, content, tags });
-      // notify list and include created note id so the list can focus it
-      window.dispatchEvent(new CustomEvent('notes:changed', { detail: { cardId, noteId: created.id } }));
-    }
+$: {
+	// populate from note
+	title = note?.title || "";
+	content = note?.content || "";
+	tagsText = (note?.tags || []).join(", ");
+}
 
-    // close editor
-    modalStore.pop();
-  }
+function resolveApi(): NoteApi | null {
+	if (api) return api;
+	if (typeof window !== "undefined" && (window as unknown as { api?: NoteApi }).api)
+		return (window as unknown as { api?: NoteApi }).api;
+	return null;
+}
 
-  function cancel() {
-    modalStore.pop();
-  }
+async function _doSave() {
+	const tags = tagsText
+		.split(",")
+		.map((t) => t.trim())
+		.filter(Boolean);
 
-  function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      cancel();
-    }
-  }
+	const resolved = resolveApi();
+	if (!resolved) return;
+
+	if (note?.id) {
+		const updated = await resolved.updateNote({
+			id: note.id,
+			title,
+			content,
+			tags,
+		});
+		// notify list with updated id
+		window.dispatchEvent(
+			new CustomEvent("notes:changed", {
+				detail: { cardId, noteId: updated.id },
+			}),
+		);
+	} else {
+		const created = await resolved.createNote({ cardId: cardId ?? undefined as unknown as string, title, content, tags });
+		// notify list and include created note id so the list can focus it
+		window.dispatchEvent(
+			new CustomEvent("notes:changed", {
+				detail: { cardId, noteId: created.id },
+			}),
+		);
+	}
+
+	// close editor
+	modalStore.pop();
+}
+
+function cancel() {
+	modalStore.pop();
+}
+
+function _onKey(e: KeyboardEvent) {
+	if (e.key === "Escape") {
+		e.stopPropagation();
+		cancel();
+	}
+}
 </script>
 
-  <div class="modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" onkeydown={onKey}>
+  <div class="modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" onkeydown={_onKey}>
     <div class="modal" role="document">
       <header>
         <h2>{note ? 'Edit Note' : 'New Note'}</h2>
@@ -69,7 +92,7 @@
       <div class="body">
         <label>
           Title
-          <input bind:this={firstInput} bind:value={title} />
+          <input bind:this={_firstInput} bind:value={title} />
         </label>
 
         <label>
@@ -85,7 +108,7 @@
 
       <footer>
         <button type="button" class="secondary" onclick={cancel}>Cancel</button>
-        <button type="button" class="primary" onclick={doSave}>Save</button>
+        <button type="button" class="primary" onclick={_doSave}>Save</button>
       </footer>
     </div>
   </div>

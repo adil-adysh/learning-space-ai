@@ -1,12 +1,12 @@
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-import * as path from 'path';
-import type { RawCard, RawProject, RawNote } from './types';
+import { Low } from "lowdb";
+import { JSONFile } from "lowdb/node";
+import * as path from "path";
+import type { RawCard, RawProject, RawNote } from "./types";
 
 interface Database {
-  cards: RawCard[];
-  projects: RawProject[];
-  notes?: RawNote[];
+	cards: RawCard[];
+	projects: RawProject[];
+	notes?: RawNote[];
 }
 
 let db: Low<Database> | null = null;
@@ -16,33 +16,33 @@ let db: Low<Database> | null = null;
  * @param dataPath - Path to the data directory
  */
 export async function initDatabase(dataPath: string): Promise<Low<Database>> {
-  if (db) {
-    return db;
-  }
+	if (db) {
+		return db;
+	}
 
-  const file = path.join(dataPath, 'learning-cards-db.json');
-  const adapter = new JSONFile<Database>(file);
+	const file = path.join(dataPath, "learning-cards-db.json");
+	const adapter = new JSONFile<Database>(file);
 
-  db = new Low<Database>(adapter, { cards: [], projects: [], notes: [] });
+	db = new Low<Database>(adapter, { cards: [], projects: [], notes: [] });
 
-  await db.read();
+	await db.read();
 
-  // Initialize with empty arrays if the file is new
-  db.data ||= { cards: [], projects: [] };
+	// Initialize with empty arrays if the file is new
+	db.data ||= { cards: [], projects: [] };
 
-  await db.write();
+	await db.write();
 
-  return db;
+	return db;
 }
 
 /**
  * Get the database instance
  */
 function getDb(): Low<Database> {
-  if (!db) {
-    throw new Error('Database not initialized. Call initDatabase first.');
-  }
-  return db;
+	if (!db) {
+		throw new Error("Database not initialized. Call initDatabase first.");
+	}
+	return db;
 }
 
 // ============================================================
@@ -50,9 +50,9 @@ function getDb(): Low<Database> {
 // ============================================================
 
 export async function readCards(): Promise<RawCard[]> {
-  const database = getDb();
-  await database.read();
-  return database.data.cards || [];
+	const database = getDb();
+	await database.read();
+	return database.data.cards || [];
 }
 
 // ============================================================
@@ -60,87 +60,93 @@ export async function readCards(): Promise<RawCard[]> {
 // ============================================================
 
 export async function readNotes(cardId?: string): Promise<RawNote[]> {
-  const database = getDb();
-  await database.read();
-  const notes = database.data.notes || [];
-  if (!cardId) return notes;
-  return notes.filter((n) => n.cardId === cardId);
+	const database = getDb();
+	await database.read();
+	const notes = database.data.notes || [];
+	if (!cardId) return notes;
+	return notes.filter((n) => n.cardId === cardId);
 }
 
 export async function addNote(note: RawNote): Promise<RawNote> {
-  const database = getDb();
-  await database.read();
-  database.data.notes = database.data.notes || [];
-  database.data.notes.unshift(note);
-  await database.write();
-  return note;
+	const database = getDb();
+	await database.read();
+	database.data.notes = database.data.notes || [];
+	database.data.notes.unshift(note);
+	await database.write();
+	return note;
 }
 
-export async function updateNote(id: string, updates: Partial<RawNote>): Promise<RawNote | null> {
-  const database = getDb();
-  await database.read();
-  database.data.notes = database.data.notes || [];
-  const idx = database.data.notes.findIndex((n) => n.id === id);
-  if (idx === -1) return null;
-  database.data.notes[idx] = { ...database.data.notes[idx], ...updates };
-  await database.write();
-  return database.data.notes[idx];
+export async function updateNote(
+	id: string,
+	updates: Partial<RawNote>,
+): Promise<RawNote | null> {
+	const database = getDb();
+	await database.read();
+	database.data.notes = database.data.notes || [];
+	const idx = database.data.notes.findIndex((n) => n.id === id);
+	if (idx === -1) return null;
+	database.data.notes[idx] = { ...database.data.notes[idx], ...updates };
+	await database.write();
+	return database.data.notes[idx];
 }
 
 export async function deleteNote(id: string): Promise<RawNote | null> {
-  const database = getDb();
-  await database.read();
-  database.data.notes = database.data.notes || [];
-  const idx = database.data.notes.findIndex((n) => n.id === id);
-  if (idx === -1) return null;
-  const [removed] = database.data.notes.splice(idx, 1);
-  await database.write();
-  return removed;
+	const database = getDb();
+	await database.read();
+	database.data.notes = database.data.notes || [];
+	const idx = database.data.notes.findIndex((n) => n.id === id);
+	if (idx === -1) return null;
+	const [removed] = database.data.notes.splice(idx, 1);
+	await database.write();
+	return removed;
 }
 
 export async function writeCards(cards: RawCard[]): Promise<void> {
-  const database = getDb();
-  await database.read();
-  database.data.cards = cards;
-  await database.write();
+	const database = getDb();
+	await database.read();
+	database.data.cards = cards;
+	await database.write();
 }
 
 export async function addCard(card: RawCard): Promise<RawCard> {
-  const database = getDb();
-  await database.read();
-  database.data.cards.unshift(card);
-  await database.write();
-  return card;
+	const database = getDb();
+	await database.read();
+	database.data.cards.unshift(card);
+	await database.write();
+	return card;
 }
 
-export async function updateCard(id: string, updates: Partial<RawCard>): Promise<RawCard | null> {
-  const database = getDb();
-  await database.read();
+export async function updateCard(
+	id: string,
+	updates: Partial<RawCard>,
+): Promise<RawCard | null> {
+	const database = getDb();
+	await database.read();
 
-  const idx = database.data.cards.findIndex((c) => c.id === id);
-  if (idx === -1) {
-    return null;
-  }
+	const idx = database.data.cards.findIndex((c) => c.id === id);
+	if (idx === -1) {
+		return null;
+	}
 
-  database.data.cards[idx] = { ...database.data.cards[idx], ...updates };
-  await database.write();
+	database.data.cards[idx] = { ...database.data.cards[idx], ...updates };
+	await database.write();
 
-  return database.data.cards[idx];
+	return database.data.cards[idx];
 }
 
 export async function deleteCard(id: string): Promise<RawCard | null> {
-  const database = getDb();
-  await database.read();
+	const database = getDb();
+	await database.read();
 
-  const idx = database.data.cards.findIndex((c) => c.id === id);
-  if (idx === -1) {
-    return null;
-  }
+	const idx = database.data.cards.findIndex((c) => c.id === id);
+	if (idx === -1) {
+		return null;
+	}
 
-  const [removed] = database.data.cards.splice(idx, 1);
-  await database.write();
+	const [removed] = database.data.cards.splice(idx, 1);
+	await database.write();
 
-  return removed;
+	return removed;
 }
 
 // ============================================================
@@ -148,71 +154,73 @@ export async function deleteCard(id: string): Promise<RawCard | null> {
 // ============================================================
 
 export async function readProjects(): Promise<RawProject[]> {
-  const database = getDb();
-  await database.read();
-  return database.data.projects || [];
+	const database = getDb();
+	await database.read();
+	return database.data.projects || [];
 }
 
 export async function writeProjects(projects: RawProject[]): Promise<void> {
-  const database = getDb();
-  await database.read();
-  database.data.projects = projects;
-  await database.write();
+	const database = getDb();
+	await database.read();
+	database.data.projects = projects;
+	await database.write();
 }
 
 export async function addProject(project: RawProject): Promise<RawProject> {
-  const database = getDb();
-  await database.read();
-  database.data.projects.push(project);
-  database.data.projects.sort((a, b) => a.name.localeCompare(b.name));
-  await database.write();
-  return project;
+	const database = getDb();
+	await database.read();
+	database.data.projects.push(project);
+	database.data.projects.sort((a, b) => a.name.localeCompare(b.name));
+	await database.write();
+	return project;
 }
 
 export async function updateProject(
-  id: string,
-  updates: Partial<RawProject>
+	id: string,
+	updates: Partial<RawProject>,
 ): Promise<RawProject | null> {
-  const database = getDb();
-  await database.read();
+	const database = getDb();
+	await database.read();
 
-  const idx = database.data.projects.findIndex((p) => p.id === id);
-  if (idx === -1) {
-    return null;
-  }
+	const idx = database.data.projects.findIndex((p) => p.id === id);
+	if (idx === -1) {
+		return null;
+	}
 
-  database.data.projects[idx] = { ...database.data.projects[idx], ...updates };
-  database.data.projects.sort((a, b) => a.name.localeCompare(b.name));
-  await database.write();
+	database.data.projects[idx] = { ...database.data.projects[idx], ...updates };
+	database.data.projects.sort((a, b) => a.name.localeCompare(b.name));
+	await database.write();
 
-  return database.data.projects[idx];
+	return database.data.projects[idx];
 }
 
 export async function deleteProject(id: string): Promise<RawProject | null> {
-  const database = getDb();
-  await database.read();
+	const database = getDb();
+	await database.read();
 
-  const idx = database.data.projects.findIndex((p) => p.id === id);
-  if (idx === -1) {
-    return null;
-  }
+	const idx = database.data.projects.findIndex((p) => p.id === id);
+	if (idx === -1) {
+		return null;
+	}
 
-  const [removed] = database.data.projects.splice(idx, 1);
-  await database.write();
+	const [removed] = database.data.projects.splice(idx, 1);
+	await database.write();
 
-  return removed;
+	return removed;
 }
 
 export async function findProjectById(id: string): Promise<RawProject | null> {
-  const database = getDb();
-  await database.read();
-  return database.data.projects.find((p) => p.id === id) || null;
+	const database = getDb();
+	await database.read();
+	return database.data.projects.find((p) => p.id === id) || null;
 }
 
-export async function findProjectByName(name: string): Promise<RawProject | null> {
-  const database = getDb();
-  await database.read();
-  return database.data.projects.find((p) => p.name === name) || null;
+export async function findProjectByName(
+	name: string,
+): Promise<RawProject | null> {
+	const database = getDb();
+	await database.read();
+	return database.data.projects.find((p) => p.name === name) || null;
 }
 
 // ============================================================
@@ -223,18 +231,18 @@ export async function findProjectByName(name: string): Promise<RawProject | null
  * Remove project references from all cards when a project is deleted
  */
 export async function clearProjectFromCards(projectId: string): Promise<void> {
-  const database = getDb();
-  await database.read();
+	const database = getDb();
+	await database.read();
 
-  let changed = false;
-  for (const card of database.data.cards) {
-    if (card.project === projectId) {
-      card.project = '';
-      changed = true;
-    }
-  }
+	let changed = false;
+	for (const card of database.data.cards) {
+		if (card.project === projectId) {
+			card.project = "";
+			changed = true;
+		}
+	}
 
-  if (changed) {
-    await database.write();
-  }
+	if (changed) {
+		await database.write();
+	}
 }

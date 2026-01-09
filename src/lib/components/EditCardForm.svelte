@@ -1,178 +1,196 @@
 <script lang="ts">
-	/* global HTMLElement setTimeout */
-	import { projectManager } from '../projectManager.svelte';
-	import type { LearningCard } from '../../types';
+/* global HTMLElement setTimeout */
+import { projectManager } from "../projectManager.svelte";
+import type { LearningCard } from "../../types";
 
-	interface Props {
-		card: LearningCard;
-		onSubmit: (data: { id: string; title: string; prompt: string; topic?: string; project?: string }) => Promise<void>;
-		onCancel: () => void;
+interface Props {
+	card: LearningCard;
+	onSubmit: (data: {
+		id: string;
+		title: string;
+		prompt: string;
+		topic?: string;
+		project?: string;
+	}) => Promise<void>;
+	onCancel: () => void;
+}
+
+const { card, onSubmit, onCancel }: Props = $props();
+
+// Local state using Svelte 5 runes
+let title = $state("");
+let topic = $state("");
+let project = $state("");
+let creatingProject = $state(false);
+let prompt = $state("");
+let status = $state("");
+let isSubmitting = $state(false);
+
+$effect(() => {
+	title = card.title;
+	topic = card.topic || "";
+	project = card.project || "";
+	prompt = card.prompt;
+	creatingProject = false;
+});
+
+// Derived validation state
+const titleError = $derived.by(() => {
+	const trimmed = title.trim();
+	if (trimmed.length === 0) return "Title is required";
+	if (trimmed.length < 3) return "Title must be at least 3 characters";
+	if (trimmed.length > 100) return "Title must be less than 100 characters";
+	return "";
+});
+
+const promptError = $derived.by(() => {
+	const trimmed = prompt.trim();
+	if (trimmed.length === 0) return "Prompt is required";
+	if (trimmed.length < 10) return "Prompt must be at least 10 characters";
+	if (trimmed.length > 8000) return "Prompt must be less than 8000 characters";
+	return "";
+});
+
+const projectError = $derived.by(() => {
+	if (creatingProject) {
+		const trimmed = project.trim();
+		if (trimmed.length === 0) return "Project name is required";
+		if (trimmed.length < 2) return "Project name must be at least 2 characters";
+		if (trimmed.length > 50)
+			return "Project name must be less than 50 characters";
+		if (
+			projectManager.all.some(
+				(p) => p.name.toLowerCase() === trimmed.toLowerCase(),
+			)
+		) {
+			return "A project with this name already exists";
+		}
+	}
+	return "";
+});
+
+const isValid = $derived.by(() => {
+	return (
+		title.trim().length > 0 &&
+		prompt.trim().length > 0 &&
+		!titleError &&
+		!promptError &&
+		!projectError
+	);
+});
+
+let formElement: HTMLElement | null = null;
+let firstFocusableElement: HTMLElement | null = null;
+let lastFocusableElement: HTMLElement | null = null;
+
+// Focus trap effect
+$effect(() => {
+	// Set initial focus to title input
+	const titleInput = document.getElementById("edit-title") as HTMLInputElement;
+	if (titleInput) {
+		setTimeout(() => titleInput.focus(), 0);
 	}
 
-	const { card, onSubmit, onCancel }: Props = $props();
+	// Get all focusable elements within the form
+	const updateFocusableElements = () => {
+		if (!formElement) return;
 
-	// Local state using Svelte 5 runes
-	let title = $state('');
-	let topic = $state('');
-	let project = $state('');
-	let creatingProject = $state(false);
-	let prompt = $state('');
-	let status = $state('');
-	let isSubmitting = $state(false);
+		const focusableSelectors =
+			'input:not([disabled]), textarea:not([disabled]), button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+		const focusableElements = formElement.querySelectorAll(focusableSelectors);
 
-	$effect(() => {
-		title = card.title;
-		topic = card.topic || '';
-		project = card.project || '';
-		prompt = card.prompt;
-		creatingProject = false;
-	});
-
-	// Derived validation state
-	let titleError = $derived.by(() => {
-		const trimmed = title.trim();
-		if (trimmed.length === 0) return 'Title is required';
-		if (trimmed.length < 3) return 'Title must be at least 3 characters';
-		if (trimmed.length > 100) return 'Title must be less than 100 characters';
-		return '';
-	});
-
-	let promptError = $derived.by(() => {
-		const trimmed = prompt.trim();
-		if (trimmed.length === 0) return 'Prompt is required';
-		if (trimmed.length < 10) return 'Prompt must be at least 10 characters';
-		if (trimmed.length > 8000) return 'Prompt must be less than 8000 characters';
-		return '';
-	});
-
-	let projectError = $derived.by(() => {
-		if (creatingProject) {
-			const trimmed = project.trim();
-			if (trimmed.length === 0) return 'Project name is required';
-			if (trimmed.length < 2) return 'Project name must be at least 2 characters';
-			if (trimmed.length > 50) return 'Project name must be less than 50 characters';
-			if (projectManager.all.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
-				return 'A project with this name already exists';
-			}
+		if (focusableElements.length > 0) {
+			firstFocusableElement = focusableElements[0] as HTMLElement;
+			lastFocusableElement = focusableElements[
+				focusableElements.length - 1
+			] as HTMLElement;
 		}
-		return '';
-	});
+	};
 
-	let isValid = $derived.by(() => {
-		return title.trim().length > 0 && 
-		       prompt.trim().length > 0 && 
-		       !titleError && 
-		       !promptError && 
-		       !projectError;
-	});
+	updateFocusableElements();
 
-	let formElement: HTMLElement | null = null;
-	let firstFocusableElement: HTMLElement | null = null;
-	let lastFocusableElement: HTMLElement | null = null;
-
-	// Focus trap effect
-	$effect(() => {
-		// Set initial focus to title input
-		const titleInput = document.getElementById('edit-title') as HTMLInputElement;
-		if (titleInput) {
-			setTimeout(() => titleInput.focus(), 0);
-		}
-
-		// Get all focusable elements within the form
-		const updateFocusableElements = () => {
-			if (!formElement) return;
-			
-			const focusableSelectors = 'input:not([disabled]), textarea:not([disabled]), button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-			const focusableElements = formElement.querySelectorAll(focusableSelectors);
-			
-			if (focusableElements.length > 0) {
-				firstFocusableElement = focusableElements[0] as HTMLElement;
-				lastFocusableElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-			}
-		};
+	const handleTabKey = (e: KeyboardEvent) => {
+		if (e.key !== "Tab") return;
 
 		updateFocusableElements();
 
-		const handleTabKey = (e: KeyboardEvent) => {
-			if (e.key !== 'Tab') return;
-
-			updateFocusableElements();
-
-			if (e.shiftKey) {
-				if (document.activeElement === firstFocusableElement) {
-					e.preventDefault();
-					lastFocusableElement?.focus();
-				}
-			} else {
-				if (document.activeElement === lastFocusableElement) {
-					e.preventDefault();
-					firstFocusableElement?.focus();
-				}
+		if (e.shiftKey) {
+			if (document.activeElement === firstFocusableElement) {
+				e.preventDefault();
+				lastFocusableElement?.focus();
 			}
-		};
-
-		const handleGlobalKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				onCancel();
-			}
-		};
-
-		formElement?.addEventListener('keydown', handleTabKey);
-		window.addEventListener('keydown', handleGlobalKeydown);
-
-		return () => {
-			formElement?.removeEventListener('keydown', handleTabKey);
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
-	});
-
-	async function handleSubmit(e: SubmitEvent) {
-		e.preventDefault();
-
-		if (!isValid || isSubmitting) return;
-
-		isSubmitting = true;
-		status = '';
-
-		try {
-			await onSubmit({
-				id: card.id,
-				title: title.trim(),
-				prompt: prompt.trim(),
-				topic: topic.trim() || undefined,
-				project: creatingProject ? project.trim() || undefined : (project || undefined),
-			});
-
-			announceToSR(`Card "${title}" updated successfully`);
-		} catch (err) {
-			status = err instanceof Error ? err.message : 'Failed to update card';
-			announceToSR(status);
-		} finally {
-			isSubmitting = false;
-		}
-	}
-
-	function handleProjectChange(e: Event) {
-		const select = e.target as HTMLSelectElement;
-		if (select.value === '__create__') {
-			creatingProject = true;
-			project = '';
 		} else {
-			creatingProject = false;
-			project = select.value;
+			if (document.activeElement === lastFocusableElement) {
+				e.preventDefault();
+				firstFocusableElement?.focus();
+			}
 		}
-	}
+	};
 
-	function announceToSR(message: string) {
-		const announcer = document.getElementById('sr-announcements');
-		if (announcer) {
-			announcer.textContent = message;
+	const handleGlobalKeydown = (e: KeyboardEvent) => {
+		if (e.key === "Escape") {
+			onCancel();
 		}
+	};
+
+	formElement?.addEventListener("keydown", handleTabKey);
+	window.addEventListener("keydown", handleGlobalKeydown);
+
+	return () => {
+		formElement?.removeEventListener("keydown", handleTabKey);
+		window.removeEventListener("keydown", handleGlobalKeydown);
+	};
+});
+
+async function _handleSubmit(e: SubmitEvent) {
+	e.preventDefault();
+
+	if (!isValid || isSubmitting) return;
+
+	isSubmitting = true;
+	status = "";
+
+	try {
+		await onSubmit({
+			id: card.id,
+			title: title.trim(),
+			prompt: prompt.trim(),
+			topic: topic.trim() || undefined,
+			project: creatingProject
+				? project.trim() || undefined
+				: project || undefined,
+		});
+
+		announceToSR(`Card "${title}" updated successfully`);
+	} catch (err) {
+		status = err instanceof Error ? err.message : "Failed to update card";
+		announceToSR(status);
+	} finally {
+		isSubmitting = false;
 	}
+}
+
+function _handleProjectChange(e: Event) {
+	const select = e.target as HTMLSelectElement;
+	if (select.value === "__create__") {
+		creatingProject = true;
+		project = "";
+	} else {
+		creatingProject = false;
+		project = select.value;
+	}
+}
+
+function announceToSR(message: string) {
+	const announcer = document.getElementById("sr-announcements");
+	if (announcer) {
+		announcer.textContent = message;
+	}
+}
 </script>
 
 <section id="edit-section" bind:this={formElement}>
-	<form onsubmit={handleSubmit} aria-labelledby="edit-heading">
+	<form onsubmit={_handleSubmit} aria-labelledby="edit-heading">
 		<h2 id="edit-heading">Edit learning item</h2>
 
 		{#if status}
@@ -218,7 +236,7 @@
 			<select
 				id="edit-project-select"
 				bind:value={project}
-				onchange={handleProjectChange}
+				onchange={_handleProjectChange}
 				disabled={isSubmitting}
 				aria-describedby="edit-project-hint"
 			>

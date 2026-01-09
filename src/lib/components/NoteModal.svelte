@@ -1,108 +1,125 @@
 <script lang="ts">
 /* global setTimeout */
-  import NoteEditorModal from './NoteEditorModal.svelte';
-  import NoteContent from './NoteContent.svelte';
-  import NoteView from './NoteView.svelte';
-  import MoreMenu from './MoreMenu.svelte';
-  import { modalStore } from '../stores/modalStore';
-  import type { Note } from '../../types';
-  import { createEventDispatcher } from 'svelte';
+import NoteEditorModal from "./NoteEditorModal.svelte";
+import NoteContent from "./NoteContent.svelte";
+import NoteView from "./NoteView.svelte";
+import MoreMenu from "./MoreMenu.svelte";
+import { modalStore } from "../stores/modalStore";
+import type { Note } from "../../types";
+import { createEventDispatcher } from "svelte";
 
-  interface Props {
-    cardId: string;
-    cardTitle?: string;
-    api?: {
-      getNotes(cardId: string): Promise<Note[]>;
-      createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
-      updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
-      deleteNote(id: string): Promise<Note>;
-    } | null;
-    confirmFn?: (message: string) => boolean;
-  }
-  const { cardId, cardTitle, api, confirmFn }: Props = $props();
-  const dispatch = createEventDispatcher();
+interface Props {
+	cardId: string;
+	cardTitle?: string;
+	api?: {
+		getNotes(cardId: string): Promise<Note[]>;
+		createNote(payload: {
+			cardId: string;
+			title: string;
+			content: string;
+			tags: string[];
+		}): Promise<Note>;
+		updateNote(payload: {
+			id: string;
+			title?: string;
+			content?: string;
+			tags?: string[];
+		}): Promise<Note>;
+		deleteNote(id: string): Promise<Note>;
+	} | null;
+	confirmFn?: (message: string) => boolean;
+}
+const { cardId, cardTitle, api, confirmFn }: Props = $props();
+const dispatch = createEventDispatcher();
 
-  let notes: Note[] = $state([] as Note[]);
-  let editing: Note | null = $state(null);
-  let dialogRef: HTMLElement | null = $state(null);
-  let lastCreatedNoteId: string | null = $state(null);
+let notes: Note[] = $state([] as Note[]);
+let editing: Note | null = $state(null);
+let dialogRef: HTMLElement | null = $state(null);
+let lastCreatedNoteId: string | null = $state(null);
 
-  function resolveApi() {
-    if (api) return api;
-    if (typeof window !== 'undefined' && (window as any).api) return (window as any).api;
-    return null;
-  }
+function resolveApi() {
+	if (api) return api;
+	if (typeof window !== "undefined" && (window as unknown as { api?: Props["api"] }).api)
+		return (window as unknown as { api?: Props["api"] }).api;
+	return null;
+}
 
-  async function load() {
-    if (!cardId) return;
-    const resolved = resolveApi();
-    if (!resolved) return;
-    notes = await resolved.getNotes(cardId);
-  }
+async function load() {
+	if (!cardId) return;
+	const resolved = resolveApi();
+	if (!resolved) return;
+	notes = await resolved.getNotes(cardId);
+}
 
-  import { onMount } from 'svelte';
+import { onMount } from "svelte";
 
-  onMount(() => {
-    load();
-    setTimeout(() => dialogRef?.focus(), 0);
-  });
+onMount(() => {
+	load();
+	setTimeout(() => dialogRef?.focus(), 0);
+});
 
-  function openNew() {
-    const resolved = resolveApi();
-    // push the editor onto the modal stack so the list remains mounted underneath
-    modalStore.push(NoteEditorModal, { cardId, note: null, api: resolved });
-  }
+function openNew() {
+	const resolved = resolveApi();
+	// push the editor onto the modal stack so the list remains mounted underneath
+	modalStore.push(NoteEditorModal, { cardId, note: null, api: resolved });
+}
 
-  function editNote(n: Note) {
-    const resolved = resolveApi();
-    modalStore.push(NoteEditorModal, { cardId, note: n, api: resolved });
-  }
+function editNote(n: Note) {
+	const resolved = resolveApi();
+	modalStore.push(NoteEditorModal, { cardId, note: n, api: resolved });
+}
 
-  function openView(n: Note) {
-    const resolved = resolveApi();
-    modalStore.push(NoteView, { cardId, note: n, api: resolved });
-  }
+function openView(n: Note) {
+	const resolved = resolveApi();
+	modalStore.push(NoteView, { cardId, note: n, api: resolved });
+}
 
-  // NoteEditor will perform saves itself and dispatch a global event when notes change.
+// NoteEditor will perform saves itself and dispatch a global event when notes change.
 
-  async function handleDelete(id: string) {
-    const resolvedConfirm = confirmFn ?? (typeof window !== 'undefined' ? window.confirm.bind(window) : () => true);
-    if (!resolvedConfirm('Delete this note?')) return;
-    const resolved = resolveApi();
-    if (!resolved) return;
-    await resolved.deleteNote(id);
-    await load();
-  }
+async function handleDelete(id: string) {
+	const resolvedConfirm =
+		confirmFn ??
+		(typeof window !== "undefined" ? window.confirm.bind(window) : () => true);
+	if (!resolvedConfirm("Delete this note?")) return;
+	const resolved = resolveApi();
+	if (!resolved) return;
+	await resolved.deleteNote(id);
+	await load();
+}
 
-  function close() {
-    dispatch('close');
-  }
+function close() {
+	dispatch("close");
+}
 
-  // listen for global note-change events so the list refreshes when the editor creates/updates
-  function onNotesChanged(e: Event) {
-    const detail = (e as CustomEvent).detail as { cardId?: string } | undefined;
-    if (!detail || detail.cardId !== cardId) return;
-    // remember created note id so we can focus after reload
-    lastCreatedNoteId = detail['noteId'] || null;
-    load().then(() => {
-      if (lastCreatedNoteId) {
-        // focus the newly created note element if present
-        const el = document.getElementById(`note-${lastCreatedNoteId}`) as HTMLElement | null;
-        if (el && typeof el.focus === 'function') {
-          setTimeout(() => el.focus(), 0);
-        }
-        lastCreatedNoteId = null;
-      }
-    });
-  }
+// listen for global note-change events so the list refreshes when the editor creates/updates
+function onNotesChanged(e: Event) {
+	const detail = (e as CustomEvent).detail as { cardId?: string } | undefined;
+	if (!detail || detail.cardId !== cardId) return;
+	// remember created note id so we can focus after reload
+	lastCreatedNoteId = detail["noteId"] || null;
+	load().then(() => {
+		if (lastCreatedNoteId) {
+			// focus the newly created note element if present
+			const el = document.getElementById(
+				`note-${lastCreatedNoteId}`,
+			) as HTMLElement | null;
+			if (el && typeof el.focus === "function") {
+				setTimeout(() => el.focus(), 0);
+			}
+			lastCreatedNoteId = null;
+		}
+	});
+}
 
-  import { onDestroy } from 'svelte';
-  onMount(() => {
-    load();
-    setTimeout(() => dialogRef?.focus(), 0);
-    window.addEventListener('notes:changed', onNotesChanged as EventListener);
-  });
-  onDestroy(() => window.removeEventListener('notes:changed', onNotesChanged as EventListener));
+import { onDestroy } from "svelte";
+onMount(() => {
+	load();
+	setTimeout(() => dialogRef?.focus(), 0);
+	window.addEventListener("notes:changed", onNotesChanged as EventListener);
+});
+onDestroy(() =>
+	window.removeEventListener("notes:changed", onNotesChanged as EventListener),
+);
 </script>
 
   <div class="notes-modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" bind:this={dialogRef}>
@@ -162,6 +179,5 @@
   .note-item .content { white-space:pre-wrap; margin:0.5rem 0; }
   .actions { display:flex; gap:0.5rem; }
   .primary { background:#2563eb; color:#fff; border:none; padding:0.5rem 0.75rem; border-radius:6px }
-  .danger { color:#b91c1c; background:transparent; border:1px solid rgba(0,0,0,0.06); padding:0.25rem 0.5rem; border-radius:6px }
   .close { background:transparent; border:none; font-size:1.1rem }
 </style>

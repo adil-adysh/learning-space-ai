@@ -364,17 +364,17 @@ function ProjectsList($$renderer, $$props) {
 function ProjectCreate($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let formData = { name: "", systemPrompt: "" };
-    let isSubmitting = false;
+    let _isSubmitting = false;
     let fieldErrors = {};
-    let descriptionIds = fieldErrors.name ? "name-error project-hint" : "project-hint";
-    $$renderer2.push(`<section class="project-create svelte-t06kqd"><h2 class="svelte-t06kqd">Create project</h2> <form${attr("aria-describedby", descriptionIds)} class="project-form svelte-t06kqd"><label for="proj-name" class="svelte-t06kqd">Project name</label> <input id="proj-name"${attr("value", formData.name)} type="text" placeholder="e.g. JavaScript"${attr("aria-invalid", fieldErrors.name ? "true" : "false")}${attr("disabled", isSubmitting, true)}${attr_class("svelte-t06kqd", void 0, { "error": fieldErrors.name })}/> `);
+    const _descriptionIds = fieldErrors.name ? "name-error project-hint" : "project-hint";
+    $$renderer2.push(`<section class="project-create svelte-t06kqd"><h2 class="svelte-t06kqd">Create project</h2> <form${attr("aria-describedby", _descriptionIds)} class="project-form svelte-t06kqd"><label for="proj-name" class="svelte-t06kqd">Project name</label> <input id="proj-name"${attr("value", formData.name)} type="text" placeholder="e.g. JavaScript"${attr("aria-invalid", fieldErrors.name ? "true" : "false")}${attr("disabled", _isSubmitting, true)}${attr_class("svelte-t06kqd", void 0, { "error": fieldErrors.name })}/> `);
     if (fieldErrors.name) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<p id="name-error" class="field-error svelte-t06kqd" role="alert">${escape_html(fieldErrors.name)}</p>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--> <p class="hint svelte-t06kqd" id="project-hint">The project name appears in the sidebar list.</p> <label for="proj-system-prompt" class="svelte-t06kqd">System prompt <span class="optional">(optional)</span></label> <textarea id="proj-system-prompt" placeholder="e.g. You are an expert JavaScript developer. Always provide code examples and explain best practices."${attr("aria-invalid", fieldErrors.systemPrompt ? "true" : "false")}${attr("disabled", isSubmitting, true)} rows="4"${attr_class("", void 0, { "error": fieldErrors.systemPrompt })}>`);
+    $$renderer2.push(`<!--]--> <p class="hint svelte-t06kqd" id="project-hint">The project name appears in the sidebar list.</p> <label for="proj-system-prompt" class="svelte-t06kqd">System prompt <span class="optional">(optional)</span></label> <textarea id="proj-system-prompt" placeholder="e.g. You are an expert JavaScript developer. Always provide code examples and explain best practices."${attr("aria-invalid", fieldErrors.systemPrompt ? "true" : "false")}${attr("disabled", _isSubmitting, true)} rows="4"${attr_class("", void 0, { "error": fieldErrors.systemPrompt })}>`);
     const $$body = escape_html(formData.systemPrompt);
     if ($$body) {
       $$renderer2.push(`${$$body}`);
@@ -390,7 +390,7 @@ function ProjectCreate($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--> <div class="actions svelte-t06kqd"><button type="submit" class="primary svelte-t06kqd"${attr("disabled", isSubmitting, true)}>${escape_html("Create project")}</button> <button type="button" class="ghost svelte-t06kqd"${attr("disabled", isSubmitting, true)}>Cancel</button></div></form></section>`);
+    $$renderer2.push(`<!--]--> <div class="actions svelte-t06kqd"><button type="submit" class="primary svelte-t06kqd"${attr("disabled", _isSubmitting, true)}>${escape_html("Create project")}</button> <button type="button" class="ghost svelte-t06kqd"${attr("disabled", _isSubmitting, true)}>Cancel</button></div></form></section>`);
   });
 }
 function EditCardForm($$renderer, $$props) {
@@ -401,21 +401,21 @@ function EditCardForm($$renderer, $$props) {
     let creatingProject = false;
     let prompt = "";
     let isSubmitting = false;
-    let titleError = (() => {
+    const titleError = (() => {
       const trimmed = title.trim();
       if (trimmed.length === 0) return "Title is required";
       if (trimmed.length < 3) return "Title must be at least 3 characters";
       if (trimmed.length > 100) return "Title must be less than 100 characters";
       return "";
     })();
-    let promptError = (() => {
+    const promptError = (() => {
       const trimmed = prompt.trim();
       if (trimmed.length === 0) return "Prompt is required";
       if (trimmed.length < 10) return "Prompt must be at least 10 characters";
       if (trimmed.length > 8e3) return "Prompt must be less than 8000 characters";
       return "";
     })();
-    let projectError = (() => {
+    const projectError = (() => {
       if (creatingProject) {
         const trimmed = project.trim();
         if (trimmed.length === 0) return "Project name is required";
@@ -427,10 +427,10 @@ function EditCardForm($$renderer, $$props) {
       }
       return "";
     })();
-    let isValid = (() => {
+    const isValid = (() => {
       return title.trim().length > 0 && prompt.trim().length > 0 && !titleError && !promptError && !projectError;
     })();
-    function handleProjectChange(e) {
+    function _handleProjectChange(e) {
       const select = e.target;
       if (select.value === "__create__") {
         creatingProject = true;
@@ -457,7 +457,7 @@ function EditCardForm($$renderer, $$props) {
       {
         id: "edit-project-select",
         value: project,
-        onchange: handleProjectChange,
+        onchange: _handleProjectChange,
         disabled: isSubmitting,
         "aria-describedby": "edit-project-hint"
       },
@@ -540,13 +540,18 @@ function CardItem($$renderer, $$props) {
 }
 function CardList($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    const { onStart, onToggle, onEdit, onDelete } = $$props;
+    const {
+      onStart: _onStart,
+      onToggle: _onToggle,
+      onEdit: _onEdit,
+      onDelete: _onDelete
+    } = $$props;
     function groupByProject(list) {
       const map = /* @__PURE__ */ new Map();
       for (const c of list) {
         const key = c.project || "";
         if (!map.has(key)) map.set(key, []);
-        map.get(key).push(c);
+        map.get(key)?.push(c);
       }
       const groups = [];
       for (const [project, cards] of map.entries()) {
@@ -563,7 +568,7 @@ function CardList($$renderer, $$props) {
       });
       return groups;
     }
-    const groupedCards = (() => {
+    const _groupedCards = (() => {
       if (cardManager.filterProject === "all") {
         return groupByProject(cardManager.filtered);
       }
@@ -588,14 +593,20 @@ function CardList($$renderer, $$props) {
       if (cardManager.filterProject === "all") {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<!--[-->`);
-        const each_array = ensure_array_like(groupedCards);
+        const each_array = ensure_array_like(_groupedCards);
         for (let $$index_1 = 0, $$length = each_array.length; $$index_1 < $$length; $$index_1++) {
           let group = each_array[$$index_1];
           $$renderer2.push(`<section class="project-group"${attr("aria-labelledby", group.headingId)}><h3${attr("id", group.headingId)}>${escape_html(group.project ? projectManager.all.find((p) => p.id === group.project)?.name || group.project : "Unassigned")}</h3> <!--[-->`);
           const each_array_1 = ensure_array_like(group.cards);
           for (let $$index = 0, $$length2 = each_array_1.length; $$index < $$length2; $$index++) {
             let card = each_array_1[$$index];
-            CardItem($$renderer2, { card, onStart, onToggle, onEdit, onDelete });
+            CardItem($$renderer2, {
+              card,
+              onStart: _onStart,
+              onToggle: _onToggle,
+              onEdit: _onEdit,
+              onDelete: _onDelete
+            });
           }
           $$renderer2.push(`<!--]--></section>`);
         }
@@ -606,7 +617,13 @@ function CardList($$renderer, $$props) {
         const each_array_2 = ensure_array_like(cardManager.filtered);
         for (let $$index_2 = 0, $$length = each_array_2.length; $$index_2 < $$length; $$index_2++) {
           let card = each_array_2[$$index_2];
-          CardItem($$renderer2, { card, onStart, onToggle, onEdit, onDelete });
+          CardItem($$renderer2, {
+            card,
+            onStart: _onStart,
+            onToggle: _onToggle,
+            onEdit: _onEdit,
+            onDelete: _onDelete
+          });
         }
         $$renderer2.push(`<!--]-->`);
       }
