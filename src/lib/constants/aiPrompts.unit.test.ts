@@ -8,6 +8,10 @@ describe("AI Prompts", () => {
 			expect(AI_LEARNING_CARD_PROMPT).toContain("version");
 			expect(AI_LEARNING_CARD_PROMPT).toContain("cards");
 			expect(AI_LEARNING_CARD_PROMPT).toContain("JSON");
+			expect(AI_LEARNING_CARD_PROMPT).toContain("How many learning cards");
+			expect(AI_LEARNING_CARD_PROMPT).toContain("What topic");
+			expect(AI_LEARNING_CARD_PROMPT).toContain("clarifying question");
+			expect(AI_LEARNING_CARD_PROMPT).toContain("Return ONLY valid JSON");
 		});
 
 		it("should specify required fields", () => {
@@ -52,8 +56,4 @@ describe("AI Prompts", () => {
 			expect(url).not.toContain("\n");
 		});
 	});
-
-	
-
-	
 });

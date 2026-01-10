@@ -10,7 +10,7 @@ const sampleNote = (id = "n1") => ({
 	title: "Existing Note",
 	content: "Note content here",
 	tags: ["tag1"],
-	createdAt: new Date().toISOString(),
+	createdAt: new Date(),
 });
 
 test("NoteModal lists notes and New Note opens editor and triggers createNote (and list updates)", async () => {

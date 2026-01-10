@@ -6,9 +6,9 @@ import { makeApiMock } from "./__tests__/helpers/factories";
 
 test("Import modal file-upload flow: upload, validate, and import JSON file", async () => {
 	// Arrange: start with empty data and mock API
-	const { api, internal } = makeApiMock({ projects: [], cards: [], notes: [] });
+	const { api } = makeApiMock({ projects: [], cards: [], notes: [] });
 	// Ensure updateCard exists on the mock (used by import flow to assign project)
-	api.updateCard = vi.fn(async (payload: any) => {
+	(api as any).updateCard = vi.fn(async (payload: any) => {
 		return {
 			id: payload.id,
 			title: payload.title ?? "Imported Card",
@@ -24,13 +24,17 @@ test("Import modal file-upload flow: upload, validate, and import JSON file", as
 	render(ProjectFlowTestWrapper);
 
 	// Create a new project so that import is project-scoped
-	const newProjectBtn = page.getByRole("button", { name: /New Project|Create project/i });
+	const newProjectBtn = page.getByRole("button", {
+		name: /New Project|Create project/i,
+	});
 	await expect.element(newProjectBtn).toBeVisible();
 	await newProjectBtn.click();
 
 	const nameInput = page.getByPlaceholder("e.g. JavaScript");
 	await nameInput.fill("Import Project");
-	const systemInput = page.getByPlaceholder(/You are an expert JavaScript developer/i);
+	const systemInput = page.getByPlaceholder(
+		/You are an expert JavaScript developer/i,
+	);
 	await systemInput.fill("System prompt");
 
 	const createBtn = page.getByRole("button", { name: /Create project/i });
@@ -54,9 +58,6 @@ test("Import modal file-upload flow: upload, validate, and import JSON file", as
 		],
 	};
 
-	// Build a file payload in-memory (avoid Node fs in browser tests)
-	const jsonBuffer = new TextEncoder().encode(JSON.stringify(bundle));
-
 	// Open Import modal
 	const importBtn = page.getByRole("button", { name: /Import/i });
 	await expect.element(importBtn).toBeVisible();
@@ -64,7 +65,9 @@ test("Import modal file-upload flow: upload, validate, and import JSON file", as
 
 	// Ensure file input exists and set files using an in-memory file payload
 	// Set the file input directly in the browser DOM (test runs in-browser)
-	const input = document.getElementById("file-input") as HTMLInputElement | null;
+	const input = document.getElementById(
+		"file-input",
+	) as HTMLInputElement | null;
 	if (!input) throw new Error("file input not found");
 	const blob = new Blob([JSON.stringify(bundle)], { type: "application/json" });
 	const file = new File([blob], "import.json", { type: "application/json" });
@@ -77,7 +80,9 @@ test("Import modal file-upload flow: upload, validate, and import JSON file", as
 	await new Promise((r) => setTimeout(r, 50));
 
 	// Click 'Import File' button to validate and import
-	const importFileBtn = page.getByRole("button", { name: /Import File|Import file/i });
+	const importFileBtn = page.getByRole("button", {
+		name: /Import File|Import file/i,
+	});
 	await expect.element(importFileBtn).toBeVisible();
 	await importFileBtn.click();
 

@@ -161,9 +161,11 @@ async function _handleImport(jsonData: string) {
 	}
 
 	// Import
-	await cardManager.importCardsToProject(parsedData as LearningCardBundleV1, projectId);
+	await cardManager.importCardsToProject(
+		parsedData as LearningCardBundleV1,
+		projectId,
+	);
 }
-
 </script>
 
 <section class="project-detail">

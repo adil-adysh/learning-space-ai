@@ -1,6 +1,12 @@
 import type { LearningCard } from "../types";
 import type { LearningCardBundleV1, ValidationError } from "../types";
-import { exportCards, validateBundle, downloadJSON, generateExportFilename, rawToLearningCard } from "./utils/cardImportExport";
+import {
+	exportCards,
+	validateBundle,
+	downloadJSON,
+	generateExportFilename,
+	rawToLearningCard,
+} from "./utils/cardImportExport";
 
 /**
  * Card Manager using Svelte 5 Runes
@@ -307,7 +313,10 @@ class CardManager {
 	 * Import cards from validated bundle into a specific project
 	 * Cards will be assigned to the given projectId
 	 */
-	async importCardsToProject(bundle: LearningCardBundleV1, projectId: string): Promise<void> {
+	async importCardsToProject(
+		bundle: LearningCardBundleV1,
+		projectId: string,
+	): Promise<void> {
 		if (typeof window === "undefined" || !("api" in window)) {
 			throw new Error("Window API not available");
 		}

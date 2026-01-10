@@ -49,7 +49,7 @@ test("ModalContainer clears modalStore when child dispatches close", async () =>
 	// allow ModalContainer's close clearing timeout to run
 	await new Promise((r) => setTimeout(r, 250));
 
-	const state = get(modalStore as unknown) as unknown[];
+	const state = get(modalStore as any) as unknown[];
 	// modalStore is now a stack; after close the stack should be empty
 	expect(Array.isArray(state)).toBe(true);
 	expect(state.length).toBe(0);

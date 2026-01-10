@@ -52,7 +52,8 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 
 	// Wait for the note to be present
 	for (let i = 0; i < 20; i++) {
-		const ns = await api.getNotes();
+		const createdCardId = internal.cards[0]?.id;
+		const ns = await api.getNotes(createdCardId as string);
 		if (ns.length > 0) break;
 		await new Promise((r) => setTimeout(r, 100));
 	}

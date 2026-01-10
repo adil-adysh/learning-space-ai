@@ -1,4 +1,9 @@
-import type { LearningCard, RawCard, LearningCardBundleV1, ValidationError } from "../../types";
+import type {
+	LearningCard,
+	RawCard,
+	LearningCardBundleV1,
+	ValidationError,
+} from "../../types";
 
 /**
  * Convert LearningCard to RawCard (Date -> ISO string)
@@ -57,22 +62,28 @@ export function validateBundle(data: unknown): ValidationError[] {
 
 	// Check version
 	if (bundle.version !== 1) {
-		errors.push({ field: "version", message: "Invalid or missing version (expected: 1)" });
+		errors.push({
+			field: "version",
+			message: "Invalid or missing version (expected: 1)",
+		});
 	}
 
 	// Check cards array
 	if (!Array.isArray(bundle.cards)) {
-		errors.push({ field: "cards", message: "Missing or invalid 'cards' array" });
+		errors.push({
+			field: "cards",
+			message: "Missing or invalid 'cards' array",
+		});
 		return errors;
 	}
 
 	// Validate each card
 	bundle.cards.forEach((card, index) => {
 		if (!card || typeof card !== "object") {
-			errors.push({ 
-				field: "card", 
+			errors.push({
+				field: "card",
 				message: `Card at index ${index} is not an object`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 			return;
 		}
@@ -81,69 +92,69 @@ export function validateBundle(data: unknown): ValidationError[] {
 
 		// Required fields
 		if (!c.id || typeof c.id !== "string") {
-			errors.push({ 
-				field: "id", 
+			errors.push({
+				field: "id",
 				message: `Card at index ${index} missing or invalid 'id'`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 
 		if (!c.title || typeof c.title !== "string") {
-			errors.push({ 
-				field: "title", 
+			errors.push({
+				field: "title",
 				message: `Card at index ${index} missing or invalid 'title'`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 
 		if (!c.prompt || typeof c.prompt !== "string") {
-			errors.push({ 
-				field: "prompt", 
+			errors.push({
+				field: "prompt",
 				message: `Card at index ${index} missing or invalid 'prompt'`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 
 		if (!c.status || (c.status !== "active" && c.status !== "done")) {
-			errors.push({ 
-				field: "status", 
+			errors.push({
+				field: "status",
 				message: `Card at index ${index} has invalid 'status' (must be 'active' or 'done')`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 
 		if (!c.createdAt || typeof c.createdAt !== "string") {
-			errors.push({ 
-				field: "createdAt", 
+			errors.push({
+				field: "createdAt",
 				message: `Card at index ${index} missing or invalid 'createdAt'`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		} else {
 			// Validate ISO date format
 			const date = new Date(c.createdAt);
 			if (Number.isNaN(date.getTime())) {
-				errors.push({ 
-					field: "createdAt", 
+				errors.push({
+					field: "createdAt",
 					message: `Card at index ${index} has invalid date format in 'createdAt'`,
-					cardIndex: index 
+					cardIndex: index,
 				});
 			}
 		}
 
 		// Optional fields validation
 		if (c.topic !== undefined && typeof c.topic !== "string") {
-			errors.push({ 
-				field: "topic", 
+			errors.push({
+				field: "topic",
 				message: `Card at index ${index} has invalid 'topic' (must be string)`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 
 		if (c.project !== undefined && typeof c.project !== "string") {
-			errors.push({ 
-				field: "project", 
+			errors.push({
+				field: "project",
 				message: `Card at index ${index} has invalid 'project' (must be string)`,
-				cardIndex: index 
+				cardIndex: index,
 			});
 		}
 	});
@@ -154,18 +165,21 @@ export function validateBundle(data: unknown): ValidationError[] {
 /**
  * Trigger browser download of JSON file
  */
-export function downloadJSON(data: LearningCardBundleV1, filename: string): void {
+export function downloadJSON(
+	data: LearningCardBundleV1,
+	filename: string,
+): void {
 	const json = JSON.stringify(data, null, 2);
 	const blob = new Blob([json], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
-	
+
 	const link = document.createElement("a");
 	link.href = url;
 	link.download = filename;
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);
-	
+
 	URL.revokeObjectURL(url);
 }
 
@@ -179,7 +193,7 @@ export function generateExportFilename(projectName: string): string {
 		.replace(/-+/g, "-")
 		.replace(/^-|-$/g, "")
 		.toLowerCase();
-	
+
 	return `${sanitized}-learning-cards.json`;
 }
 

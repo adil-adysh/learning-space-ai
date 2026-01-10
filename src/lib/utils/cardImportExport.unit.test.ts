@@ -197,11 +197,21 @@ describe("cardImportExport utilities", () => {
 
 			const errors = validateBundle(bundle);
 
-			expect(errors.some((e) => e.field === "id" && e.cardIndex === 0)).toBe(true);
-			expect(errors.some((e) => e.field === "title" && e.cardIndex === 0)).toBe(true);
-			expect(errors.some((e) => e.field === "prompt" && e.cardIndex === 0)).toBe(true);
-			expect(errors.some((e) => e.field === "status" && e.cardIndex === 0)).toBe(true);
-			expect(errors.some((e) => e.field === "createdAt" && e.cardIndex === 0)).toBe(true);
+			expect(errors.some((e) => e.field === "id" && e.cardIndex === 0)).toBe(
+				true,
+			);
+			expect(errors.some((e) => e.field === "title" && e.cardIndex === 0)).toBe(
+				true,
+			);
+			expect(
+				errors.some((e) => e.field === "prompt" && e.cardIndex === 0),
+			).toBe(true);
+			expect(
+				errors.some((e) => e.field === "status" && e.cardIndex === 0),
+			).toBe(true);
+			expect(
+				errors.some((e) => e.field === "createdAt" && e.cardIndex === 0),
+			).toBe(true);
 		});
 
 		it("should reject invalid status", () => {
@@ -220,7 +230,9 @@ describe("cardImportExport utilities", () => {
 
 			const errors = validateBundle(bundle);
 
-			expect(errors.some((e) => e.field === "status" && e.cardIndex === 0)).toBe(true);
+			expect(
+				errors.some((e) => e.field === "status" && e.cardIndex === 0),
+			).toBe(true);
 		});
 
 		it("should reject invalid date format", () => {
@@ -239,7 +251,9 @@ describe("cardImportExport utilities", () => {
 
 			const errors = validateBundle(bundle);
 
-			expect(errors.some((e) => e.field === "createdAt" && e.cardIndex === 0)).toBe(true);
+			expect(
+				errors.some((e) => e.field === "createdAt" && e.cardIndex === 0),
+			).toBe(true);
 		});
 
 		it("should validate multiple cards", () => {
@@ -387,7 +401,9 @@ describe("cardImportExport utilities", () => {
 				expect(imported.topic).toBe(original.topic);
 				expect(imported.project).toBe(original.project);
 				expect(imported.status).toBe(original.status);
-				expect(imported.createdAt.toISOString()).toBe(original.createdAt.toISOString());
+				expect(imported.createdAt.toISOString()).toBe(
+					original.createdAt.toISOString(),
+				);
 			});
 		});
 	});

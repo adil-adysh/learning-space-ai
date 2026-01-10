@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ValidationError } from "../../types";
+import type { ValidationError, LearningCardBundleV1 } from "../../types";
 import { cardManager } from "../cardManager.svelte";
 
 interface Props {
@@ -14,8 +14,7 @@ let errors = $state<ValidationError[]>([]);
 let isImporting = $state(false);
 let successMessage = $state("");
 
-
-let parsedBundle = $state<any>(null);
+let parsedBundle = $state<LearningCardBundleV1 | null>(null);
 let previewJson = $state("");
 let isValidated = $state(false);
 
@@ -29,7 +28,7 @@ function _resetValidation() {
 function handleFileUpload(event: Event) {
 	const target = event.target as HTMLInputElement;
 	const file = target.files?.[0];
-	
+
 	if (file) {
 		const reader = new FileReader();
 		reader.onload = (e) => {
@@ -85,7 +84,9 @@ async function handleImportFile() {
 
 async function handleImport() {
 	if (!isValidated || !parsedBundle) {
-		errors = [{ field: "validation", message: "Please validate JSON before importing" }];
+		errors = [
+			{ field: "validation", message: "Please validate JSON before importing" },
+		];
 		return;
 	}
 

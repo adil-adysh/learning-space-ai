@@ -6,15 +6,20 @@ import { validateBundle, rawToLearningCard } from "./utils/cardImportExport";
 class CardManager {
 	all: LearningCard[] = [];
 
-	validateImportBundle(data: unknown): Array<{ field: string; message: string; cardIndex?: number }> {
+	validateImportBundle(
+		data: unknown,
+	): Array<{ field: string; message: string; cardIndex?: number }> {
 		return validateBundle(data);
 	}
 
-	async importCardsToProject(bundle: LearningCardBundleV1, projectId: string): Promise<void> {
+	async importCardsToProject(
+		bundle: LearningCardBundleV1,
+		projectId: string,
+	): Promise<void> {
 		if (typeof window === "undefined" || !("api" in window)) {
 			throw new Error("Window API not available");
 		}
-		
+
 		const cardsToImport = bundle.cards.map((rawCard) => {
 			const card = rawToLearningCard(rawCard);
 			return {
@@ -117,10 +122,10 @@ describe("CardManager import/export", () => {
 			];
 
 			// Mock downloadJSON to capture the bundle
-			let capturedBundle: LearningCardBundleV1 | null = null;
+			let _capturedBundle: LearningCardBundleV1 | null = null;
 			vi.mock("../utils/cardImportExport", () => ({
 				downloadJSON: (bundle: LearningCardBundleV1) => {
-					capturedBundle = bundle;
+					_capturedBundle = bundle;
 				},
 				generateExportFilename: () => "test.json",
 				exportCards: (cards: LearningCard[]) => ({
@@ -213,9 +218,9 @@ describe("CardManager import/export", () => {
 				cards: [],
 			};
 
-			await expect(manager.importCardsToProject(bundle, "project-1")).rejects.toThrow(
-				"Window API not available",
-			);
+			await expect(
+				manager.importCardsToProject(bundle, "project-1"),
+			).rejects.toThrow("Window API not available");
 		});
 
 		it("should handle import errors", async () => {
@@ -234,14 +239,16 @@ describe("CardManager import/export", () => {
 
 			const mockAddCard = vi.fn().mockRejectedValue(new Error("Import failed"));
 			const mockUpdateCard = vi.fn();
-			(global as any).window = { 
-				api: { 
+			(global as any).window = {
+				api: {
 					addCard: mockAddCard,
 					updateCard: mockUpdateCard,
-				} 
+				},
 			};
 
-			await expect(manager.importCardsToProject(bundle, "project-1")).rejects.toThrow();
+			await expect(
+				manager.importCardsToProject(bundle, "project-1"),
+			).rejects.toThrow();
 		});
 	});
 
