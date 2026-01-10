@@ -174,9 +174,9 @@ async function _handleImport(jsonData: string) {
         class="secondary"
         onclick={_handleOpenAI}
         type="button"
-        title="Open AI with project prompt"
+        title="Generate learning cards with AI"
       >
-        🤖 Open AI
+        🤖 Generate Learning Cards
       </button>
       <button
         class="secondary"

@@ -54,7 +54,7 @@ This document summarizes the implementation of the AI-assisted generation, impor
 ### 6. UI Integration - ProjectDetail
 - **File**: `src/lib/components/ProjectDetail.svelte`
 - Added three buttons to project header:
-  1. **🤖 Generate with AI**: Opens ChatGPT with pre-filled prompt
+  1. **🤖 Generate Learning Cards**: Opens ChatGPT with pre-filled prompt
   2. **📥 Import**: Opens import modal
   3. **📤 Export**: Downloads JSON file
 - Buttons are project-scoped (only shown when project is active)
@@ -97,7 +97,7 @@ This document summarizes the implementation of the AI-assisted generation, impor
 - Export filters cards by project (only exports project's cards)
 
 ### AI Integration is Safe
-- "Generate with AI" only opens a URL; no automatic persistence
+- "Generate Learning Cards" only opens a URL; no automatic persistence
 - User must manually copy/paste AI-generated JSON
 - Validation catches issues before any data is saved
 
@@ -152,7 +152,7 @@ src/
 
 ### AI Generation Workflow
 1. Navigate to a project
-2. Click **🤖 Generate with AI** button
+2. Click **🤖 Generate Learning Cards** button
 3. Browser opens ChatGPT with pre-filled prompt
 4. User chats with AI to generate cards
 5. User copies the generated JSON
