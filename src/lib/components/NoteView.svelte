@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Note } from "../../types";
+import type { Note, NoteApi } from "$lib/types";
 import { modalStore } from "../stores/modalStore";
 import NoteContent from "./NoteContent.svelte";
 import MoreMenu from "./MoreMenu.svelte";
@@ -9,7 +9,8 @@ import NoteEditorModal from "./NoteEditorModal.svelte";
 void MoreMenu;
 void NoteContent;
 
-type NoteApi = { deleteNote: (id: string) => Promise<void> };
+// Use shared NoteApi type from $lib/types
+// type NoteApi = { deleteNote: (id: string) => Promise<void> };
 
 interface Props {
 	note: Note | null;

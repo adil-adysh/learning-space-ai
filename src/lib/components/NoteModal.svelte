@@ -2,7 +2,7 @@
 /* global setTimeout */
 
 import { createEventDispatcher, onDestroy, onMount } from "svelte";
-import type { Note } from "../../types";
+import type { Note } from "$lib/types";
 import { modalStore } from "../stores/modalStore";
 import MoreMenu from "./MoreMenu.svelte";
 import NoteContent from "./NoteContent.svelte";
@@ -80,50 +80,44 @@ function resolveApi() {
 }
 
 async function load() {
-	if (!cardId) return;
+	if (!cardId) {
+		return;
+	}
 	const resolved = resolveApi();
-	if (!resolved) return;
+	if (!resolved) {
+		return;
+	}
 	notes = await resolved.getNotes(cardId);
 }
 
-function openNew() {
+function openEditor(note: Note | null) {
 	const resolved = resolveApi();
-	// push the editor onto the modal stack so the list remains mounted underneath
 	modalStore.push(NoteEditorModal, {
 		cardId,
-		note: null,
+		note,
 		api: resolved,
-		onSaved: (created: Note) => {
-			// focus the newly created note after reload
-			lastCreatedNoteId = created.id;
+		onSaved: (saved: Note) => {
+			// If this was a creation (note === null), mark for focus after reload
+			if (!note) lastCreatedNoteId = saved.id;
+			// reload the list and focus the created/updated note
 			load().then(() => {
-				if (lastCreatedNoteId) {
-					const el = document.getElementById(
-						`note-${lastCreatedNoteId}`,
-					) as HTMLElement | null;
-					if (el && typeof el.focus === "function") {
-						setTimeout(() => el.focus(), 0);
-					}
-					lastCreatedNoteId = null;
-				}
+				const targetId = lastCreatedNoteId ?? saved.id;
+				const el = document.getElementById(`note-${targetId}`) as HTMLElement | null;
+
+				if (el && typeof el.focus === "function") setTimeout(() => el.focus(), 0);
+				lastCreatedNoteId = null;
 			});
 		},
 	});
 }
 
+function openNew() {
+	openEditor(null);
+}
+
 function editNote(n: Note) {
-	const resolved = resolveApi();
-	// ensure we use the freshest note object from the current store
 	const latest = notes.find((x) => x.id === n.id) ?? n;
-	modalStore.push(NoteEditorModal, {
-		cardId,
-		note: latest,
-		api: resolved,
-		onSaved: (_updated: Note) => {
-			// reload notes after edit and keep backward-compatible global event handling
-			load();
-		},
-	});
+	openEditor(latest);
 }
 
 function openView(n: Note) {
@@ -141,7 +135,9 @@ async function handleDelete(id: string) {
 		(typeof window !== "undefined" ? window.confirm.bind(window) : () => true);
 	if (!resolvedConfirm("Delete this note?")) return;
 	const resolved = resolveApi();
-	if (!resolved) return;
+	if (!resolved) {
+		return;
+	}
 	await resolved.deleteNote(id);
 	await load();
 }

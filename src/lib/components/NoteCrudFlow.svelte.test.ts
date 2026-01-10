@@ -2,14 +2,16 @@ import { test, expect } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
 import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
+import { makeApiMock } from "./__tests__/helpers/factories";
+import { createProject, addCard } from "./__tests__/helpers/flows";
 
 test("Full note CRUD flow: create, view, edit, delete", async () => {
-	const createdProject = {
+	const _createdProject = {
 		id: "p-crud",
 		name: "CRUDProj",
 		systemPrompt: "Sys",
 	};
-	const createdCard = {
+	const _createdCard = {
 		id: "c-crud-1",
 		title: "CRUD Card",
 		prompt: "Explain promises",
@@ -18,50 +20,16 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 		project: "p-crud",
 	};
 
-	const notes: any[] = [];
-
-	const api = {
-		getProjects: () => Promise.resolve([]),
-		createProject: (p: any) =>
-			Promise.resolve({ ...createdProject, name: p.name }),
-		getCards: () => Promise.resolve([]),
-		addCard: (c: any) => Promise.resolve({ ...createdCard, ...c }),
-		getNotes: () => Promise.resolve(notes),
-		createNote: (n: any) => {
-			const created = { id: `n-${Date.now()}`, ...n };
-			notes.push(created);
-			return Promise.resolve(created);
-		},
-		updateNote: (n: any) => {
-			const idx = notes.findIndex((x) => x.id === n.id);
-			if (idx !== -1) notes[idx] = { ...notes[idx], ...n };
-			return Promise.resolve(n);
-		},
-		deleteNote: (id: string) => {
-			const idx = notes.findIndex((x) => x.id === id);
-			if (idx !== -1) notes.splice(idx, 1);
-			return Promise.resolve();
-		},
-	};
-
+	const { api, internal } = makeApiMock({ notes: [] });
 	(globalThis as any).api = api;
 
 	render(ProjectFlowTestWrapper);
 
 	// Create project
-	const newProjectBtn = page.getByRole("button", {
-		name: /New Project|Create project/i,
-	});
-	await expect.element(newProjectBtn).toBeVisible();
-	await newProjectBtn.click();
+	await createProject("CRUDProj", "Sys");
 
-	const nameInput = page.getByPlaceholder("e.g. JavaScript");
-	await nameInput.fill("CRUDProj");
-	const systemInput = page.getByPlaceholder(
-		/You are an expert JavaScript developer/i,
-	);
-	await systemInput.fill("Sys");
-	await page.getByRole("button", { name: /Create project/i }).click();
+	// Add a learning card
+	await addCard("CRUD Card", "Explain promises");
 
 	// Add a learning card
 	await page.getByRole("button", { name: /New Learning Item/i }).click();
@@ -72,7 +40,7 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 	await page.getByRole("button", { name: /Save card/i }).click();
 
 	// Open notes and create a note
-	await page.getByRole("button", { name: /Open Notes/i }).click();
+	await (page.getByLabelText("Open notes for CRUD Card") as any).first().click();
 	await page.getByRole("button", { name: /New Note/i }).click();
 	await page.getByRole("textbox", { name: /Title/i }).fill("Note CRUD Title");
 	await page
@@ -88,8 +56,9 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 	}
 
 	if (typeof window !== "undefined") {
+		const createdCardId = internal.cards[0]?.id;
 		window.dispatchEvent(
-			new CustomEvent("notes:changed", { detail: { cardId: createdCard.id } }),
+			new CustomEvent("notes:changed", { detail: { cardId: createdCardId } }),
 		);
 	}
 
@@ -155,8 +124,8 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 	let updated = false;
 	for (let i = 0; i < 20; i++) {
 		if ((api as any).updateNote && (api as any).updateNote.length >= 0) {
-			// we don't have a spy here; check data
-			if (notes.find((n) => n.content === "Updated body.")) {
+			// check internal mock store for the updated content
+			if (internal.notes.find((n) => n.content === "Updated body.")) {
 				updated = true;
 				break;
 			}
@@ -172,6 +141,6 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 
 	await new Promise((r) => setTimeout(r, 100));
 	// Ensure note removed from our mock store
-	if (notes.find((n) => n.title === "Note CRUD Title"))
+	if (internal.notes.find((n) => n.title === "Note CRUD Title"))
 		throw new Error("Note not deleted");
 });

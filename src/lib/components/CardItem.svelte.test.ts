@@ -64,7 +64,7 @@ test("Open Notes button shows the notes modal", async () => {
 		},
 	});
 
-	const openNotes = page.getByRole("button", { name: /Open Notes/i });
+	const openNotes = page.getByLabelText("Open notes for Notes Card");
 	await expect.element(openNotes).toBeVisible();
 	await openNotes.click();
 

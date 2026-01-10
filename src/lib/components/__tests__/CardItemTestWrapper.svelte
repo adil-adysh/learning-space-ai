@@ -1,15 +1,16 @@
 <script lang="ts">
 import ModalContainer from "../ModalContainer.svelte";
 import CardItem from "../CardItem.svelte";
+import type { LearningCard, NoteApi } from "../../types";
 
 void ModalContainer; // used in test wrapper markup
 void CardItem; // used in test wrapper markup
-export let card: unknown;
-export let onStart: (...args: unknown[]) => void;
-export let onToggle: (...args: unknown[]) => void;
-export let onEdit: (...args: unknown[]) => void;
-export let onDelete: (...args: unknown[]) => void;
-export let noteApi: unknown;
+export let card: LearningCard;
+export let onStart: (card: LearningCard) => void = () => {};
+export let onToggle: (id: string, status: "active" | "done") => void = () => {};
+export let onEdit: (card: LearningCard) => void = () => {};
+export let onDelete: (id: string) => void = () => {};
+export let noteApi: NoteApi | null = null;
 </script>
 
 <ModalContainer />

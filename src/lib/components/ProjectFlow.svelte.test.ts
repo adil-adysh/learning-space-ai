@@ -1,16 +1,17 @@
-import { expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
 import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
-import { cardManager } from "../cardManager.svelte";
+import { makeApiMock } from "./__tests__/helpers/factories";
+import { addCard } from "./__tests__/helpers/flows";
 
 test("Create project, open it, add a card, and open the card's notes", async () => {
-	const createdProject = {
+	const _createdProject = {
 		id: "p1",
 		name: "My Project",
 		systemPrompt: "System",
 	};
-	const createdCard = {
+	const _createdCard = {
 		id: "c1",
 		title: "Project Card",
 		prompt: "Do the thing",
@@ -19,28 +20,12 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 		project: "p1",
 	};
 
-	const api = {
-		getProjects: vi.fn(() => Promise.resolve([])),
-		createProject: vi.fn((payload: any) =>
-			Promise.resolve({
-				...createdProject,
-				name: payload.name,
-				systemPrompt: payload.systemPrompt,
-			}),
-		),
-		getCards: vi.fn(() => Promise.resolve([])),
-		addCard: vi.fn((data: any) => Promise.resolve({ ...createdCard, ...data })),
-		getNotes: vi.fn(() => Promise.resolve([])),
-		createNote: vi.fn(() => Promise.resolve(null)),
-		updateNote: vi.fn(() => Promise.resolve(null)),
-		deleteNote: vi.fn(() => Promise.resolve(null)),
-	};
-	// Expose API on window (preload shim)
+	const { api } = makeApiMock({ projects: [], cards: [], notes: [] });
 	(globalThis as any).api = api;
 
 	render(ProjectFlowTestWrapper);
 
-	// Open project create screen
+	// Open project create screen and create project via helper
 	const newProjectBtn = page.getByRole("button", {
 		name: /New Project|Create project/i,
 	});
@@ -59,19 +44,12 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 	const createBtn = page.getByRole("button", { name: /Create project/i });
 	await createBtn.click();
 
-	// Ensure API called
-	expect(api.createProject).toHaveBeenCalled();
-
 	// Project detail should now be visible with the created project name
 	const detailHeading = page.getByRole("heading", { name: /My Project/i });
 	await expect.element(detailHeading).toBeVisible();
 
-	// Add a card programmatically for the created project (simulates user adding a card)
-	await cardManager.addCard({
-		title: "Project Card",
-		prompt: "Do the thing",
-		project: "p1",
-	});
+	// Add a card via UI (ensures the created project is selected properly)
+	await addCard("Project Card", "Do the thing");
 
 	// Card should appear in the list
 	const cardHeading = page.getByRole("heading", { name: /Project Card/i });

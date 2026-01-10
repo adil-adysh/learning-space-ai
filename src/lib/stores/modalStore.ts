@@ -1,8 +1,8 @@
-import type { SvelteComponent } from "svelte";
+import type { ComponentType } from "svelte";
 import { derived, writable } from "svelte/store";
 
 type StackItem = {
-	component: typeof SvelteComponent;
+	component: ComponentType;
 	props?: Record<string, unknown> | null;
 	opener?: HTMLElement | null;
 };
@@ -16,7 +16,10 @@ function createModalStore() {
 		props: Record<string, unknown> = {},
 		opener: HTMLElement | null = null,
 	) {
-		stack.update((s) => [...s, { component, props, opener }]);
+		stack.update((s) => {
+			const next = [...s, { component, props, opener }];
+			return next;
+		});
 	}
 
 	function pop() {
@@ -42,6 +45,12 @@ function createModalStore() {
 		lastOpener.set(top?.opener || null);
 	}
 
+	function clear() {
+		// deterministic reset for tests
+		stack.set([]);
+		lastOpener.set(null);
+	}
+
 	// backward-compatible alias for `push`
 	function open(
 		component: typeof SvelteComponent,
@@ -61,6 +70,7 @@ function createModalStore() {
 		push,
 		pop,
 		close,
+		clear,
 		open,
 		// derived helpers
 		current,

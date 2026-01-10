@@ -85,7 +85,7 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 	expect(api.addCard).toHaveBeenCalled();
 
 	// Open the card's notes
-	const openNotesBtn = page.getByRole("button", { name: /Open Notes/i });
+	const openNotesBtn = page.getByLabelText("Open notes for CardFlow Card");
 	await openNotesBtn.click();
 
 	// Create a new note

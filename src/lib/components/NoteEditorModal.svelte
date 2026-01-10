@@ -1,27 +1,10 @@
 <script lang="ts">
-import type { Note } from "../../types";
+import type { Note, NoteApi } from "$lib/types";
 import { modalStore } from "../stores/modalStore";
 
 /* biome-disable lint/style/useConst */
 // Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
 /* biome-enable lint/style/useConst */
-
-type NoteApi = {
-	getNotes(cardId: string): Promise<Note[]>;
-	createNote(payload: {
-		cardId: string;
-		title: string;
-		content: string;
-		tags: string[];
-	}): Promise<Note>;
-	updateNote(payload: {
-		id: string;
-		title?: string;
-		content?: string;
-		tags?: string[];
-	}): Promise<Note>;
-	deleteNote(id: string): Promise<Note>;
-};
 
 interface Props {
 	note: Note | null;
@@ -64,14 +47,39 @@ function resolveApi(): NoteApi | null {
 	return null;
 }
 
+import { tick } from "svelte";
+
 async function _doSave() {
+	// let Svelte flush any pending input bindings before reading values
+	await tick();
 	const tags = tagsText
 		.split(",")
 		.map((t) => t.trim())
 		.filter(Boolean);
 
+	// fallback: if bindings didn't capture input values (race), try reading directly from the DOM
+	if (!title || !content) {
+		try {
+			const top = document.querySelector('.modal-pane.top');
+			if (top) {
+				if (!title) {
+					const input = top.querySelector('input');
+					if (input) title = (input as HTMLInputElement).value || title;
+				}
+				if (!content) {
+					const ta = top.querySelector('textarea');
+					if (ta) content = (ta as HTMLTextAreaElement).value || content;
+				}
+			}
+		} catch (_e) {
+			// ignore DOM read failures
+		}
+	}
+
 	const resolved = resolveApi();
-	if (!resolved) return;
+	if (!resolved) {
+		return;
+	}
 
 	if (note?.id) {
 		const updated = await resolved.updateNote({
@@ -90,12 +98,13 @@ async function _doSave() {
 			}),
 		);
 	} else {
-		const created = await resolved.createNote({
+		const payload = {
 			cardId: cardId ?? (undefined as unknown as string),
 			title,
 			content,
 			tags,
-		});
+		};
+		const created = await resolved.createNote(payload);
 		// notify parent directly via callback if provided (preferred), and keep global event for backward compat
 		if (typeof onSaved === "function") {
 			onSaved(created);
