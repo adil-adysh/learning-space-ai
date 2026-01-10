@@ -2,7 +2,10 @@ import { render } from "vitest-browser-svelte";
 import RenderWithModal from "./RenderWithModal.svelte";
 import type { ComponentType } from "svelte";
 
-export function renderWithModal(component: ComponentType, props: Record<string, unknown> = {}) {
+export function renderWithModal(
+	component: ComponentType,
+	props: Record<string, unknown> = {},
+) {
 	return render(RenderWithModal, { props: { component, props } });
 }
 

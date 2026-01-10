@@ -26,7 +26,6 @@ test("NoteModal lists notes and New Note opens editor and triggers createNote (a
 		props: { cardId: "c1", cardTitle: "Card 1", confirmFn: () => true },
 	});
 
-
 	const noteHeading = page.getByRole("heading", { name: /Existing Note/i });
 	await expect.element(noteHeading).toBeVisible();
 
@@ -90,7 +89,11 @@ test("NoteModal rapid-save uses tick() to capture freshly-set input values", asy
 	(globalThis as unknown as { api: unknown }).api = {
 		getNotes: vi.fn(() => Promise.resolve(notes)),
 		createNote: vi.fn().mockImplementation(async (payload: any) => {
-			created = { ...(payload as any), id: "n3", createdAt: new Date().toISOString() };
+			created = {
+				...(payload as any),
+				id: "n3",
+				createdAt: new Date().toISOString(),
+			};
 			notes.push(created);
 			return created;
 		}),
@@ -196,7 +199,9 @@ test("NoteModal edit opens editor and triggers updateNote (and list updates)", a
 	});
 
 	// open more menu and click edit
-	const moreTrigger = page.getByLabelText("More actions for note Existing Note");
+	const moreTrigger = page.getByLabelText(
+		"More actions for note Existing Note",
+	);
 	await expect.element(moreTrigger).toBeVisible();
 	await moreTrigger.click();
 

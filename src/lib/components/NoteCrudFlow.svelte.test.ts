@@ -40,7 +40,9 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 	await page.getByRole("button", { name: /Save card/i }).click();
 
 	// Open notes and create a note
-	await (page.getByLabelText("Open notes for CRUD Card") as any).first().click();
+	await (page.getByLabelText("Open notes for CRUD Card") as any)
+		.first()
+		.click();
 	await page.getByRole("button", { name: /New Note/i }).click();
 	await page.getByRole("textbox", { name: /Title/i }).fill("Note CRUD Title");
 	await page

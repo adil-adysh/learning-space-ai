@@ -102,9 +102,12 @@ function openEditor(note: Note | null) {
 			// reload the list and focus the created/updated note
 			load().then(() => {
 				const targetId = lastCreatedNoteId ?? saved.id;
-				const el = document.getElementById(`note-${targetId}`) as HTMLElement | null;
+				const el = document.getElementById(
+					`note-${targetId}`,
+				) as HTMLElement | null;
 
-				if (el && typeof el.focus === "function") setTimeout(() => el.focus(), 0);
+				if (el && typeof el.focus === "function")
+					setTimeout(() => el.focus(), 0);
 				lastCreatedNoteId = null;
 			});
 		},

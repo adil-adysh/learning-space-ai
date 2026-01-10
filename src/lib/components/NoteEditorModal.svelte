@@ -60,14 +60,14 @@ async function _doSave() {
 	// fallback: if bindings didn't capture input values (race), try reading directly from the DOM
 	if (!title || !content) {
 		try {
-			const top = document.querySelector('.modal-pane.top');
+			const top = document.querySelector(".modal-pane.top");
 			if (top) {
 				if (!title) {
-					const input = top.querySelector('input');
+					const input = top.querySelector("input");
 					if (input) title = (input as HTMLInputElement).value || title;
 				}
 				if (!content) {
-					const ta = top.querySelector('textarea');
+					const ta = top.querySelector("textarea");
 					if (ta) content = (ta as HTMLTextAreaElement).value || content;
 				}
 			}

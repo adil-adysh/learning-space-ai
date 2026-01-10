@@ -3,9 +3,13 @@ import { page as vitestPage } from "vitest/browser";
 
 export async function createProject(name: string, systemPrompt = "System") {
 	const page: Page = vitestPage as unknown as Page;
-	await page.getByRole("button", { name: /New Project|Create project/i }).click();
+	await page
+		.getByRole("button", { name: /New Project|Create project/i })
+		.click();
 	await page.getByPlaceholder("e.g. JavaScript").fill(name);
-	await page.getByPlaceholder(/You are an expert JavaScript developer/i).fill(systemPrompt);
+	await page
+		.getByPlaceholder(/You are an expert JavaScript developer/i)
+		.fill(systemPrompt);
 	await page.getByRole("button", { name: /Create project/i }).click();
 	// wait for heading
 	await page.getByRole("heading", { name: new RegExp(name, "i") });
