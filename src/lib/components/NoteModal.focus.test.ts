@@ -1,6 +1,6 @@
-import { test, expect, vi } from "vitest";
-import { render } from "vitest-browser-svelte";
+import { expect, test, vi } from "vitest";
 import { page } from "vitest/browser";
+import { render } from "vitest-browser-svelte";
 
 // Render the ModalContainer with NoteModal via the existing test wrapper
 const NoteWrapperImport = () =>
@@ -29,7 +29,11 @@ test("creating a note focuses the newly-created note element", async () => {
 	(globalThis as unknown as { api: unknown }).api = {
 		getNotes: vi.fn().mockResolvedValue([sampleNote("n1")]),
 		createNote: vi.fn().mockImplementation((payload: unknown) => {
-			created = { ...(payload as Record<string, unknown>), id: "n2", createdAt: new Date().toISOString() };
+			created = {
+				...(payload as Record<string, unknown>),
+				id: "n2",
+				createdAt: new Date().toISOString(),
+			};
 			return created;
 		}),
 		updateNote: vi.fn().mockResolvedValue(null),

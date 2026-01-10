@@ -1,5 +1,5 @@
-const { writeFileSync, mkdirSync } = require('fs');
-const { join } = require('path');
+const { writeFileSync, mkdirSync } = require('node:fs');
+const { join } = require('node:path');
 
 const dist = 'dist';
 try {

@@ -1,9 +1,7 @@
 <script lang="ts">
 import type { Note } from "../../types";
-import NoteContent from "./NoteContent.svelte";
-import NoteEditorModal from "./NoteEditorModal.svelte";
-import MoreMenu from "./MoreMenu.svelte";
 import { modalStore } from "../stores/modalStore";
+import NoteEditorModal from "./NoteEditorModal.svelte";
 
 type NoteApi = { deleteNote: (id: string) => Promise<void> };
 
@@ -13,21 +11,24 @@ export const api: NoteApi | null = null;
 
 function resolveApi(): NoteApi | null {
 	if (api) return api;
-	if (typeof window !== "undefined" && (window as unknown as { api?: NoteApi }).api)
+	if (
+		typeof window !== "undefined" &&
+		(window as unknown as { api?: NoteApi }).api
+	)
 		return (window as unknown as { api?: NoteApi }).api;
 	return null;
 }
 
-function close() {
+function _close() {
 	modalStore.pop();
 }
 
-function edit() {
+function _edit() {
 	const resolved = resolveApi();
 	modalStore.push(NoteEditorModal, { cardId, note, api: resolved });
 }
 
-async function remove() {
+async function _remove() {
 	const resolved = resolveApi();
 	if (!resolved) return;
 	if (!confirm("Delete this note?")) return;

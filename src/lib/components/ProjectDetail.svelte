@@ -1,11 +1,9 @@
 <script lang="ts">
-import { projectManager } from "../projectManager.svelte";
-import { cardManager } from "../cardManager.svelte";
-import AddForm from "./AddForm.svelte";
-import EditCardForm from "./EditCardForm.svelte";
-import CardList from "./CardList.svelte";
-import { modalStore } from "../stores/modalStore";
 import type { LearningCard } from "../../types";
+import { cardManager } from "../cardManager.svelte";
+import { projectManager } from "../projectManager.svelte";
+import { modalStore } from "../stores/modalStore";
+import AddForm from "./AddForm.svelte";
 
 interface Props {
 	projectId: string;
@@ -14,7 +12,7 @@ interface Props {
 const { projectId }: Props = $props();
 
 // Derived value: find current project
-const project = $derived.by(() => {
+const _project = $derived.by(() => {
 	if (!projectManager.all || !projectId) return undefined;
 	return projectManager.all.find((p) => p.id === projectId);
 });
@@ -26,7 +24,7 @@ $effect(() => {
 	}
 });
 
-function openAddForm() {
+function _openAddForm() {
 	modalStore.open(AddForm, {
 		initialProject: projectId,
 		onSubmit: async (data: {
@@ -54,7 +52,7 @@ async function handleFormSubmit(data: {
 	cardManager.closeForm();
 }
 
-async function handleStart(card: LearningCard) {
+async function _handleStart(card: LearningCard) {
 	// Get the project's system prompt if the card belongs to a project
 	let systemPrompt: string | undefined;
 	if (card.project) {
@@ -66,17 +64,17 @@ async function handleStart(card: LearningCard) {
 	await cardManager.runPromptWithSystem(card.prompt, systemPrompt);
 }
 
-async function handleCardToggle(id: string, status: "active" | "done") {
+async function _handleCardToggle(id: string, status: "active" | "done") {
 	await cardManager.updateCardStatus(id, status);
 }
 
-let editingCard = $state<LearningCard | null>(null);
+let _editingCard = $state<LearningCard | null>(null);
 
-function handleCardEdit(card: LearningCard) {
-	editingCard = card;
+function _handleCardEdit(card: LearningCard) {
+	_editingCard = card;
 }
 
-async function handleEditSubmit(data: {
+async function _handleEditSubmit(data: {
 	id: string;
 	title: string;
 	prompt: string;
@@ -84,14 +82,14 @@ async function handleEditSubmit(data: {
 	project?: string;
 }) {
 	await cardManager.updateCard(data);
-	editingCard = null;
+	_editingCard = null;
 }
 
-function handleEditCancel() {
-	editingCard = null;
+function _handleEditCancel() {
+	_editingCard = null;
 }
 
-async function handleCardDelete(id: string) {
+async function _handleCardDelete(id: string) {
 	if (window.confirm("Are you sure you want to delete this learning card?")) {
 		await cardManager.deleteCard(id);
 	}

@@ -1,6 +1,6 @@
-import { test, expect, vi } from "vitest";
-import { render } from "vitest-browser-svelte";
+import { expect, test, vi } from "vitest";
 import { page } from "vitest/browser";
+import { render } from "vitest-browser-svelte";
 
 const sampleNote = (id = "n1") => ({
 	id,
@@ -18,7 +18,11 @@ test("NoteModal lists notes and New Note opens editor and triggers createNote", 
 		getNotes: vi.fn().mockResolvedValue([sampleNote("n1")]),
 		createNote: vi.fn().mockImplementation(async (payload: unknown) => {
 			created = payload as Record<string, unknown>;
-			return { ...(payload as Record<string, unknown>), id: "n2", createdAt: new Date().toISOString() };
+			return {
+				...(payload as Record<string, unknown>),
+				id: "n2",
+				createdAt: new Date().toISOString(),
+			};
 		}),
 		updateNote: vi.fn().mockResolvedValue(null),
 		deleteNote: vi.fn().mockResolvedValue(null),

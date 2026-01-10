@@ -78,9 +78,9 @@ const isValid = $derived.by(() => {
 	);
 });
 
-let formElement: HTMLElement | null = null;
-let firstFocusableElement: HTMLElement | null = null;
-let lastFocusableElement: HTMLElement | null = null;
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
+let formElement: HTMLElement | null = $state(null); // bound via bind:this
 
 // Focus / accessibility handled by ModalContainer when used as modal; keep simple on-mount focus
 $effect(() => {
@@ -90,7 +90,7 @@ $effect(() => {
 	if (titleInput) setTimeout(() => titleInput.focus(), 0);
 });
 
-async function handleSubmit(e: SubmitEvent) {
+async function _handleSubmit(e: SubmitEvent) {
 	e.preventDefault();
 
 	if (!isValid || isSubmitting) return;
@@ -122,7 +122,7 @@ async function handleSubmit(e: SubmitEvent) {
 	}
 }
 
-function handleProjectChange(e: Event) {
+function _handleProjectChange(e: Event) {
 	const select = e.target as HTMLSelectElement;
 	if (select.value === "__create__") {
 		creatingProject = true;
@@ -142,7 +142,7 @@ function clearForm() {
 	status = "";
 }
 
-function handleCancel() {
+function _handleCancel() {
 	clearForm();
 	onCancel?.();
 }

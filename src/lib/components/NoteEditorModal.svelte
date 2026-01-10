@@ -1,36 +1,53 @@
 <script lang="ts">
-
 import type { Note } from "../../types";
 import { modalStore } from "../stores/modalStore";
+
+/* biome-disable lint/style/useConst */
+// Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
+/* biome-enable lint/style/useConst */
 
 export const note: Note | null = null; // null => create new
 export const cardId: string | null = null;
 type NoteApi = {
 	getNotes(cardId: string): Promise<Note[]>;
-	createNote(payload: { cardId: string; title: string; content: string; tags: string[] }): Promise<Note>;
-	updateNote(payload: { id: string; title?: string; content?: string; tags?: string[] }): Promise<Note>;
+	createNote(payload: {
+		cardId: string;
+		title: string;
+		content: string;
+		tags: string[];
+	}): Promise<Note>;
+	updateNote(payload: {
+		id: string;
+		title?: string;
+		content?: string;
+		tags?: string[];
+	}): Promise<Note>;
 	deleteNote(id: string): Promise<Note>;
 };
 
 export const api: NoteApi | null = null;
+export const onSaved: ((note: Note) => void) | null = null; // optional callback for parent to react to saved note (create/update)
 
+let title = $state("");
+let content = $state("");
+let tagsText = $state("");
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
+let _firstInput: HTMLInputElement | null = $state(null); // bound via bind:this in template
 
-
-let title = "";
-let content = "";
-let tagsText = "";
-let _firstInput: HTMLInputElement | null = null;
-
-$: {
+$effect(() => {
 	// populate from note
 	title = note?.title || "";
 	content = note?.content || "";
 	tagsText = (note?.tags || []).join(", ");
-}
+});
 
 function resolveApi(): NoteApi | null {
 	if (api) return api;
-	if (typeof window !== "undefined" && (window as unknown as { api?: NoteApi }).api)
+	if (
+		typeof window !== "undefined" &&
+		(window as unknown as { api?: NoteApi }).api
+	)
 		return (window as unknown as { api?: NoteApi }).api;
 	return null;
 }
@@ -51,15 +68,26 @@ async function _doSave() {
 			content,
 			tags,
 		});
-		// notify list with updated id
+		// notify parent directly via callback if provided; keep global event for backward compat
+		if (typeof onSaved === "function") {
+			onSaved(updated);
+		}
 		window.dispatchEvent(
 			new CustomEvent("notes:changed", {
 				detail: { cardId, noteId: updated.id },
 			}),
 		);
 	} else {
-		const created = await resolved.createNote({ cardId: cardId ?? undefined as unknown as string, title, content, tags });
-		// notify list and include created note id so the list can focus it
+			const created = await resolved.createNote({
+			cardId: cardId ?? (undefined as unknown as string),
+			title,
+			content,
+			tags,
+		});
+		// notify parent directly via callback if provided (preferred), and keep global event for backward compat
+		if (typeof onSaved === "function") {
+			onSaved(created);
+		}
 		window.dispatchEvent(
 			new CustomEvent("notes:changed", {
 				detail: { cardId, noteId: created.id },

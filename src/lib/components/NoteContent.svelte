@@ -1,6 +1,6 @@
 <script lang="ts">
-import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
+import MarkdownIt from "markdown-it";
 
 export const markdown: string = "";
 

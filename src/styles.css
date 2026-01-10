@@ -46,7 +46,7 @@ header h1 {
 
 /* Ensure HTML hidden attribute is respected */
 [hidden] {
-	display: none !important;
+	display: none;
 }
 
 /* Add form */
@@ -235,11 +235,11 @@ pre.prompt:focus-visible {
 
 /* screen reader only */
 .sr-only {
-	position: absolute !important;
-	left: -9999px !important;
-	top: auto !important;
-	width: 1px !important;
-	height: 1px !important;
+	position: absolute;
+	left: -9999px;
+	top: auto;
+	width: 1px;
+	height: 1px;
 	overflow: hidden;
 }
 

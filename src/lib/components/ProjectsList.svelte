@@ -2,6 +2,10 @@
 import { projectManager } from "../projectManager.svelte";
 import EditProjectForm from "./EditProjectForm.svelte";
 import MoreMenu from "./MoreMenu.svelte";
+
+void EditProjectForm; // referenced in template
+void MoreMenu; // referenced in template
+
 import type { Project } from "../../types";
 
 interface Props {
@@ -10,12 +14,12 @@ interface Props {
 
 const { onopen }: Props = $props();
 
-function handleOpenProject(projectId: string) {
+function _handleOpenProject(projectId: string) {
 	projectManager.selectProject(projectId);
 	onopen?.({ projectId });
 }
 
-async function handleDeleteProject(e: Event, projectId: string) {
+async function _handleDeleteProject(e: Event, projectId: string) {
 	e.stopPropagation();
 	const project = projectManager.all.find((p) => p.id === projectId);
 	if (
@@ -35,13 +39,13 @@ function _handleEditProject(e: Event, projectId: string) {
 	if (project) {
 		_editingProject = project;
 	}
-} 
+}
 
 // wrappers for menu-based actions (no DOM event available)
 function _handleEditProjectFromMenu(projectId: string) {
 	const project = projectManager.all.find((p) => p.id === projectId);
 	if (project) _editingProject = project;
-} 
+}
 
 async function _handleDeleteProjectFromMenu(projectId: string) {
 	const project = projectManager.all.find((p) => p.id === projectId);
@@ -61,11 +65,11 @@ async function _handleEditSubmit(data: {
 }) {
 	await projectManager.updateProject(data);
 	_editingProject = null;
-} 
+}
 
 function _handleEditCancel() {
 	_editingProject = null;
-} 
+}
 </script>
 
 <section class="projects">
@@ -86,7 +90,7 @@ function _handleEditCancel() {
           <div class="project-card-wrapper">
             <button
               class="project-card"
-              onclick={() => handleOpenProject(p.id)}
+              onclick={() => _handleOpenProject(p.id)}
               aria-label={`Open project ${p.name}`}
             >
               <span class="project-name">{p.name}</span>

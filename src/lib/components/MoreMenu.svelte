@@ -1,12 +1,23 @@
 <script lang="ts">
 import { createEventDispatcher } from "svelte";
 
+/* biome-disable lint/style/useConst */
+// Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
+/* biome-enable lint/style/useConst */
+
 const dispatch = createEventDispatcher();
 
-const { ariaLabel }: { ariaLabel?: string } = $props();
-
-let detailsEl: HTMLDetailsElement | null = null;
-let menuEl: HTMLDivElement | null = null;
+const props = $props();
+let ariaLabel = $state("");
+$effect(() => {
+	ariaLabel = props.ariaLabel ?? "";
+}); // keep ariaLabel reactive to prop changes
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
+let detailsEl: HTMLDetailsElement | null = $state(null);
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
+let menuEl: HTMLDivElement | null = $state(null);
 
 function _handleEdit() {
 	dispatch("edit");

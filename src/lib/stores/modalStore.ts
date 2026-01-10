@@ -1,5 +1,5 @@
 import type { SvelteComponent } from "svelte";
-import { writable, derived } from "svelte/store";
+import { derived, writable } from "svelte/store";
 
 type StackItem = {
 	component: typeof SvelteComponent;

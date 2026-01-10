@@ -1,10 +1,17 @@
 <script lang="ts">
-import { projectManager } from "../lib/projectManager.svelte";
 import { cardManager } from "../lib/cardManager.svelte";
-import ProjectsList from "../lib/components/ProjectsList.svelte";
 import ProjectCreate from "../lib/components/ProjectCreate.svelte";
 import ProjectDetail from "../lib/components/ProjectDetail.svelte";
+import ProjectsList from "../lib/components/ProjectsList.svelte";
+import { projectManager } from "../lib/projectManager.svelte";
 import "../styles.css";
+
+// Mark imports as used in template to satisfy linter
+void projectManager;
+void cardManager;
+void ProjectsList;
+void ProjectCreate;
+void ProjectDetail;
 
 // Initial data load effect
 $effect.pre(() => {
@@ -14,12 +21,12 @@ $effect.pre(() => {
 	loadInitialData();
 });
 
-function handleProjectCreated(detail: { project: string }) {
+function _handleProjectCreated(detail: { project: string }) {
 	const projectId = detail.project;
 	projectManager.selectProject(projectId);
 }
 
-function handleProjectFilterChange(e: Event) {
+function _handleProjectFilterChange(e: Event) {
 	const select = e.target as HTMLSelectElement;
 	const projectId = select.value;
 	if (projectId === "all") {
@@ -66,7 +73,7 @@ function handleProjectFilterChange(e: Event) {
 						Project:
 						<select 
 							value={projectManager.selectedProject}
-							onchange={handleProjectFilterChange}
+							onchange={_handleProjectFilterChange}
 							aria-label="Switch project"
 						>
 							<option value="all">All projects</option>
@@ -93,7 +100,7 @@ function handleProjectFilterChange(e: Event) {
 		{:else if projectManager.selectedProject === 'all'}
 			<ProjectsList onopen={(e) => projectManager.selectProject(e.projectId)} />
 		{:else if projectManager.selectedProject === 'create'}
-			<ProjectCreate oncreated={handleProjectCreated} />
+			<ProjectCreate oncreated={_handleProjectCreated} />
 		{:else}
 			<!-- Project detail view -->
 			<ProjectDetail projectId={projectManager.selectedProject} />

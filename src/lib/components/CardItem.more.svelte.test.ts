@@ -1,6 +1,6 @@
-import { test, expect, vi } from "vitest";
-import { render } from "vitest-browser-svelte";
+import { expect, test, vi } from "vitest";
 import { page } from "vitest/browser";
+import { render } from "vitest-browser-svelte";
 import CardItemTestWrapper from "./__tests__/CardItemTestWrapper.svelte";
 
 test("More menu Edit/Delete dispatch actions", async () => {

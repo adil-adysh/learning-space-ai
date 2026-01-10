@@ -1,29 +1,30 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
-import * as path from "path";
+import { randomUUID } from "node:crypto";
+import { promises as fs } from "node:fs";
+import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import { createServer } from "node:http";
+import * as path from "node:path";
 import { inspect } from "node:util";
-import { randomUUID } from "crypto";
-import { promises as fs } from "fs";
-import type { IncomingMessage, Server, ServerResponse } from "http";
-import { createServer } from "http";
-import type { RawCard, Status, RawNote } from "./types";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import {
+	clearProjectFromCards,
+	addCard as dbAddCard,
+	addNote as dbAddNote,
+	addProject as dbAddProject,
+	deleteNote as dbDeleteNote,
+	deleteProject as dbDeleteProject,
+	updateNote as dbUpdateNote,
+	updateProject as dbUpdateProject,
+	deleteCard,
+	findProjectByName,
 	initDatabase,
 	readCards,
-	addCard as dbAddCard,
-	updateCard,
-	deleteCard,
 	readNotes,
-	addNote as dbAddNote,
-	updateNote as dbUpdateNote,
-	deleteNote as dbDeleteNote,
 	readProjects,
-	addProject as dbAddProject,
-	updateProject as dbUpdateProject,
-	deleteProject as dbDeleteProject,
-	findProjectByName,
-	clearProjectFromCards,
+	updateCard,
 } from "./db";
+import type { RawCard, RawNote, Status } from "./types";
 import { buildChatGPTUrl } from "./util";
+
 const STATIC_PORT = Number(process.env.STATIC_PORT) || 4173;
 const BUILD_DIR = path.join(__dirname, "..", "build");
 let staticServer: Server | null = null;
@@ -41,7 +42,7 @@ function formatLogItem(item: unknown) {
 }
 
 function logError(...items: unknown[]) {
-	process.stderr.write(items.map(formatLogItem).join(" ") + "\n");
+	process.stderr.write(`${items.map(formatLogItem).join(" ")}\n`);
 }
 
 async function startStaticServer() {
@@ -54,7 +55,7 @@ async function startStaticServer() {
 	});
 
 	await new Promise<void>((resolve) => {
-		staticServer!.listen(STATIC_PORT, "127.0.0.1", () => resolve());
+		staticServer?.listen(STATIC_PORT, "127.0.0.1", () => resolve());
 	});
 }
 

@@ -1,7 +1,8 @@
 <script lang="ts">
 /* global HTMLElement setTimeout */
-import { projectManager } from "../projectManager.svelte";
+
 import type { LearningCard } from "../../types";
+import { projectManager } from "../projectManager.svelte";
 
 interface Props {
 	card: LearningCard;
@@ -79,7 +80,8 @@ const isValid = $derived.by(() => {
 	);
 });
 
-let formElement: HTMLElement | null = null;
+/* biome-disable-next-line lint/style/useConst */
+let formElement: HTMLElement | null = $state(null); // bound via bind:this
 let firstFocusableElement: HTMLElement | null = null;
 let lastFocusableElement: HTMLElement | null = null;
 

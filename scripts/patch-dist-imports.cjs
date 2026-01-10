@@ -31,7 +31,7 @@ function fixContent(content) {
 
   let out = content;
   for (const re of patterns) {
-    out = out.replace(re, (match, q, p) => {
+    out = out.replace(re, (match, _q, p) => {
       if (!isRelativeImport(p) || shouldSkipExt(p)) {
         return match;
       }

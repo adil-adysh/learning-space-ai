@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { buildChatGPTUrl } from "../../util";
 
 describe("buildChatGPTUrl", () => {
@@ -9,7 +9,7 @@ describe("buildChatGPTUrl", () => {
 	it("encodes special characters", () => {
 		const p = "Hello & world?=/#\nNewLine";
 		const url = buildChatGPTUrl(p);
-		expect(url).toBe("https://chat.openai.com/?q=" + encodeURIComponent(p));
+		expect(url).toBe(`https://chat.openai.com/?q=${encodeURIComponent(p)}`);
 	});
 
 	it("combines system prompt with user prompt", () => {
@@ -18,7 +18,7 @@ describe("buildChatGPTUrl", () => {
 		const url = buildChatGPTUrl(userPrompt, systemPrompt);
 		const expected = `${systemPrompt}\n\n${userPrompt}`;
 		expect(url).toBe(
-			"https://chat.openai.com/?q=" + encodeURIComponent(expected),
+			`https://chat.openai.com/?q=${encodeURIComponent(expected)}`,
 		);
 	});
 });

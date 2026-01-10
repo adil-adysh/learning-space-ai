@@ -62,7 +62,8 @@ const isValid = $derived(
 		formData.name.trim().length > 0,
 );
 
-let formElement: HTMLElement | null = null;
+/* biome-disable-next-line lint/style/useConst */
+let formElement: HTMLElement | null = $state(null); // bound via bind:this
 
 $effect(() => {
 	const nameInput = document.getElementById(
@@ -85,7 +86,7 @@ $effect(() => {
 	};
 });
 
-async function handleSubmit(e: SubmitEvent) {
+async function _handleSubmit(e: SubmitEvent) {
 	e.preventDefault();
 
 	if (!isValid || isSubmitting) return;

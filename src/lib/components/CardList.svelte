@@ -1,8 +1,7 @@
 <script lang="ts">
+import type { LearningCard } from "../../types";
 import { cardManager } from "../cardManager.svelte";
 import { projectManager } from "../projectManager.svelte";
-import CardItem from "./CardItem.svelte";
-import type { LearningCard } from "../../types";
 
 interface Props {
 	onStart: (card: LearningCard) => void;
@@ -11,7 +10,12 @@ interface Props {
 	onDelete?: (id: string) => void;
 }
 
-const { onStart: _onStart, onToggle: _onToggle, onEdit: _onEdit, onDelete: _onDelete }: Props = $props();
+const {
+	onStart: _onStart,
+	onToggle: _onToggle,
+	onEdit: _onEdit,
+	onDelete: _onDelete,
+}: Props = $props();
 
 // Helper function to group cards by project
 function groupByProject(list: LearningCard[]) {
@@ -20,7 +24,7 @@ function groupByProject(list: LearningCard[]) {
 		const key = c.project || "";
 		if (!map.has(key)) map.set(key, []);
 		map.get(key)?.push(c);
-	} 
+	}
 	const groups: {
 		project: string;
 		cards: LearningCard[];

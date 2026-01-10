@@ -4,7 +4,6 @@ function ModalContainer($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
     const _stack = modalStore;
-    modalStore.current;
     modalStore.lastOpener;
     if (store_get($$store_subs ??= {}, "$_stack", _stack).length > 0) {
       $$renderer2.push("<!--[-->");

@@ -1,11 +1,11 @@
-import { test, expect, vi } from "vitest";
-import { render } from "vitest-browser-svelte";
+import type { SvelteComponent } from "svelte";
+import { get } from "svelte/store";
+import { expect, test, vi } from "vitest";
 import { page } from "vitest/browser";
+import { render } from "vitest-browser-svelte";
+import { modalStore } from "../stores/modalStore";
 import ModalContainer from "./ModalContainer.svelte";
 import NoteModal from "./NoteModal.svelte";
-import { modalStore } from "../stores/modalStore";
-import { get } from "svelte/store";
-import type { SvelteComponent } from "svelte";
 
 declare global {
 	var api: {

@@ -11,7 +11,7 @@ const { oncreated }: Props = $props();
 
 // Form state using Svelte 5 runes
 let formData: FormValues = $state({ name: "", systemPrompt: "" });
-let submissionError: string | null = $state(null);
+let _submissionError: string | null = $state(null);
 let _isSubmitting = $state(false);
 let fieldErrors = $state<{ name?: string; systemPrompt?: string }>({});
 
@@ -36,13 +36,13 @@ function validateForm(values: FormValues): {
 }
 
 // Handle form submission
-async function handleSubmit(e: SubmitEvent) {
+async function _handleSubmit(e: SubmitEvent) {
 	e.preventDefault();
 
 	fieldErrors = validateForm(formData);
 	if (Object.keys(fieldErrors).length > 0) return;
 
-	submissionError = null;
+	_submissionError = null;
 	_isSubmitting = true;
 
 	try {
@@ -61,7 +61,7 @@ async function handleSubmit(e: SubmitEvent) {
 		oncreated?.({ project: created.id });
 	} catch (error) {
 		console.error("Failed to create project", error);
-		submissionError =
+		_submissionError =
 			error instanceof Error
 				? error.message
 				: "Unable to create project right now. Try again in a moment.";
@@ -70,10 +70,10 @@ async function handleSubmit(e: SubmitEvent) {
 	}
 }
 
-function cancel() {
+function _cancel() {
 	formData = { name: "", systemPrompt: "" };
 	fieldErrors = {};
-	submissionError = null;
+	_submissionError = null;
 	projectManager.selectProject("all");
 }
 </script>

@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
 	LearningCard,
-	RawCard,
-	Status,
 	Project,
-	RawProject,
+	RawCard,
 	RawNote,
+	RawProject,
+	Status,
 } from "./types";
 
 function formatPreloadItem(item: unknown) {
@@ -19,7 +19,7 @@ function formatPreloadItem(item: unknown) {
 }
 
 function logPreloadError(...items: unknown[]) {
-	process.stderr.write(items.map(formatPreloadItem).join(" ") + "\n");
+	process.stderr.write(`${items.map(formatPreloadItem).join(" ")}\n`);
 }
 
 function toLearningCard(raw: RawCard): LearningCard {

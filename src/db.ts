@@ -1,7 +1,7 @@
+import * as path from "node:path";
 import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
-import * as path from "path";
-import type { RawCard, RawProject, RawNote } from "./types";
+import type { RawCard, RawNote, RawProject } from "./types";
 
 interface Database {
 	cards: RawCard[];

@@ -1,4 +1,4 @@
-import type { RawCard, LearningCard } from "./types";
+import type { LearningCard, RawCard } from "./types";
 
 /**
  * Robustly converts RawCard (from JSON) to LearningCard (for UI).

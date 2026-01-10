@@ -1,12 +1,17 @@
 <script lang="ts">
 /* global setTimeout */
-import NoteEditorModal from "./NoteEditorModal.svelte";
-import NoteContent from "./NoteContent.svelte";
-import NoteView from "./NoteView.svelte";
-import MoreMenu from "./MoreMenu.svelte";
-import { modalStore } from "../stores/modalStore";
+
+import { createEventDispatcher, onDestroy, onMount } from "svelte";
 import type { Note } from "../../types";
-import { createEventDispatcher } from "svelte";
+import { modalStore } from "../stores/modalStore";
+import MoreMenu from "./MoreMenu.svelte";
+import NoteContent from "./NoteContent.svelte";
+import NoteEditorModal from "./NoteEditorModal.svelte";
+import NoteView from "./NoteView.svelte";
+
+/* biome-disable lint/style/useConst */
+// Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
+/* biome-enable lint/style/useConst */
 
 interface Props {
 	cardId: string;
@@ -29,17 +34,40 @@ interface Props {
 	} | null;
 	confirmFn?: (message: string) => boolean;
 }
-const { cardId, cardTitle, api, confirmFn }: Props = $props();
+const props = $props() as Props;
+let cardId = $state(props.cardId);
+let cardTitle = $state(props.cardTitle);
+let api = props.api;
+let confirmFn = props.confirmFn;
+$effect(() => {
+	cardId = props.cardId;
+	cardTitle = props.cardTitle;
+	api = props.api;
+	confirmFn = props.confirmFn;
+});
 const dispatch = createEventDispatcher();
 
+// referenced in template
+void NoteContent;
+void MoreMenu;
+
 let notes: Note[] = $state([] as Note[]);
-let editing: Note | null = $state(null);
+void notes; // used in template
+const _editing: Note | null = $state(null);
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
 let dialogRef: HTMLElement | null = $state(null);
 let lastCreatedNoteId: string | null = $state(null);
 
+// mark functions as used (template usage sometimes not detected by linter)
+void openNew; void editNote; void openView; void handleDelete; void close;
+
 function resolveApi() {
 	if (api) return api;
-	if (typeof window !== "undefined" && (window as unknown as { api?: Props["api"] }).api)
+	if (
+		typeof window !== "undefined" &&
+		(window as unknown as { api?: Props["api"] }).api
+	)
 		return (window as unknown as { api?: Props["api"] }).api;
 	return null;
 }
@@ -51,17 +79,27 @@ async function load() {
 	notes = await resolved.getNotes(cardId);
 }
 
-import { onMount } from "svelte";
-
-onMount(() => {
-	load();
-	setTimeout(() => dialogRef?.focus(), 0);
-});
-
 function openNew() {
 	const resolved = resolveApi();
 	// push the editor onto the modal stack so the list remains mounted underneath
-	modalStore.push(NoteEditorModal, { cardId, note: null, api: resolved });
+	modalStore.push(NoteEditorModal, {
+		cardId,
+		note: null,
+		api: resolved,
+		onSaved: (created: Note) => {
+			// focus the newly created note after reload
+			lastCreatedNoteId = created.id;
+			load().then(() => {
+				if (lastCreatedNoteId) {
+					const el = document.getElementById(`note-${lastCreatedNoteId}`) as HTMLElement | null;
+					if (el && typeof el.focus === "function") {
+						setTimeout(() => el.focus(), 0);
+					}
+					lastCreatedNoteId = null;
+				}
+			});
+		}
+	});
 }
 
 function editNote(n: Note) {
@@ -92,34 +130,10 @@ function close() {
 }
 
 // listen for global note-change events so the list refreshes when the editor creates/updates
-function onNotesChanged(e: Event) {
-	const detail = (e as CustomEvent).detail as { cardId?: string } | undefined;
-	if (!detail || detail.cardId !== cardId) return;
-	// remember created note id so we can focus after reload
-	lastCreatedNoteId = detail["noteId"] || null;
-	load().then(() => {
-		if (lastCreatedNoteId) {
-			// focus the newly created note element if present
-			const el = document.getElementById(
-				`note-${lastCreatedNoteId}`,
-			) as HTMLElement | null;
-			if (el && typeof el.focus === "function") {
-				setTimeout(() => el.focus(), 0);
-			}
-			lastCreatedNoteId = null;
-		}
-	});
-}
-
-import { onDestroy } from "svelte";
 onMount(() => {
 	load();
 	setTimeout(() => dialogRef?.focus(), 0);
-	window.addEventListener("notes:changed", onNotesChanged as EventListener);
 });
-onDestroy(() =>
-	window.removeEventListener("notes:changed", onNotesChanged as EventListener),
-);
 </script>
 
   <div class="notes-modal-backdrop" role="dialog" aria-modal="true" tabindex="-1" bind:this={dialogRef}>

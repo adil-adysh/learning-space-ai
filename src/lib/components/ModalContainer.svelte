@@ -1,15 +1,19 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { modalStore } from "../stores/modalStore";
 import { tick } from "svelte";
+import { modalStore } from "../stores/modalStore";
 
+/* biome-disable lint/style/useConst */
+// Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
+/* biome-enable lint/style/useConst */
+
+// bound via `bind:this` in template — must remain `let` for Svelte
+/* biome-disable-next-line lint/style/useConst */
 let containerRef: HTMLElement | null = $state(null);
 let focusableElements: HTMLElement[] = $state([] as HTMLElement[]);
 
 // read the raw stack and the derived current item
 const _stack = modalStore; // store has subscribe (stack)
 
-const _current = modalStore.current;
 const _lastOpener = modalStore.lastOpener;
 
 // focus trap: when modal stack has any item, focus first actionable element in the top view
@@ -83,10 +87,6 @@ function _handleKeydown(e: KeyboardEvent) {
 		e.preventDefault();
 	}
 }
-
-onMount(() => {
-	// nothing else; keydown is handled on the container
-});
 </script>
 
 {#if $_stack.length > 0}

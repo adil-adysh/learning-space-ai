@@ -219,7 +219,7 @@ class CardManager {
 
 		// Combine system prompt with user prompt
 		let combinedPrompt = userPrompt;
-		if (systemPrompt && systemPrompt.trim()) {
+		if (systemPrompt?.trim()) {
 			combinedPrompt = `${systemPrompt.trim()}\n\n${userPrompt}`;
 		}
 
