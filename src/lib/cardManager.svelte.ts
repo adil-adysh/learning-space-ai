@@ -1,4 +1,6 @@
 import type { LearningCard } from "../types";
+import type { LearningCardBundleV1, ValidationError } from "../types";
+import { exportCards, validateBundle, downloadJSON, generateExportFilename, rawToLearningCard } from "./utils/cardImportExport";
 
 /**
  * Card Manager using Svelte 5 Runes
@@ -273,6 +275,79 @@ class CardManager {
 	 */
 	setFilterProject(projectId: string) {
 		this.filterProject = projectId;
+	}
+
+	/**
+	 * Export cards for a specific project to JSON file (immediate download)
+	 */
+	exportProjectCards(projectId: string, projectName: string): void {
+		const projectCards = this.all.filter((c) => c.project === projectId);
+		const bundle = exportCards(projectCards);
+		const filename = generateExportFilename(projectName);
+		downloadJSON(bundle, filename);
+	}
+
+	/**
+	 * Return export bundle for a specific project (no side effects)
+	 */
+	getExportBundleForProject(projectId: string) {
+		const projectCards = this.all.filter((c) => c.project === projectId);
+		return exportCards(projectCards);
+	}
+
+	/**
+	 * Validate imported bundle
+	 * Returns array of validation errors (empty if valid)
+	 */
+	validateImportBundle(data: unknown): ValidationError[] {
+		return validateBundle(data);
+	}
+
+	/**
+	 * Import cards from validated bundle into a specific project
+	 * Cards will be assigned to the given projectId
+	 */
+	async importCardsToProject(bundle: LearningCardBundleV1, projectId: string): Promise<void> {
+		if (typeof window === "undefined" || !("api" in window)) {
+			throw new Error("Window API not available");
+		}
+
+		try {
+			// Convert RawCards to LearningCards and assign to project
+			const cardsToImport = bundle.cards.map((rawCard) => {
+				const card = rawToLearningCard(rawCard);
+				return {
+					...card,
+					project: projectId, // Override project with target project
+				};
+			});
+
+			// Import each card via IPC
+			const importedCards: LearningCard[] = [];
+			for (const card of cardsToImport) {
+				const newCard = await (
+					window as typeof window & { api: typeof window.api }
+				).api.addCard({
+					title: card.title,
+					prompt: card.prompt,
+					topic: card.topic,
+				});
+				// Manually update the project after creation
+				const updatedCard = await (
+					window as typeof window & { api: typeof window.api }
+				).api.updateCard({
+					id: newCard.id,
+					project: projectId,
+				});
+				importedCards.push(updatedCard);
+			}
+
+			// Update local state with imported cards
+			this.all = [...importedCards, ...this.all];
+		} catch (err) {
+			console.error("Failed to import cards:", err);
+			throw err;
+		}
 	}
 }
 

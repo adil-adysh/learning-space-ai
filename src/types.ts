@@ -75,3 +75,16 @@ export type NoteApi = {
 	}) => Promise<Note>;
 	deleteNote: (id: string) => Promise<void>;
 };
+
+// Import/Export schema for LearningCards
+export type LearningCardBundleV1 = {
+	version: 1;
+	cards: RawCard[];
+};
+
+// Validation error type
+export type ValidationError = {
+	field: string;
+	message: string;
+	cardIndex?: number;
+};

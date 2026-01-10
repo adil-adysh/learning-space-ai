@@ -1,12 +1,17 @@
 <script lang="ts">
 /* biome-disable lint/correctness/noUnusedImports -- used in markup/modal (Svelte component imports) */
-import type { LearningCard } from "../../types";
+import type { LearningCard, LearningCardBundleV1 } from "../../types";
 import { cardManager } from "../cardManager.svelte";
 import { projectManager } from "../projectManager.svelte";
 import { modalStore } from "../stores/modalStore";
+import { AI_LEARNING_CARD_PROMPT } from "../constants/aiPrompts";
+import { buildChatGPTUrl } from "../../util";
 import AddForm from "./AddForm.svelte";
+import ExportCardsModal from "./ExportCardsModal.svelte";
 import CardList from "./CardList.svelte";
 import EditCardForm from "./EditCardForm.svelte";
+import ImportCardsModal from "./ImportCardsModal.svelte";
+import { generateExportFilename } from "../utils/cardImportExport";
 /* used in markup/modal */
 void CardList;
 void EditCardForm;
@@ -16,6 +21,11 @@ interface Props {
 }
 
 const { projectId }: Props = $props();
+
+// Derived value: project name for filename and prompt; keep it reactive
+const _projectName = $derived.by(() => {
+	return _project?.name || "project";
+});
 
 // Derived value: find current project
 const _project = $derived.by(() => {
@@ -100,12 +110,90 @@ async function _handleCardDelete(id: string) {
 		await cardManager.deleteCard(id);
 	}
 }
+
+function _handleOpenAI() {
+	if (!_project) return;
+
+	// Build prompt using the central AI prompt and include project context
+	const prompt = `${AI_LEARNING_CARD_PROMPT}\n\nGenerate cards related to the project: "${_project.name}"`;
+	const url = buildChatGPTUrl(prompt, _project.systemPrompt);
+	window.open(url, "_blank");
+}
+
+function _handleExport() {
+	if (!_project) return;
+	cardManager.exportProjectCards(projectId, _project.name);
+}
+
+function _openImportModal() {
+	modalStore.open(ImportCardsModal, {
+		onImport: async (jsonData: string) => {
+			await _handleImport(jsonData);
+		},
+		onCancel: () => modalStore.close(),
+	});
+}
+
+function _openExportModal() {
+	if (!_project) return;
+	const bundle = cardManager.getExportBundleForProject(projectId);
+	const filename = generateExportFilename(_project.name);
+	modalStore.open(ExportCardsModal, {
+		bundle,
+		filename,
+		onClose: () => modalStore.close(),
+	});
+}
+
+async function _handleImport(jsonData: string) {
+	// Parse JSON
+	let parsedData: unknown;
+	try {
+		parsedData = JSON.parse(jsonData);
+	} catch (err) {
+		throw [{ field: "json", message: "Invalid JSON format" }];
+	}
+
+	// Validate
+	const errors = cardManager.validateImportBundle(parsedData);
+	if (errors.length > 0) {
+		throw errors;
+	}
+
+	// Import
+	await cardManager.importCardsToProject(parsedData as LearningCardBundleV1, projectId);
+}
+
 </script>
 
 <section class="project-detail">
   <header>
     <h2>{_project ? _project.name : 'Project'}</h2>
     <div class="actions">
+      <button
+        class="secondary"
+        onclick={_handleOpenAI}
+        type="button"
+        title="Open AI with project prompt"
+      >
+        🤖 Open AI
+      </button>
+      <button
+        class="secondary"
+        onclick={_openImportModal}
+        type="button"
+        title="Import learning cards from JSON"
+      >
+        📥 Import
+      </button>
+      <button
+        class="secondary"
+        onclick={_openExportModal}
+        type="button"
+        title="Preview and download learning cards"
+      >
+        📤 Export
+      </button>
       <button
         class="primary"
         onclick={_openAddForm}
@@ -144,5 +232,13 @@ async function _handleCardDelete(id: string) {
 
 <style>
   .project-detail { padding:1rem; }
-  .actions { display:flex; gap:8px; }
+  .actions { display:flex; gap:8px; flex-wrap: wrap; }
+  button.secondary { 
+    background: #f0f0f0; 
+    color: #333; 
+    border: 1px solid #ddd;
+  }
+  button.secondary:hover { 
+    background: #e0e0e0; 
+  }
 </style>
