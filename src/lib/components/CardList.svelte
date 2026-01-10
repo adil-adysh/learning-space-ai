@@ -1,7 +1,11 @@
 <script lang="ts">
+/* biome-disable lint/correctness/noUnusedImports -- used in template markup (Svelte component import) */
 import type { LearningCard } from "../../types";
 import { cardManager } from "../cardManager.svelte";
 import { projectManager } from "../projectManager.svelte";
+import CardItem from "./CardItem.svelte";
+/* used in template markup */
+void CardItem;
 
 interface Props {
 	onStart: (card: LearningCard) => void;

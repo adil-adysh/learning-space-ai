@@ -11,14 +11,16 @@
     "includes": [
       "src/**",
       "scripts/**",
+      "docs/**",
       "package.json",
-      "*.config.{js,ts}",
       "*.{js,ts,json,svelte,css}",
+      "*.config.{js,ts}",
+
       "!**/node_modules",
-      "!**/dist",
-      "!**/build",
+      "!**/.git",
       "!**/.svelte-kit",
-      "!**/.git"
+      "!**/build",
+      "!**/dist"
     ]
   },
 
@@ -30,13 +32,26 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+
+      "style": {
+        "useConst": "off"
+      }
     }
   },
 
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
+    },
+    "parser": {
+      "jsxEverywhere": false
+    }
+  },
+
+  "css": {
+    "parser": {
+      "cssModules": true
     }
   },
 
@@ -47,5 +62,31 @@
         "organizeImports": "on"
       }
     }
-  }
-} 
+  },
+
+  "overrides": [
+    {
+      "includes": ["**/*.svelte"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useConst": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts", "**/*.spec.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
+  ]
+}

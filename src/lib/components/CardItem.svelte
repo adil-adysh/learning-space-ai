@@ -34,7 +34,7 @@ interface Props {
 }
 
 const props = $props() as Props;
-let card: LearningCard = props.card;
+let card: LearningCard = $state(props.card);
 let onStart = props.onStart;
 let onToggle = props.onToggle;
 let onEdit = props.onEdit;
@@ -58,16 +58,23 @@ void noteApi;
 
 // Derived computed values
 const isDone = $derived.by(() => card.status === "done");
-const buttonLabel = $derived.by(() => (isDone ? "Mark active" : "Mark done"));
-const statusText = $derived.by(() => (isDone ? "✓ Completed" : "Active"));
+const buttonLabel = $derived.by(() => (card.status === "done" ? "Mark active" : "Mark done"));
+const statusText = $derived.by(() => (card.status === "done" ? "✓ Completed" : "Active"));
 const projectName = $derived.by(() => {
 	if (!card.project) return "";
 	return (
 		projectManager.all.find((p) => p.id === card.project)?.name || card.project
 	);
 });
-// Mark derived values as used (linter sometimes misses template refs)
-void buttonLabel; void statusText; void projectName;
+// Mirror derived values into stateful aliases to avoid "reference only captures the initial value" warnings
+let _buttonLabel = $state("");
+let _statusText = $state("");
+let _projectName = $state("");
+$effect(() => {
+	_buttonLabel = buttonLabel;
+	_statusText = statusText;
+	_projectName = projectName;
+});
 
 // local modal state (Svelte 5 rune) - replaced by centralized modalStore
 const _notesOpen = $state(false); // intentionally unused; kept for possible future local state
@@ -82,12 +89,12 @@ void MoreMenu; void NoteModal; void modalStore;
 			<p class="topic">{card.topic}</p>
 		{/if}
 		{#if card.project}
-			<p class="project">Project: <strong>{projectName}</strong></p>
+			<p class="project">Project: <strong>{_projectName}</strong></p>
 		{/if}
 	</header>
 
 	<section>
-		<div class="status" class:done={isDone}>{statusText}</div>
+		<div class="status" class:done={isDone}>{_statusText}</div>
 		<pre class="prompt">{card.prompt}</pre>
 	</section>
 
@@ -104,13 +111,12 @@ void MoreMenu; void NoteModal; void modalStore;
 		<label class="check">
 			<input
 				type="checkbox"
-				checked={isDone}
-				onclick={(e) => { e.stopPropagation(); onToggle(card.id, isDone ? 'active' : 'done'); }}
-				aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
-			/>
-			<span class="check-label">{buttonLabel}</span>
-		</label>
-
+					checked={isDone}
+					onclick={(e) => { e.stopPropagation(); onToggle(card.id, isDone ? 'active' : 'done'); }}
+					aria-label={isDone ? `Mark ${card.title} as active` : `Mark ${card.title} as done`}
+				/>
+				<span class="check-label">{_buttonLabel}</span>
+			</label>
 			<button
 				type="button"
 				class="secondary open-notes"

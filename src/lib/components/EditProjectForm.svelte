@@ -121,7 +121,7 @@ function announceToSR(message: string) {
 </script>
 
 <section id="edit-project-section" bind:this={formElement}>
-	<form onsubmit={handleSubmit} aria-labelledby="edit-project-heading">
+	<form onsubmit={_handleSubmit} aria-labelledby="edit-project-heading">
 		<h2 id="edit-project-heading">Edit Project</h2>
 
 		{#if submissionError}

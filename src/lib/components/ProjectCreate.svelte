@@ -80,7 +80,7 @@ function _cancel() {
 
 <section class="project-create">
   <h2>Create project</h2>
-  <form onsubmit={handleSubmit} aria-describedby={_descriptionIds} class="project-form">
+  <form onsubmit={_handleSubmit} aria-describedby={_descriptionIds} class="project-form">
     <label for="proj-name">Project name</label>
     <input
       id="proj-name"
@@ -115,14 +115,14 @@ function _cancel() {
     {/if}
     <p class="hint" id="system-prompt-hint">This prompt will be prepended to all learning cards in this project when sent to ChatGPT.</p>
     
-    {#if submissionError}
-      <p class="submission-error" role="alert">{submissionError}</p>
+    {#if _submissionError}
+      <p class="submission-error" role="alert">{_submissionError}</p>
     {/if}
     <div class="actions">
       <button type="submit" class="primary" disabled={_isSubmitting}>
         {_isSubmitting ? 'Creating...' : 'Create project'}
       </button>
-      <button type="button" class="ghost" onclick={cancel} disabled={_isSubmitting}>
+      <button type="button" class="ghost" onclick={_cancel} disabled={_isSubmitting}>
         Cancel
       </button>
     </div>

@@ -1,9 +1,15 @@
 <script lang="ts">
+/* biome-disable lint/correctness/noUnusedImports -- used in markup/modal (Svelte component imports) */
 import type { LearningCard } from "../../types";
 import { cardManager } from "../cardManager.svelte";
 import { projectManager } from "../projectManager.svelte";
 import { modalStore } from "../stores/modalStore";
 import AddForm from "./AddForm.svelte";
+import CardList from "./CardList.svelte";
+import EditCardForm from "./EditCardForm.svelte";
+/* used in markup/modal */
+void CardList;
+void EditCardForm;
 
 interface Props {
 	projectId: string;
@@ -98,11 +104,11 @@ async function _handleCardDelete(id: string) {
 
 <section class="project-detail">
   <header>
-    <h2>{project ? project.name : 'Project'}</h2>
+    <h2>{_project ? _project.name : 'Project'}</h2>
     <div class="actions">
       <button
         class="primary"
-        onclick={openAddForm}
+        onclick={_openAddForm}
         type="button"
       >
         + New Learning Item
@@ -112,27 +118,27 @@ async function _handleCardDelete(id: string) {
 
   
 
-  {#if editingCard}
-    <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && handleEditCancel()}>
+  {#if _editingCard}
+    <dialog open class="modal-overlay" onclick={(e) => { if (e.target === e.currentTarget) _handleEditCancel(); }} onkeydown={(e) => e.key === 'Escape' && _handleEditCancel()}>
       <div
         class="modal-content"
         aria-labelledby="edit-heading"
         role="document"
       >
         <EditCardForm 
-          card={editingCard}
-          onSubmit={handleEditSubmit}
-          onCancel={handleEditCancel}
+          card={_editingCard}
+          onSubmit={_handleEditSubmit}
+          onCancel={_handleEditCancel}
         />
       </div>
     </dialog>
   {/if}
 
   <CardList
-    onStart={handleStart}
-    onToggle={handleCardToggle}
-    onEdit={handleCardEdit}
-    onDelete={handleCardDelete}
+    onStart={_handleStart}
+    onToggle={_handleCardToggle}
+    onEdit={_handleCardEdit}
+    onDelete={_handleCardDelete}
   />
 </section>
 

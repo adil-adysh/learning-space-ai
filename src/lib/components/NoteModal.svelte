@@ -52,7 +52,10 @@ void NoteContent;
 void MoreMenu;
 
 let notes: Note[] = $state([] as Note[]);
-void notes; // used in template
+let _notes: Note[] = $state([] as Note[]);
+$effect(() => {
+	_notes = notes;
+});
 const _editing: Note | null = $state(null);
 // bound via `bind:this` in template — must remain `let` for Svelte
 /* biome-disable-next-line lint/style/useConst */
@@ -130,9 +133,24 @@ function close() {
 }
 
 // listen for global note-change events so the list refreshes when the editor creates/updates
+function _notesChangedHandler(e: CustomEvent<{ cardId?: string }>) {
+	if (e?.detail?.cardId === cardId) {
+		load();
+	}
+}
+
 onMount(() => {
 	load();
 	setTimeout(() => dialogRef?.focus(), 0);
+	if (typeof window !== "undefined") {
+		window.addEventListener("notes:changed", _notesChangedHandler as EventListener);
+	}
+});
+
+onDestroy(() => {
+	if (typeof window !== "undefined") {
+		window.removeEventListener("notes:changed", _notesChangedHandler as EventListener);
+	}
 });
 </script>
 
@@ -152,11 +170,11 @@ onMount(() => {
       </header>
 
       <div class="notes-list">
-        {#if notes.length === 0}
+        {#if _notes.length === 0}
           <div class="empty">No notes yet. Click "New Note" to add one.</div>
         {:else}
           <ul class="notes" role="list">
-            {#each notes as n}
+            {#each _notes as n}
               <li>
                 <div class="note-item">
                     <button id={"note-" + n.id} type="button" class="note-open" onclick={() => openView(n)} aria-label={`Open note ${n.title || 'untitled'}`}>

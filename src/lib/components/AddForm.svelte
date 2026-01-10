@@ -156,7 +156,7 @@ function announceToSR(message: string) {
 </script>
 
 	<section id="add-section" bind:this={formElement}>
-		<form onsubmit={handleSubmit} aria-labelledby="add-heading">
+		<form onsubmit={_handleSubmit} aria-labelledby="add-heading">
 			<h2>New Card Details</h2>
 
 			{#if status}
@@ -257,7 +257,7 @@ function announceToSR(message: string) {
 				<button type="submit" class="primary" disabled={!isValid || isSubmitting}>
 					{isSubmitting ? 'Saving...' : 'Save card'}
 				</button>
-				<button type="button" class="ghost" onclick={handleCancel} disabled={isSubmitting}>
+				<button type="button" class="ghost" onclick={_handleCancel} disabled={isSubmitting}>
 					Cancel
 				</button>
 			</div>
