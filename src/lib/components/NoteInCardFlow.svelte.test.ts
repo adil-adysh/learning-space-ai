@@ -139,7 +139,8 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 	let bodyText: any = null;
 	for (let i = 0; i < 20; i++) {
 		try {
-			bodyText = page.getByText(/Note body for card flow./i);
+			// pick the modal-instance (second match is the view modal)
+			bodyText = (page.getByText(/Note body for card flow./i) as any).nth(1);
 			break;
 		} catch (_err) {
 			await new Promise((r) => setTimeout(r, 50));

@@ -113,12 +113,24 @@ function openNew() {
 
 function editNote(n: Note) {
 	const resolved = resolveApi();
-	modalStore.push(NoteEditorModal, { cardId, note: n, api: resolved });
+	// ensure we use the freshest note object from the current store
+	const latest = notes.find((x) => x.id === n.id) ?? n;
+	modalStore.push(NoteEditorModal, {
+		cardId,
+		note: latest,
+		api: resolved,
+		onSaved: (_updated: Note) => {
+			// reload notes after edit and keep backward-compatible global event handling
+			load();
+		},
+	});
 }
 
 function openView(n: Note) {
 	const resolved = resolveApi();
-	modalStore.push(NoteView, { cardId, note: n, api: resolved });
+	// lookup latest note by id so the view shows up-to-date content
+	const latest = notes.find((x) => x.id === n.id) ?? n;
+	modalStore.push(NoteView, { cardId, note: latest, api: resolved });
 }
 
 // NoteEditor will perform saves itself and dispatch a global event when notes change.

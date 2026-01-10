@@ -105,7 +105,8 @@ test("Edit and delete an existing note via UI", async () => {
 	let viewBody: any = null;
 	for (let i = 0; i < 20; i++) {
 		try {
-			viewBody = page.getByText(/Edited content via UI\./i);
+			// pick the modal's instance by selecting the second match (list + modal)
+			viewBody = (page.getByText(/Edited content via UI\./i) as any).nth(1);
 			break;
 		} catch (_err) {
 			await new Promise((r) => setTimeout(r, 50));

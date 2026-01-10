@@ -1,24 +1,13 @@
-import { expect, test } from "vitest";
+import { test, expect } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
-import NoteView from "./NoteView.svelte";
+import NoteContent from "./NoteContent.svelte";
 
-const sampleNote = () => ({
-	id: "md1",
-	title: "Markdown Note",
-	content: "**Bold Text**\n\n`inline code`\n\n- list item",
-	tags: ["t"],
-	createdAt: new Date().toISOString(),
-});
+test("NoteContent renders markdown into HTML (bold, inline code, list)", async () => {
+	const markdown = "**Bold Text**\n\n`inline code`\n\n- list item";
+	render(NoteContent, { props: { markdown } });
 
-test("NoteView renders markdown content (bold, inline code, list)", async () => {
-	const note = sampleNote();
-	render(NoteView, { props: { note, cardId: "c1", api: null } });
-
-	const heading = page.getByRole("heading", { name: /Markdown Note/i });
-	await expect.element(heading).toBeVisible();
-
-	// Poll for bold text, inline code and list text to account for async markdown rendering
+	// Poll for rendered elements
 	let bold: any = null;
 	for (let i = 0; i < 20; i++) {
 		try {

@@ -1,11 +1,13 @@
 <script lang="ts">
 import type { Note } from "../../types";
 import { modalStore } from "../stores/modalStore";
+import NoteContent from "./NoteContent.svelte";
 import MoreMenu from "./MoreMenu.svelte";
 import NoteEditorModal from "./NoteEditorModal.svelte";
 
 // Mark markup-only component references as used so Biome doesn't flag them as unused
 void MoreMenu;
+void NoteContent;
 
 type NoteApi = { deleteNote: (id: string) => Promise<void> };
 
@@ -27,6 +29,8 @@ $effect(() => {
 	api = props.api;
 });
 
+import { onMount } from "svelte";
+
 function resolveApi(): NoteApi | null {
 	if (api) return api;
 	if (
@@ -35,6 +39,19 @@ function resolveApi(): NoteApi | null {
 	)
 		return (window as unknown as { api?: NoteApi }).api;
 	return null;
+}
+
+async function loadNote() {
+	if (!note || !note.id) return;
+	const resolved = resolveApi();
+	if (!resolved || !cardId) return;
+	try {
+		const ns = await resolved.getNotes(cardId);
+		const latest = ns.find((x) => x.id === note?.id);
+		if (latest) note = latest;
+	} catch (_e) {
+		// ignore load errors in view
+	}
 }
 
 function _close() {
@@ -56,6 +73,22 @@ async function _remove() {
 	);
 	modalStore.pop();
 }
+
+onMount(() => {
+	// ensure we have the latest content for this note when viewing
+	loadNote();
+	// also listen for global note changes and refresh if they affect this note
+	if (typeof window !== "undefined") {
+		const handler = (e: CustomEvent<{ cardId?: string; noteId?: string }>) => {
+			if (e?.detail?.cardId === cardId || e?.detail?.noteId === note?.id) {
+				loadNote();
+			}
+		};
+		window.addEventListener("notes:changed", handler as EventListener);
+		return () =>
+			window.removeEventListener("notes:changed", handler as EventListener);
+	}
+});
 </script>
 
 <div class="note-view-backdrop" role="dialog" aria-modal="true" tabindex="-1">
@@ -67,10 +100,10 @@ async function _remove() {
 
     <div class="meta">{note?.tags?.map((t:string) => `#${t}`).join(' ')}</div>
 
-    <article class="body">
-      <!-- render plain content to avoid Markdown rendering timing issues in tests -->
-      <div class="raw-content">{note?.content}</div>
-    </article>
+		<article class="body">
+			<!-- render markdown content safely -->
+			<div class="rendered-content"><NoteContent markdown={note?.content} /></div>
+		</article>
 
     <footer>
       <MoreMenu ariaLabel={`More actions for note ${note?.title || 'note'}`} on:edit={_edit} on:delete={_remove} />

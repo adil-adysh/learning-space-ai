@@ -77,7 +77,7 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 	await page.getByRole("textbox", { name: /Title/i }).fill("Note CRUD Title");
 	await page
 		.getByRole("textbox", { name: /Content|Content/ })
-		.fill("Initial body.");
+		.fill("**Initial Bold**\n\n`inline code`\n\n- list item");
 	await page.getByRole("button", { name: /Save/i }).click();
 
 	// Wait for the note to be present
@@ -109,7 +109,40 @@ test("Full note CRUD flow: create, view, edit, delete", async () => {
 		}
 	}
 	await expect.element(viewHeading).toBeVisible();
-	await expect.element(page.getByText(/Initial body./i)).toBeVisible();
+	// the heading we found belongs to the opened note view; use broader locators but pick the second match (view) to avoid the list preview duplicate
+	let bodyEl: any = null;
+	for (let i = 0; i < 20; i++) {
+		try {
+			// pick the second occurrence which corresponds to the modal view
+			bodyEl = (page.getByText(/Initial Bold/i) as any).nth(1);
+			break;
+		} catch (_err) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	}
+	await expect.element(bodyEl).toBeVisible();
+
+	let codeEl: any = null;
+	for (let i = 0; i < 20; i++) {
+		try {
+			codeEl = (page.getByText(/inline code/i) as any).nth(1);
+			break;
+		} catch (_err) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	}
+	await expect.element(codeEl).toBeVisible();
+
+	let listEl: any = null;
+	for (let i = 0; i < 20; i++) {
+		try {
+			listEl = (page.getByText(/list item/i) as any).nth(1);
+			break;
+		} catch (_err) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	}
+	await expect.element(listEl).toBeVisible();
 
 	// Close and edit via More menu
 	await page.getByRole("button", { name: /^Close$/ }).click();
