@@ -118,7 +118,40 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 	const createdHeading = page.getByRole("heading", { name: /CF Note Title/i });
 	await expect.element(createdHeading).toBeVisible();
 
-	// Edit the note
+	// Open the created note and verify its view modal
+	const openBtn = page.getByLabelText("Open note CF Note Title");
+	await expect.element(openBtn).toBeVisible();
+	await openBtn.click();
+
+	// Wait for the view modal heading to appear (may be a second dialog); poll globally
+	let viewHeading: any = null;
+	for (let i = 0; i < 20; i++) {
+		try {
+			viewHeading = page.getByRole("heading", { name: /CF Note Title/i });
+			break;
+		} catch (_err) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	}
+	await expect.element(viewHeading).toBeVisible();
+
+	// Poll for the body text too
+	let bodyText: any = null;
+	for (let i = 0; i < 20; i++) {
+		try {
+			bodyText = page.getByText(/Note body for card flow./i);
+			break;
+		} catch (_err) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	}
+	await expect.element(bodyText).toBeVisible();
+
+	// Close the view modal by clicking its exact Close button (avoid ambiguous labels)
+	const closeBtnExact = page.getByRole("button", { name: /^Close$/ });
+	await closeBtnExact.click();
+
+	// Re-open the More menu for the created note in the list
 	const noteMore = page.getByLabelText("More actions for note CF Note Title");
 	await expect.element(noteMore).toBeVisible();
 	await noteMore.click();
