@@ -58,8 +58,12 @@ void noteApi;
 
 // Derived computed values
 const isDone = $derived.by(() => card.status === "done");
-const buttonLabel = $derived.by(() => (card.status === "done" ? "Mark active" : "Mark done"));
-const statusText = $derived.by(() => (card.status === "done" ? "✓ Completed" : "Active"));
+const buttonLabel = $derived.by(() =>
+	card.status === "done" ? "Mark active" : "Mark done",
+);
+const statusText = $derived.by(() =>
+	card.status === "done" ? "✓ Completed" : "Active",
+);
 const projectName = $derived.by(() => {
 	if (!card.project) return "";
 	return (
@@ -79,7 +83,9 @@ $effect(() => {
 // local modal state (Svelte 5 rune) - replaced by centralized modalStore
 const _notesOpen = $state(false); // intentionally unused; kept for possible future local state
 // ensure component imports are treated as used by linter
-void MoreMenu; void NoteModal; void modalStore;
+void MoreMenu;
+void NoteModal;
+void modalStore;
 </script>
 
 <article class="card" class:done={isDone}>

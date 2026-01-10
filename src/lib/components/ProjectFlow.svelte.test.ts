@@ -5,7 +5,11 @@ import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
 import { cardManager } from "../cardManager.svelte";
 
 test("Create project, open it, add a card, and open the card's notes", async () => {
-	const createdProject = { id: "p1", name: "My Project", systemPrompt: "System" };
+	const createdProject = {
+		id: "p1",
+		name: "My Project",
+		systemPrompt: "System",
+	};
 	const createdCard = {
 		id: "c1",
 		title: "Project Card",
@@ -17,7 +21,13 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 
 	const api = {
 		getProjects: vi.fn(() => Promise.resolve([])),
-		createProject: vi.fn((payload: any) => Promise.resolve({ ...createdProject, name: payload.name, systemPrompt: payload.systemPrompt })),
+		createProject: vi.fn((payload: any) =>
+			Promise.resolve({
+				...createdProject,
+				name: payload.name,
+				systemPrompt: payload.systemPrompt,
+			}),
+		),
 		getCards: vi.fn(() => Promise.resolve([])),
 		addCard: vi.fn((data: any) => Promise.resolve({ ...createdCard, ...data })),
 		getNotes: vi.fn(() => Promise.resolve([])),
@@ -31,14 +41,18 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 	render(ProjectFlowTestWrapper);
 
 	// Open project create screen
-	const newProjectBtn = page.getByRole("button", { name: /New Project|Create project/i });
+	const newProjectBtn = page.getByRole("button", {
+		name: /New Project|Create project/i,
+	});
 	await expect.element(newProjectBtn).toBeVisible();
 	await newProjectBtn.click();
 
 	// Fill project form
 	const nameInput = page.getByPlaceholder("e.g. JavaScript");
 	await nameInput.fill("My Project");
-	const systemInput = page.getByPlaceholder(/You are an expert JavaScript developer/i);
+	const systemInput = page.getByPlaceholder(
+		/You are an expert JavaScript developer/i,
+	);
 	await systemInput.fill("System");
 
 	// Submit create
@@ -53,7 +67,11 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 	await expect.element(detailHeading).toBeVisible();
 
 	// Add a card programmatically for the created project (simulates user adding a card)
-	await cardManager.addCard({ title: "Project Card", prompt: "Do the thing", project: "p1" });
+	await cardManager.addCard({
+		title: "Project Card",
+		prompt: "Do the thing",
+		project: "p1",
+	});
 
 	// Card should appear in the list
 	const cardHeading = page.getByRole("heading", { name: /Project Card/i });
@@ -64,6 +82,8 @@ test("Create project, open it, add a card, and open the card's notes", async () 
 	await openNotesBtn.click();
 
 	// Notes modal should show for that card
-	const notesHeading = page.getByRole("heading", { name: /Notes for Project Card/i });
+	const notesHeading = page.getByRole("heading", {
+		name: /Notes for Project Card/i,
+	});
 	await expect.element(notesHeading).toBeVisible();
 });

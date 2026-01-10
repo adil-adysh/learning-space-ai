@@ -1,9 +1,9 @@
-const { writeFileSync, mkdirSync } = require('node:fs');
-const { join } = require('node:path');
+const { writeFileSync, mkdirSync } = require("node:fs");
+const { join } = require("node:path");
 
-const dist = 'dist';
+const dist = "dist";
 try {
-  mkdirSync(dist, { recursive: true });
+	mkdirSync(dist, { recursive: true });
 } catch {}
 
 const content = `// Auto-generated CommonJS wrapper to dynamically import ESM main
@@ -17,5 +17,5 @@ const content = `// Auto-generated CommonJS wrapper to dynamically import ESM ma
 })();
 `;
 
-writeFileSync(join(dist, 'main.cjs'), content, 'utf8');
-console.info('Wrote dist/main.cjs wrapper');
+writeFileSync(join(dist, "main.cjs"), content, "utf8");
+console.info("Wrote dist/main.cjs wrapper");

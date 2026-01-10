@@ -63,7 +63,11 @@ let dialogRef: HTMLElement | null = $state(null);
 let lastCreatedNoteId: string | null = $state(null);
 
 // mark functions as used (template usage sometimes not detected by linter)
-void openNew; void editNote; void openView; void handleDelete; void close;
+void openNew;
+void editNote;
+void openView;
+void handleDelete;
+void close;
 
 function resolveApi() {
 	if (api) return api;
@@ -94,14 +98,16 @@ function openNew() {
 			lastCreatedNoteId = created.id;
 			load().then(() => {
 				if (lastCreatedNoteId) {
-					const el = document.getElementById(`note-${lastCreatedNoteId}`) as HTMLElement | null;
+					const el = document.getElementById(
+						`note-${lastCreatedNoteId}`,
+					) as HTMLElement | null;
 					if (el && typeof el.focus === "function") {
 						setTimeout(() => el.focus(), 0);
 					}
 					lastCreatedNoteId = null;
 				}
 			});
-		}
+		},
 	});
 }
 
@@ -143,13 +149,19 @@ onMount(() => {
 	load();
 	setTimeout(() => dialogRef?.focus(), 0);
 	if (typeof window !== "undefined") {
-		window.addEventListener("notes:changed", _notesChangedHandler as EventListener);
+		window.addEventListener(
+			"notes:changed",
+			_notesChangedHandler as EventListener,
+		);
 	}
 });
 
 onDestroy(() => {
 	if (typeof window !== "undefined") {
-		window.removeEventListener("notes:changed", _notesChangedHandler as EventListener);
+		window.removeEventListener(
+			"notes:changed",
+			_notesChangedHandler as EventListener,
+		);
 	}
 });
 </script>

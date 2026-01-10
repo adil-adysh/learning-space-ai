@@ -1,92 +1,92 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
 
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
 
-  "files": {
-    "includes": [
-      "src/**",
-      "scripts/**",
-      "docs/**",
-      "package.json",
-      "*.{js,ts,json,svelte,css}",
-      "*.config.{js,ts}",
+	"files": {
+		"includes": [
+			"src/**",
+			"scripts/**",
+			"docs/**",
+			"package.json",
+			"*.{js,ts,json,svelte,css}",
+			"*.config.{js,ts}",
 
-      "!**/node_modules",
-      "!**/.git",
-      "!**/.svelte-kit",
-      "!**/build",
-      "!**/dist"
-    ]
-  },
+			"!**/node_modules",
+			"!**/.git",
+			"!**/.svelte-kit",
+			"!**/build",
+			"!**/dist"
+		]
+	},
 
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "tab"
-  },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
 
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
 
-      "style": {
-        "useConst": "off"
-      }
-    }
-  },
+			"style": {
+				"useConst": "off"
+			}
+		}
+	},
 
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    },
-    "parser": {
-      "jsxEverywhere": false
-    }
-  },
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		},
+		"parser": {
+			"jsxEverywhere": false
+		}
+	},
 
-  "css": {
-    "parser": {
-      "cssModules": true
-    }
-  },
+	"css": {
+		"parser": {
+			"cssModules": true
+		}
+	},
 
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  },
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 
-  "overrides": [
-    {
-      "includes": ["**/*.svelte"],
-      "linter": {
-        "rules": {
-          "style": {
-            "useConst": "off"
-          },
-          "correctness": {
-            "noUnusedVariables": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.test.ts", "**/*.spec.ts"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noExplicitAny": "off"
-          }
-        }
-      }
-    }
-  ]
+	"overrides": [
+		{
+			"includes": ["**/*.svelte"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useConst": "off"
+					},
+					"correctness": {
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/*.test.ts", "**/*.spec.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		}
+	]
 }

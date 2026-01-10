@@ -1,19 +1,19 @@
 {
-  "asar": false,
-  "files": ["build/**/*", "dist/**/*", "package.json"],
-  "extraMetadata": {
-    "main": "dist/main.cjs",
-    "version": "1.2.3"
-  },
-  "linux": {
-    "target": ["AppImage", "deb"],
-    "icon": "assets"
-  },
-  "publish": [
-    {
-      "provider": "github",
-      "owner": "owner",
-      "repo": "repo"
-    }
-  ]
+	"asar": false,
+	"files": ["build/**/*", "dist/**/*", "package.json"],
+	"extraMetadata": {
+		"main": "dist/main.cjs",
+		"version": "1.2.3"
+	},
+	"linux": {
+		"target": ["AppImage", "deb"],
+		"icon": "assets"
+	},
+	"publish": [
+		{
+			"provider": "github",
+			"owner": "owner",
+			"repo": "repo"
+		}
+	]
 }

@@ -1,18 +1,24 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "lib": ["ES2020", "DOM"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "types": ["node"]
-  },
-  "include": ["src/main.ts", "src/preload.ts", "src/db.ts", "src/util.ts", "src/types.ts"],
-  "exclude": ["src/routes", "src/lib", "src/**/*.svelte"]
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ES2020",
+		"moduleResolution": "node",
+		"lib": ["ES2020", "DOM"],
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"types": ["node"]
+	},
+	"include": [
+		"src/main.ts",
+		"src/preload.ts",
+		"src/db.ts",
+		"src/util.ts",
+		"src/types.ts"
+	],
+	"exclude": ["src/routes", "src/lib", "src/**/*.svelte"]
 }

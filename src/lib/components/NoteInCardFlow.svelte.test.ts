@@ -4,7 +4,11 @@ import { render } from "vitest-browser-svelte";
 import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
 
 test("Create, edit, and delete a note via the learning card flow", async () => {
-	const createdProject = { id: "p1", name: "CardFlowProj", systemPrompt: "System" };
+	const createdProject = {
+		id: "p1",
+		name: "CardFlowProj",
+		systemPrompt: "System",
+	};
 	const createdCard = {
 		id: "c-cardflow-1",
 		title: "CardFlow Card",
@@ -18,7 +22,13 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 
 	const api = {
 		getProjects: vi.fn(() => Promise.resolve([])),
-		createProject: vi.fn((payload: any) => Promise.resolve({ ...createdProject, name: payload.name, systemPrompt: payload.systemPrompt })),
+		createProject: vi.fn((payload: any) =>
+			Promise.resolve({
+				...createdProject,
+				name: payload.name,
+				systemPrompt: payload.systemPrompt,
+			}),
+		),
 		getCards: vi.fn(() => Promise.resolve([])),
 		addCard: vi.fn((data: any) => Promise.resolve({ ...createdCard, ...data })),
 		getNotes: vi.fn(() => Promise.resolve(notes)),
@@ -44,13 +54,17 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 	render(ProjectFlowTestWrapper);
 
 	// Create project
-	const newProjectBtn = page.getByRole("button", { name: /New Project|Create project/i });
+	const newProjectBtn = page.getByRole("button", {
+		name: /New Project|Create project/i,
+	});
 	await expect.element(newProjectBtn).toBeVisible();
 	await newProjectBtn.click();
 
 	const nameInput = page.getByPlaceholder("e.g. JavaScript");
 	await nameInput.fill("CardFlowProj");
-	const systemInput = page.getByPlaceholder(/You are an expert JavaScript developer/i);
+	const systemInput = page.getByPlaceholder(
+		/You are an expert JavaScript developer/i,
+	);
 	await systemInput.fill("System");
 	const createBtn = page.getByRole("button", { name: /Create project/i });
 	await createBtn.click();
@@ -96,7 +110,9 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 	}
 
 	if (typeof window !== "undefined") {
-		window.dispatchEvent(new CustomEvent("notes:changed", { detail: { cardId: createdCard.id } }));
+		window.dispatchEvent(
+			new CustomEvent("notes:changed", { detail: { cardId: createdCard.id } }),
+		);
 	}
 
 	const createdHeading = page.getByRole("heading", { name: /CF Note Title/i });
@@ -129,7 +145,11 @@ test("Create, edit, and delete a note via the learning card flow", async () => {
 			notes[idx].content = "Updated note body.";
 			await api.updateNote(notes[idx]);
 			if (typeof window !== "undefined") {
-				window.dispatchEvent(new CustomEvent("notes:changed", { detail: { cardId: createdCard.id } }));
+				window.dispatchEvent(
+					new CustomEvent("notes:changed", {
+						detail: { cardId: createdCard.id },
+					}),
+				);
 			}
 		}
 	}

@@ -5,7 +5,14 @@ import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
 
 test("Create, edit, and delete a note via UI", async () => {
 	const project = { id: "pn1", name: "NoteProj" };
-	const card = { id: "card1", title: "Note Card", prompt: "Prompt", status: "active", createdAt: new Date().toISOString(), project: "pn1" };
+	const card = {
+		id: "card1",
+		title: "Note Card",
+		prompt: "Prompt",
+		status: "active",
+		createdAt: new Date().toISOString(),
+		project: "pn1",
+	};
 	const notes: any[] = [];
 	const api = {
 		getProjects: vi.fn(() => Promise.resolve([project])),
@@ -33,7 +40,9 @@ test("Create, edit, and delete a note via UI", async () => {
 	render(ProjectFlowTestWrapper);
 
 	// Open the project detail first
-	const projectCard = page.getByRole("button", { name: /Open project NoteProj/i });
+	const projectCard = page.getByRole("button", {
+		name: /Open project NoteProj/i,
+	});
 	await expect.element(projectCard).toBeVisible();
 	await projectCard.click();
 
@@ -66,7 +75,9 @@ test("Create, edit, and delete a note via UI", async () => {
 
 	// Trigger global notes:changed in case the event was missed
 	if (typeof window !== "undefined") {
-		window.dispatchEvent(new CustomEvent("notes:changed", { detail: { cardId: card.id } }));
+		window.dispatchEvent(
+			new CustomEvent("notes:changed", { detail: { cardId: card.id } }),
+		);
 	}
 
 	// Wait for the created note to appear in the UI
@@ -102,7 +113,9 @@ test("Create, edit, and delete a note via UI", async () => {
 			notes[idx].content = "Updated content.";
 			await api.updateNote(notes[idx]);
 			if (typeof window !== "undefined") {
-				window.dispatchEvent(new CustomEvent("notes:changed", { detail: { cardId: card.id } }));
+				window.dispatchEvent(
+					new CustomEvent("notes:changed", { detail: { cardId: card.id } }),
+				);
 			}
 		}
 	}

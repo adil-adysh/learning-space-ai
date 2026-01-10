@@ -78,7 +78,7 @@ async function _doSave() {
 			}),
 		);
 	} else {
-			const created = await resolved.createNote({
+		const created = await resolved.createNote({
 			cardId: cardId ?? (undefined as unknown as string),
 			title,
 			content,

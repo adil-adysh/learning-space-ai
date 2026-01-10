@@ -5,11 +5,20 @@ import ProjectFlowTestWrapper from "./__tests__/ProjectFlowTestWrapper.svelte";
 
 test("Edit and delete a card via UI", async () => {
 	const project = { id: "pc1", name: "CardProj" };
-	const initialCard = { id: "cid1", title: "Old Title", prompt: "Old prompt content", status: "active", createdAt: new Date().toISOString(), project: "pc1" };
+	const initialCard = {
+		id: "cid1",
+		title: "Old Title",
+		prompt: "Old prompt content",
+		status: "active",
+		createdAt: new Date().toISOString(),
+		project: "pc1",
+	};
 	const api = {
 		getProjects: vi.fn(() => Promise.resolve([project])),
 		getCards: vi.fn(() => Promise.resolve([initialCard])),
-		updateCard: vi.fn((payload: any) => Promise.resolve({ ...initialCard, ...payload })),
+		updateCard: vi.fn((payload: any) =>
+			Promise.resolve({ ...initialCard, ...payload }),
+		),
 		deleteCard: vi.fn(() => Promise.resolve()),
 	};
 	(globalThis as any).api = api;
@@ -17,7 +26,9 @@ test("Edit and delete a card via UI", async () => {
 	render(ProjectFlowTestWrapper);
 
 	// Open the project detail first
-	const projectCard = page.getByRole("button", { name: /Open project CardProj/i });
+	const projectCard = page.getByRole("button", {
+		name: /Open project CardProj/i,
+	});
 	await expect.element(projectCard).toBeVisible();
 	await projectCard.click();
 
@@ -33,7 +44,9 @@ test("Edit and delete a card via UI", async () => {
 	await editMenuItem.click();
 
 	// Edit form should appear (EditCardForm) - wait for modal heading
-	const editHeading = page.getByRole("heading", { name: /Edit learning item/i });
+	const editHeading = page.getByRole("heading", {
+		name: /Edit learning item/i,
+	});
 	await expect.element(editHeading).toBeVisible();
 
 	const titleInput = page.getByLabelText("Title").nth(0);
