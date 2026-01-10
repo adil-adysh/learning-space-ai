@@ -6,8 +6,6 @@ import { modalStore } from "../stores/modalStore";
 // Svelte DOM refs (bind:this) are mutated by the template; keep `let` declarations
 /* biome-enable lint/style/useConst */
 
-export const note: Note | null = null; // null => create new
-export const cardId: string | null = null;
 type NoteApi = {
 	getNotes(cardId: string): Promise<Note[]>;
 	createNote(payload: {
@@ -25,18 +23,32 @@ type NoteApi = {
 	deleteNote(id: string): Promise<Note>;
 };
 
-export const api: NoteApi | null = null;
-export const onSaved: ((note: Note) => void) | null = null; // optional callback for parent to react to saved note (create/update)
+interface Props {
+	note: Note | null;
+	cardId: string | null;
+	api: NoteApi | null;
+	onSaved?: ((note: Note) => void) | null;
+}
+
+const props = $props() as Props;
+let note = $state(props.note);
+let cardId = $state(props.cardId);
+let api = props.api;
+let onSaved = props.onSaved;
 
 let title = $state("");
 let content = $state("");
 let tagsText = $state("");
-// bound via `bind:this` in template — must remain `let` for Svelte
 /* biome-disable-next-line lint/style/useConst */
 let _firstInput: HTMLInputElement | null = $state(null); // bound via bind:this in template
 
 $effect(() => {
-	// populate from note
+	// sync props into local state and populate fields
+	note = props.note;
+	cardId = props.cardId;
+	api = props.api;
+	onSaved = props.onSaved;
+
 	title = note?.title || "";
 	content = note?.content || "";
 	tagsText = (note?.tags || []).join(", ");
