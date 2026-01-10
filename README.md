@@ -1,238 +1,83 @@
 # Learning Space AI
-
-> **A local-first, accessible desktop app for organizing learning prompts and launching them in ChatGPT.**
-
-Learning Space AI helps you **capture, organize, and complete AI prompts used for learning**, with a single supported launch target: **ChatGPT in your default web browser**.
-
-The app stores prompts locally and provides intentional structure so learning prompts don’t get lost, duplicated, or mentally overwhelming.
-
+> **Your local-first workspace for intentional learning with ChatGPT.**
+**Learning Space AI** brings order to your AI learning journey. Instead of getting lost in scattered browser tabs and endless chat histories, plan your prompts locally, organize them by project, and capture your key takeaways—all in one accessible desktop app.
 ---
-
-## What Problem This Solves
-
-People learning with AI often face:
-
-- Prompts scattered across chat histories and notes
-- No clear system to organize prompts by learning context
-- Repeating prompts without knowing what was already learned
-- No sense of completion or closure
-
-**Learning Space AI solves prompt organization for learning—nothing more, nothing less.**
-
+## 🚀 Why use this?
+Learning with AI is powerful, but it often feels chaotic.
+* **The Problem:** You have 50 tabs open, you lose track of good prompts, and you forget what you've already finished.
+* **The Solution:** A dedicated workspace to **curate your prompts** before you chat, and **document your knowledge** after you chat.
+**Note:** This app respects your privacy and agency. It does **not** automate the chatting process or store your chat history. It launches your default browser, pre-fills your prompt, and lets *you* control the conversation.
 ---
-
-## Scope (Very Explicit)
-
-### ✅ What This App Does
-
-- Stores **AI prompts for learning** as structured learning cards
-- Organizes prompts by **projects (learning contexts)**
-- Launches prompts **only in ChatGPT**
-- Opens ChatGPT in the **user’s default browser**
-- Helps users mark learning as **completed**
-
-### ❌ What This App Does Not Do
-
-- It does **not** store AI responses
-- It does **not** send prompts automatically
-- It does **not** embed ChatGPT
-- It does **not** support multiple AI providers
-- It does **not** act as a chat client
-
+## ✨ Features
+* **📂 Project Organization:** Group your learning goals (e.g., "Learn Rust", "Cooking Basics").
+* **📝 Learning Cards:** Write specific prompts to target concepts one at a time.
+* **▶️ One-Click Launch:** Instantly **redirects to your default web browser** and opens ChatGPT with your prompt pre-filled and ready to go.
+* **📓 Integrated Notes:** Capture markdown-formatted notes for every card without leaving the app.
+* **✅ Progress Tracking:** Mark concepts as "Done" to visualize your learning path.
+* **🤖 AI Curriculum Generation:** Ask ChatGPT to generate a study plan and import it directly into the app.
+* **🔒 Local-First:** Your data lives on your machine (JSON). No accounts, no clouds.
+* **♿ Accessible:** Built from the ground up for screen readers and keyboard navigation.
 ---
-
-## Core Workflow
-
-1. Create a **Learning Card** containing an AI prompt
-2. Assign it to a **Project** (topic, course, or goal)
-3. Click **“Start learning with ChatGPT”**
-4. The app:
-   - Opens ChatGPT in your **default browser**
-   - Prefills the chat input with your stored prompt
-   - Leaves final control to you (you click _Send_)
-
-5. After learning, return and **mark the card as completed**
-
-This design preserves **user agency**, transparency, and accessibility.
-
+## 📖 User Guide
+### 1. The Learning Loop
+1.  **Create a Project:** Give it a name (e.g., *Advanced React*).
+2.  **Add a Card:** Write a short title and the specific prompt you want to ask AI.
+3.  **Launch:** Click **Start Chat** (▶️).
+    * *Action:* The app **redirects you to your default web browser** and opens ChatGPT.
+4.  **Learn & Note:** Read the AI response in your browser, then switch back to the app and click **Open Notes** (📝) to write down your summary.
+5.  **Complete:** Check the box to mark the card as **Done**.
+### 2. Generating Plans with AI
+Don't know where to start?
+1.  Click **🤖 Generate** in the project header.
+2.  Follow the instructions to get a JSON study plan from ChatGPT.
+3.  Copy the code block and use the **📥 Import** button to load the cards instantly.
+### 3. Data Management
+* **Export:** Backup your projects to \.json\ files via the **Export** button.
+* **Import:** Restore backups or import shared learning lists.
+> 📚 **Need more details?**
+> Check out the [Complete User Guide & UI Manual](docs/USER_GUIDE.md) for advanced workflows, JSON schemas, and troubleshooting.
 ---
-
-## Learning Card Actions
-
-Each learning card provides two primary actions:
-
-### ▶️ Start Learning with ChatGPT
-
-- Opens `chat.openai.com` in the user’s default browser
-- Prefills the chat input with the stored prompt
-- User manually sends the prompt
-- No background automation or hidden execution
-
-### ✅ Mark as Completed
-
-- Explicitly marks the learning intent as finished
-- Helps reduce mental clutter
-- Separates active learning from completed understanding
-
+## 📥 Installation
+### Windows & Linux
+Download the latest installer from the [Releases Page](https://github.com/adil-adysh/learning-space-ai/releases).
+### macOS
+*Coming soon.*
 ---
-
-## Features
-
-### 📝 Learning Cards
-
-- Prompt-first design
-- Title, prompt, topic, and project assignment
-- Clear active vs completed state
-- Accessible form validation with helpful feedback
-
-### 📂 Project Organization
-
-- Group prompts by learning context
-- Project switcher for focused views
-- Default project assignment for new cards
-
-### 🔍 Search & Filters
-
-- Search across titles, prompts, topics, and projects
-- Filter by status (all / active / completed)
-- Grouped views with counts
-
-### ♿ Accessibility
-
-- Full keyboard navigation
-- Screen reader–friendly semantics
-- Clear focus indicators
-- No reliance on color alone
-- Minimal cognitive load UI
-
+## 🛠️ For Developers
+Interested in contributing? Learning Space AI is built with **Electron**, **Svelte 5**, and **TypeScript**.
+### Project Structure
+* **\src/main.ts\**: Electron main process.
+* **\src/lib/\**: Svelte 5 UI components and Rune-based state management (\*.svelte.ts\).
+* **\src/db.ts\**: Local JSON storage (LowDB).
+### Development Setup
+1.  **Prerequisites:** Node.js 18+ and npm.
+2.  **Clone & Install:**
+    \\\ash
+    git clone https://github.com/adil-adysh/learning-space-ai.git
+    cd learning-space-ai
+    npm install
+    \\\
+3.  **Run in Dev Mode:**
+    \\\ash
+    # Starts Vite server + Electron
+    npm run dev
+    \\\
+4.  **Run Tests:**
+    \\\ash
+    # Unit & Component tests via Vitest
+    npm test
+    \\\
+5.  **Build for Production:**
+    \\\ash
+    npm run build
+    # Packages the app to /dist
+    \\\
+### Contributing Guidelines
+* We use **Svelte 5 Runes** (\$state\, \$derived\, \$effect\). Please stick to modern Svelte patterns.
+* **Accessibility is mandatory.** All interactive elements must be keyboard navigable and labeled for screen readers.
+* Run \
+pm run lint\ and \
+pm test\ before submitting a PR.
 ---
-
-## Design Principles
-
-- **Prompts are learning artifacts**, not disposable text
-- **Completion matters** for learning
-- **User intent stays explicit**
-- **Accessibility is non-negotiable**
-- **Local-first by default**
-- **No silent automation**
-
----
-
-## Technology Stack
-
-- **Desktop:** Electron
-- **UI:** Svelte 5 + SvelteKit
-- **Language:** TypeScript
-- **State:** Svelte runes (`$state`, `$derived`, `$effect`)
-- **Storage:** LowDB (local JSON)
-- **Build:** Vite, esbuild
-- **Packaging:** electron-builder
-
----
-
-## Installation
-
-### Prerequisites
-
-- Node.js 18+
-- npm
-
-### Setup
-
-```bash
-git clone https://github.com/your-org/learning-space-ai.git
-cd learning-space-ai
-npm install
-```
-
-### Development
-
-```bash
-# Run SvelteKit UI
-npm run dev
-
-# Build the app
-npm run build
-
-# Start Electron
-npm start
-```
-
----
-
-## Project Structure
-
-```
-learning-space-ai/
-├── src/
-│   ├── main.ts          # Electron main process
-│   ├── preload.ts       # Secure IPC bridge
-│   ├── db.ts            # Local storage
-│   ├── types.ts         # Shared TypeScript types
-│   ├── lib/
-│   │   ├── cardManager.svelte.ts
-│   │   ├── projectManager.svelte.ts
-│   │   └── components/
-│   └── routes/
-├── dist/                # Electron build output
-├── build/               # SvelteKit build output
-└── package.json
-```
-
----
-
-## Accessibility Notes
-
-- Uses semantic HTML wherever possible
-- Native controls preferred over custom widgets
-- Focus trapping for dialogs and forms
-- Screen reader announcements for validation and state changes
-
-Accessibility issues and suggestions are **strongly encouraged**.
-
----
-
-## Roadmap (Intentional, Not Promised)
-
-- Prompt templates
-- Import / export learning cards
-- Optional notes on completion
-- Improved keyboard workflows
-
-Multi-AI-provider support is **out of scope for now**.
-
----
-
-## Contributing
-
-Contributions are welcome—especially around:
-
-- Accessibility improvements
-- UX clarity
-- Prompt-focused workflows
-- Documentation
-
-### Guidelines
-
-1. Fork the repository
-2. Create a feature branch
-3. Run checks before committing:
-
-   ```bash
-   npm run check
-   ```
-
-4. Keep changes focused and intentional
-5. Open a Pull Request with context
-
----
-
-## License
-
+## 📄 License
 Apache-2.0 © 2026 Learning Space AI Contributors
-
----
-
-## One-Line Philosophy
-
-> **Learning Space AI helps you organize learning prompts and intentionally finish learning—using ChatGPT, on your terms.**

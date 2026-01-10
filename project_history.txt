@@ -1,0 +1,303 @@
+2026-01-10 | adil shaikh | refactor: Improve code formatting and readability across multiple files
+2026-01-10 | adil shaikh | feat: Update button labels for AI generation to improve clarity
+2026-01-10 | adil shaikh | feat: Add tests for Import modal file-upload flow with JSON validation
+2026-01-10 | adil shaikh | feat: Add Export and Import Modals for Learning Cards
+2026-01-10 | adil shaikh | ci: adding workflow for copilot cloud agent
+2026-01-10 | adil shaikh | refactor: improve code formatting and readability across multiple components and tests
+2026-01-10 | adil shaikh | feat: update package.json scripts and dependencies for improved linting and formatting
+2026-01-10 | adil shaikh | feat: update package.json scripts and dependencies for improved linting and formatting
+2026-01-10 | adil shaikh | Refactor tests and components for improved clarity and functionality
+2026-01-10 | adil shaikh | feat: enhance markdown rendering in NoteContent and update related tests
+2026-01-10 | adil shaikh | feat: implement note CRUD flow and add tests for existing notes
+2026-01-10 | adil shaikh | chore: deleting unwanted AI generated artifacts
+2026-01-10 | adil shaikh | test: add unit tests for NoteView to verify markdown rendering
+2026-01-10 | adil shaikh | refactor: standardize quotation marks and improve code formatting across multiple scripts
+2026-01-10 | adil shaikh | Add comprehensive UI tests for project and card management
+2026-01-10 | adil shaikh | Refactor code structure and remove redundant code blocks for improved readability and maintainability
+2026-01-10 | adil shaikh | fix(svelte): make bindings mutable; remove unused CSS selectors; make NoteContent styles global
+2026-01-10 | adil shaikh | fix(svelte): make bindings mutable; remove unused CSS selectors; make NoteContent styles global
+2026-01-05 | adil shaikh | feat: add NoteContent component for rendering sanitized markdown and integrate with NoteView
+2026-01-05 | adil shaikh | feat: add new app entry and update start scripts
+2026-01-05 | adil shaikh | feat: add tests for CardItem and NoteModal components, including Edit/Delete actions and modal behavior
+2026-01-05 | adil shaikh | feat: add NoteEditorModal and NoteModal components for note management
+2026-01-05 | adil shaikh | feat: add MoreMenu component with edit/delete actions and corresponding tests for CardItem
+2026-01-05 | adil shaikh | fix: update electron-builder config to include versioning and improve script clarity
+2026-01-05 | adil shaikh | fix: update button role name in CardItem test for consistency
+2026-01-05 | adil shaikh | refactor: remove legacy Node test file and update placeholder comments
+2026-01-05 | adil shaikh | refactor: migrate testing framework to Vitest and update test configurations
+2026-01-05 | adil shaikh | fix: clean up CI workflow by removing redundant package release job and adjusting branch formatting
+2026-01-05 | adil shaikh | feat: enhance CI workflow with matrix testing and improved artifact handling
+2026-01-05 | adil shaikh | feat: expand Copilot instructions with detailed guidance on architecture, workflows, and best practices
+2026-01-05 | adil shaikh | feat: add initial Copilot instructions file
+2026-01-05 | adil shaikh | feat: add comprehensive documentation for Svelte 5 refactoring, including project index and detailed component changes
+2026-01-05 | adil shaikh | Refactor code structure for improved readability and maintainability
+2026-01-05 | adil shaikh | Refactor code structure for improved readability and maintainability
+2026-01-05 | adil shaikh | feat: add EditCardForm and EditProjectForm components with validation and accessibility features
+2026-01-04 | adil shaikh | feat: enhance project and card management with system prompt support
+2026-01-04 | adil shaikh | refactor: Remove outdated documentation and files after major architectural overhaul
+2026-01-04 | adil shaikh | fix: update artifact checks and configuration for CommonJS output
+2026-01-04 | adil shaikh | fix: update main entry point to use CommonJS format
+2026-01-04 | adil shaikh | feat: add initial project and card management functionality
+2026-01-04 | adil shaikh | feat: add initial project and card management components
+2026-01-04 | adil shaikh | refactor: Migrate to Svelte 5 with reactive runes and modern patterns
+2026-01-04 | adil shaikh | feat: add build scripts for CommonJS output and import patching
+2026-01-04 | adil shaikh | feat: simplify artifact upload patterns to prevent duplicates and enhance clarity
+2026-01-04 | adil shaikh | feat: enhance artifact handling by merging multiple downloads and simplifying installer verification
+2026-01-04 | adil shaikh | feat: refine artifact upload process by specifying installer patterns for Windows and Linux
+2026-01-04 | adil shaikh | feat: enhance artifact handling by adding search for required files and validation for Windows installers
+2026-01-04 | adil shaikh | chore: organise .md files
+2026-01-04 | adil shaikh | feat: enhance release workflow with deduplication of artifacts and improved caching
+2026-01-04 | adil shaikh | feat: update release workflow to improve artifact handling and permissions
+2026-01-04 | adil shaikh | feat: update project name to learning-space-ai in package.json and package-lock.json
+2026-01-04 | adil shaikh | feat: enhance electron-builder config to include Linux targets and permissions
+2026-01-04 | adil shaikh | feat: Add initial build configuration and entry points for the application
+2026-01-04 | adil shaikh | refactor: streamline electron-builder config generation using Node.js script
+2026-01-04 | adil shaikh | ci: add verification+debug checks for dist/main.cjs; add local verify:dist script
+2026-01-04 | adil shaikh | ci: generate electron-builder config with files + extraMetadata.main (dist/main.cjs)
+2026-01-04 | adil shaikh | chore(build): ensure dist is included in packaged app (disable asar + extraResources)
+2026-01-04 | adil shaikh | feat: Add initial build output for SvelteKit application
+2026-01-04 | adil shaikh | ci: use npm install cache and npx electron-builder for robust CI releases
+2026-01-04 | adil shaikh | feat: implement filtering for learning cards
+2026-01-04 | adil shaikh | chore: remove legacy UI files (src/ui) and old ui.cardItem test
+2026-01-04 | adil shaikh | feat: Implement centralized application state management with AppStateManager
+2026-01-04 | adil shaikh | chore: initial commit
+--- CURRENT README ---
+
+# Learning Space AI
+
+> **A local-first, accessible desktop app for organizing learning prompts and launching them in ChatGPT.**
+
+Learning Space AI helps you **capture, organize, and complete AI prompts used for learning**, with a single supported launch target: **ChatGPT in your default web browser**.
+
+The app stores prompts locally and provides intentional structure so learning prompts don’t get lost, duplicated, or mentally overwhelming.
+
+---
+
+## What Problem This Solves
+
+People learning with AI often face:
+
+- Prompts scattered across chat histories and notes
+- No clear system to organize prompts by learning context
+- Repeating prompts without knowing what was already learned
+- No sense of completion or closure
+
+**Learning Space AI solves prompt organization for learning—nothing more, nothing less.**
+
+---
+
+## Scope (Very Explicit)
+
+### ✅ What This App Does
+
+- Stores **AI prompts for learning** as structured learning cards
+- Organizes prompts by **projects (learning contexts)**
+- Launches prompts **only in ChatGPT**
+- Opens ChatGPT in the **user’s default browser**
+- Helps users mark learning as **completed**
+
+### ❌ What This App Does Not Do
+
+- It does **not** store AI responses
+- It does **not** send prompts automatically
+- It does **not** embed ChatGPT
+- It does **not** support multiple AI providers
+- It does **not** act as a chat client
+
+---
+
+## Core Workflow
+
+1. Create a **Learning Card** containing an AI prompt
+2. Assign it to a **Project** (topic, course, or goal)
+3. Click **“Start learning with ChatGPT”**
+4. The app:
+   - Opens ChatGPT in your **default browser**
+   - Prefills the chat input with your stored prompt
+   - Leaves final control to you (you click _Send_)
+
+5. After learning, return and **mark the card as completed**
+
+This design preserves **user agency**, transparency, and accessibility.
+
+---
+
+## Learning Card Actions
+
+Each learning card provides two primary actions:
+
+### ▶️ Start Learning with ChatGPT
+
+- Opens `chat.openai.com` in the user’s default browser
+- Prefills the chat input with the stored prompt
+- User manually sends the prompt
+- No background automation or hidden execution
+
+### ✅ Mark as Completed
+
+- Explicitly marks the learning intent as finished
+- Helps reduce mental clutter
+- Separates active learning from completed understanding
+
+---
+
+## Features
+
+### 📝 Learning Cards
+
+- Prompt-first design
+- Title, prompt, topic, and project assignment
+- Clear active vs completed state
+- Accessible form validation with helpful feedback
+
+### 📂 Project Organization
+
+- Group prompts by learning context
+- Project switcher for focused views
+- Default project assignment for new cards
+
+### 🔍 Search & Filters
+
+- Search across titles, prompts, topics, and projects
+- Filter by status (all / active / completed)
+- Grouped views with counts
+
+### ♿ Accessibility
+
+- Full keyboard navigation
+- Screen reader–friendly semantics
+- Clear focus indicators
+- No reliance on color alone
+- Minimal cognitive load UI
+
+---
+
+## Design Principles
+
+- **Prompts are learning artifacts**, not disposable text
+- **Completion matters** for learning
+- **User intent stays explicit**
+- **Accessibility is non-negotiable**
+- **Local-first by default**
+- **No silent automation**
+
+---
+
+## Technology Stack
+
+- **Desktop:** Electron
+- **UI:** Svelte 5 + SvelteKit
+- **Language:** TypeScript
+- **State:** Svelte runes (`$state`, `$derived`, `$effect`)
+- **Storage:** LowDB (local JSON)
+- **Build:** Vite, esbuild
+- **Packaging:** electron-builder
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Setup
+
+```bash
+git clone https://github.com/adil-adysh/learning-space-ai.git
+cd learning-space-ai
+npm install
+```
+
+### Development
+
+```bash
+# Run SvelteKit UI
+npm run dev
+
+# Build the app
+npm run build
+
+# Start Electron
+npm start
+```
+
+---
+
+## Project Structure
+
+```
+learning-space-ai/
+├── src/
+│   ├── main.ts          # Electron main process
+│   ├── preload.ts       # Secure IPC bridge
+│   ├── db.ts            # Local storage
+│   ├── types.ts         # Shared TypeScript types
+│   ├── lib/
+│   │   ├── cardManager.svelte.ts
+│   │   ├── projectManager.svelte.ts
+│   │   └── components/
+│   └── routes/
+├── dist/                # Electron build output
+├── build/               # SvelteKit build output
+└── package.json
+```
+
+---
+
+## Accessibility Notes
+
+- Uses semantic HTML wherever possible
+- Native controls preferred over custom widgets
+- Focus trapping for dialogs and forms
+- Screen reader announcements for validation and state changes
+
+Accessibility issues and suggestions are **strongly encouraged**.
+
+---
+
+## Roadmap (Intentional, Not Promised)
+
+- Prompt templates
+- Import / export learning cards
+- Optional notes on completion
+- Improved keyboard workflows
+
+Multi-AI-provider support is **out of scope for now**.
+
+---
+
+## Contributing
+
+Contributions are welcome—especially around:
+
+- Accessibility improvements
+- UX clarity
+- Prompt-focused workflows
+- Documentation
+
+### Guidelines
+
+1. Fork the repository
+2. Create a feature branch
+3. Run checks before committing:
+
+   ```bash
+   npm run check
+   ```
+
+4. Keep changes focused and intentional
+5. Open a Pull Request with context
+
+---
+
+## License
+
+Apache-2.0 © 2026 Learning Space AI Contributors
+
+---
+
+## One-Line Philosophy
+
+> **Learning Space AI helps you organize learning prompts and intentionally finish learning—using ChatGPT, on your terms.**

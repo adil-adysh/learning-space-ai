@@ -32,6 +32,10 @@
   "keywords": [],
   "author": "Adil Adysh <adil@example.com>",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adil-adysh/learning-space-ai.git"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
     "@playwright/test": "^1.57.0",
@@ -101,8 +105,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "YOUR_GITHUB_USER_OR_ORG",
-        "repo": "YOUR_REPO_NAME"
+        "owner": "adil-adysh",
+        "repo": "learning-space-ai"
       }
     ]
   },
