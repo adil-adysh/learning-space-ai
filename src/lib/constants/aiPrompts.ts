@@ -16,7 +16,7 @@ Please follow this interaction protocol and generate ONLY valid JSON when produc
     {
       "id": "unique-uuid",
       "title": "Card title",
-      "prompt": "Detailed learning prompt (max 8000 chars)",
+      "prompt": "Detailed learning prompt (max 1500 chars)",
       "topic": "Optional topic",
       "project": "project-id-will-be-set-automatically",
       "status": "active",
@@ -32,7 +32,7 @@ Please follow this interaction protocol and generate ONLY valid JSON when produc
 - Each card must have: id (UUID v4), title, prompt, status, createdAt
 - status must be either "active" or "done"
 - createdAt must be a valid ISO 8601 date string
-- prompt field may be up to 8000 characters
+- prompt field may be up to 1500 characters
 - topic is optional
 - project will be set by the application on import (ignore or set a placeholder)
 

@@ -48,9 +48,9 @@ $effect(() => {
 
 $effect(() => {
 	const trimmedSystemPrompt = formData.systemPrompt.trim();
-	if (trimmedSystemPrompt.length > 8000) {
+	if (trimmedSystemPrompt.length > 2500) {
 		fieldErrors.systemPrompt =
-			"System prompt must be less than 8000 characters";
+			"System prompt must be less than 2500 characters";
 	} else {
 		fieldErrors.systemPrompt = "";
 	}
@@ -164,7 +164,7 @@ function announceToSR(message: string) {
 				<span class="error-message">{fieldErrors.systemPrompt}</span>
 			{:else}
 				<span class="hint">
-					This text will auto-prepend to every card prompt in the project—great for tone, context, or guardrails. Max 500 characters.
+					This text will auto-prepend to every card prompt in the project—great for tone, context, or guardrails. Max 2500 characters.
 				</span>
 			{/if}
 		</div>

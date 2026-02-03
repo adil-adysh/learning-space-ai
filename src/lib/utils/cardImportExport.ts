@@ -113,6 +113,12 @@ export function validateBundle(data: unknown): ValidationError[] {
 				message: `Card at index ${index} missing or invalid 'prompt'`,
 				cardIndex: index,
 			});
+		} else if (c.prompt.length > 1500) {
+			errors.push({
+				field: "prompt",
+				message: `Card at index ${index} prompt is too long (max 1500 characters)`,
+				cardIndex: index,
+			});
 		}
 
 		if (!c.status || (c.status !== "active" && c.status !== "done")) {

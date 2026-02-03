@@ -29,8 +29,8 @@ function validateForm(values: FormValues): {
 	if (!values.name || values.name.trim() === "") {
 		errors.name = "Project name is required";
 	}
-	if (values.systemPrompt && values.systemPrompt.length > 8000) {
-		errors.systemPrompt = "System prompt must be less than 8000 characters";
+	if (values.systemPrompt && values.systemPrompt.length > 2500) {
+		errors.systemPrompt = "System prompt must be less than 2500 characters";
 	}
 	return errors;
 }

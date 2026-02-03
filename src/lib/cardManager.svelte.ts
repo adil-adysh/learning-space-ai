@@ -333,22 +333,24 @@ class CardManager {
 
 			// Import each card via IPC
 			const importedCards: LearningCard[] = [];
-			for (const card of cardsToImport) {
+			// Process in reverse to maintain order in UI (which sorts by newest first)
+			// The first card in the bundle will be imported last, getting the newest timestamp
+			for (const card of cardsToImport.slice().reverse()) {
 				const newCard = await (
 					window as typeof window & { api: typeof window.api }
 				).api.addCard({
 					title: card.title,
 					prompt: card.prompt,
 					topic: card.topic,
+					project: projectId, // Pass project ID directly
 				});
-				// Manually update the project after creation
-				const updatedCard = await (
-					window as typeof window & { api: typeof window.api }
-				).api.updateCard({
-					id: newCard.id,
-					project: projectId,
-				});
-				importedCards.push(updatedCard);
+
+				// Convert createdAt from string to Date
+				const formattedCard: LearningCard = {
+					...newCard,
+					createdAt: new Date(newCard.createdAt),
+				};
+				importedCards.unshift(formattedCard);
 			}
 
 			// Update local state with imported cards

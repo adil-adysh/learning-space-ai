@@ -14,7 +14,7 @@ This file gives concise, project-specific guidance for AI coding assistants so s
 - Preserve IPC contract: updates touching `src/preload.ts` must also update `src/main.ts` and `src/app.d.ts` types.
 - Use type-only imports for interfaces/types: prefer `import type { Foo } from './types'` (tsconfig uses `verbatimModuleSyntax`).
 - Keep UI changes small and accessible: follow existing modal patterns (`role="dialog"`, `aria-modal`, focus traps, `Escape` to close).
-- Validation limits: prompt/systemPrompt limits were expanded to 8000 chars — mirror that in any new validations, labels, or tests.
+- Validation limits: systemPrompt limit is 2500 chars, and per-card prompt limit is 1500 chars — mirror that in any new validations, labels, or tests.
 
 ## Architecture notes (big picture)
 
